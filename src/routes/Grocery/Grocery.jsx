@@ -50,29 +50,32 @@ const MagazinePage = () => {
     }
   };
 
-  const handleCardClick = (columnIndex, cardIndex) => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
+  const handleCardClick = (columnIndex, cardIndex, event) => {
+    // Check if the clicked element is the card itself or one of its children
+    if (event.target === event.currentTarget) {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
   
-    input.onchange = (event) => {
-      const file = event.target.files[0];
+      input.onchange = (event) => {
+        const file = event.target.files[0];
   
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const newUploadedImages = [...uploadedImages];
-          // Calculate the correct index within the flattened array
-          const calculatedCardIndex = columnIndex * numCardsPerColumn + cardIndex;
-          newUploadedImages[columnIndex][calculatedCardIndex] = e.target.result;
-          setUploadedImages(newUploadedImages);
-        };
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const newUploadedImages = [...uploadedImages];
+            // Calculate the correct index within the flattened array
+            const calculatedCardIndex = columnIndex * numCardsPerColumn + cardIndex;
+            newUploadedImages[columnIndex][calculatedCardIndex] = e.target.result;
+            setUploadedImages(newUploadedImages);
+          };
   
-        reader.readAsDataURL(file);
-      }
-    };
+          reader.readAsDataURL(file);
+        }
+      };
   
-    input.click();
+      input.click();
+    }
   };
 
   useEffect(() => {
@@ -104,7 +107,7 @@ const MagazinePage = () => {
         }
   
         column.push(
-          <div key={j} className={styles.card} onClick={() => handleCardClick(i, j)}>
+          <div key={j} className={styles.card} onClick={(event) => handleCardClick(i, j, event)}>
             {
               <img src={imageSrc} alt="Uploaded" className={styles.uploadedImage} />
             }
