@@ -1,0 +1,84 @@
+/* App.css */
+body {
+  display: flex;
+  align-items: center; /* Centrar verticalmente */
+  justify-content: center; /* Centrar horizontalmente */
+}
+
+.container-div {
+  background-color: white;
+  width: 21cm;
+  height: 29.7cm;
+  display: flex;
+  flex-direction: row;
+  margin: 10px;
+  padding: 5px;
+  border-radius: 15px;
+  border: 2px solid red;
+  overflow: hidden;
+  position: relative; /* Añadido */
+}
+
+.container-div-border {
+  display: flex;
+  align-items: center; /* Centrar verticalmente */
+  justify-content: center; /* Centrar horizontalmente */
+  background-color: white;
+  position: relative; /* Añadido */
+}
+
+.card-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+}
+
+.card {
+  flex: 1;
+  background-color: rgb(0, 145, 212);
+  border: 1px solid rgb(255, 255, 255);
+  position: relative; /* Añadido */
+
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 150px;
+  height: 30px;
+  border-radius: 10px;
+  background-color: red;
+  box-sizing: border-box;
+  z-index: 1;
+  font-weight: bold;
+  text-align: center;
+  
+}
+
+
+.overlay-card {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 80px;
+  height: 50px;
+  border-radius: 10px;
+  border: 1px solid rgb(0, 0, 0);
+  background-color: rgb(255, 255, 255);
+  z-index: 1;
+  box-sizing: border-box;
+}
+
+.overlay-card-text {
+  position: absolute;
+  top: 60%;
+  right: 0; /* Alinea a la derecha */
+  transform: translate(0, -100%); /* Centra verticalmente entre el top de la card y el top del overlay */
+  width: 75px;
+  height: 70px;
+  border: 1px solid black; /* Añade un borde si es necesario */
+  border-radius: 5px; /* Añade un radio de borde si es necesario */
+}
+
