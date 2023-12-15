@@ -18,9 +18,16 @@ const MagazinePage = () => {
 
   const [contextMenu, setContextMenu] = useState(null);
 
+  const initialZoomLevels = Array.from({ length: numColumns }, () => Array(numCardsPerColumn).fill(100));
+  const [zoomLevels, setZoomLevels] = useState(initialZoomLevels);
+  
+
   let initialOverlayImages = Array.from({ length: numColumns }, () => Array(numCardsPerColumn).fill(null))
   initialOverlayImages[0] = Array(11).fill(null)
   console.log(initialOverlayImages)
+
+  const [selectedImage, setSelectedImage] = useState(null);
+
 
   const [uploadedImages, setUploadedImages] = useState(initialOverlayImages);
 
@@ -53,6 +60,12 @@ const MagazinePage = () => {
 
   const handleCardClick = (columnIndex, cardIndex, event) => {
     event.preventDefault();
+
+    const handleZoomChange = (newZoom) => {
+      const newZoomLevels = [...zoomLevels];
+      newZoomLevels[columnIndex][cardIndex] = newZoom;
+      setZoomLevels(newZoomLevels);
+    };
     // Check if the clicked element is the card itself or one of its children
     if (event.target === event.currentTarget) {
       // If an image is already uploaded, show a context menu with the option to delete
@@ -61,6 +74,15 @@ const MagazinePage = () => {
           x: event.clientX,
           y: event.clientY,
           items: [
+            {
+              label: 'Editar',
+              action: () => {
+                const newZoom = prompt('Ingrese el nuevo nivel de zoom:', zoomLevels[columnIndex][cardIndex]);
+                if (newZoom !== null) {
+                  handleZoomChange(parseInt(newZoom, 10));
+                }
+              },
+            },
             {
               label: 'Eliminar',
               action: () => handleDeleteImage(columnIndex, cardIndex),
@@ -164,7 +186,7 @@ const MagazinePage = () => {
         column.push(
           <div key={j} className={styles.card} onClick={(event) => handleCardClick(i, j, event)}>
             {
-              <img src={imageSrc} alt="Uploaded" className={styles.uploadedImage} />
+              <img src={imageSrc} alt="Uploaded" className={styles.uploadedImage} style={{ transform: `scale(${zoomLevels[i][j] / 100})` }}/>
             }
             {renderOverlay && (
               <div className={styles.overlayCard} onClick={() => handleOverlayCardClick(i, j)}>
