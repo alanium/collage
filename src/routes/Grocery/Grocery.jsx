@@ -16,6 +16,7 @@ const MagazinePage = () => {
   const initialOverlayCardTextsLeft = Array(numColumns).fill().map(() => Array(numCardsPerColumn).fill(''));
   const [overlayCardTextsLeft, setOverlayCardTextsLeft] = useState(initialOverlayCardTextsLeft);
 
+  const [contextMenu, setContextMenu] = useState(null);
 
   let initialOverlayImages = Array.from({ length: numColumns }, () => Array(numCardsPerColumn).fill(null))
   initialOverlayImages[0] = Array(11).fill(null)
@@ -51,32 +52,86 @@ const MagazinePage = () => {
   };
 
   const handleCardClick = (columnIndex, cardIndex, event) => {
+    event.preventDefault();
     // Check if the clicked element is the card itself or one of its children
     if (event.target === event.currentTarget) {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'image/*';
+      // If an image is already uploaded, show a context menu with the option to delete
+      if (uploadedImages[columnIndex][cardIndex]) {
+        setContextMenu({
+          x: event.clientX,
+          y: event.clientY,
+          items: [
+            {
+              label: 'Eliminar',
+              action: () => handleDeleteImage(columnIndex, cardIndex),
+            },
+          ],
+        });
+      } else {
+        // Otherwise, allow the user to upload a new image
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
   
-      input.onchange = (event) => {
-        const file = event.target.files[0];
+        input.onchange = (event) => {
+          const file = event.target.files[0];
   
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            const newUploadedImages = [...uploadedImages];
-            // Calculate the correct index within the flattened array
-            const calculatedCardIndex = columnIndex * numCardsPerColumn + cardIndex;
-            newUploadedImages[columnIndex][calculatedCardIndex] = e.target.result;
-            setUploadedImages(newUploadedImages);
-          };
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const newUploadedImages = [...uploadedImages];
+              // Calculate the correct index within the flattened array
+              const calculatedCardIndex = columnIndex * numCardsPerColumn + cardIndex;
+              newUploadedImages[columnIndex][calculatedCardIndex] = e.target.result;
+              setUploadedImages(newUploadedImages);
+            };
   
-          reader.readAsDataURL(file);
-        }
-      };
+            reader.readAsDataURL(file);
+          }
+        };
   
-      input.click();
+        input.click();
+      }
     }
   };
+  
+  const handleDeleteImage = (columnIndex, cardIndex) => {
+    const confirmDelete = window.confirm('¿Seguro que desea eliminar la imagen?');
+    if (confirmDelete) {
+      const newUploadedImages = [...uploadedImages];
+      // Calculate the correct index within the flattened array
+      const calculatedCardIndex = columnIndex * numCardsPerColumn + cardIndex;
+      newUploadedImages[columnIndex][calculatedCardIndex] = null;
+      setUploadedImages(newUploadedImages);
+    }
+  };
+  
+  const ContextMenu = ({ x, y, items }) => (
+    <div
+      style={{
+        position: 'fixed',
+        top: `${y}px`,
+        left: `${x}px`,
+        backgroundColor: 'black',
+        border: '1px solid black',
+        zIndex: '1000',
+        padding: '5px',
+      }}
+    >
+      {items.map((item, index) => (
+        <div
+          key={index}
+          style={{ cursor: 'pointer' }}
+          onClick={() => {
+            item.action();
+            setContextMenu(null);
+          }}
+        >
+          {item.label}
+        </div>
+      ))}
+    </div>
+  );
 
   useEffect(() => {
     // Puedes hacer algo con overlayCardTexts después de cada cambio si es necesario
@@ -144,11 +199,14 @@ const MagazinePage = () => {
     <div className={styles.containerDivBorder}>
       <div className={styles.containerDiv}>
         <RenderCards />
+        {contextMenu && (
+          <ContextMenu x={contextMenu.x} y={contextMenu.y} items={contextMenu.items} />
+        )}
         <div className={styles.overlay}>GROCERY</div>
       </div>
-      
     </div>
   );
+  
 };
 
 export default MagazinePage;
