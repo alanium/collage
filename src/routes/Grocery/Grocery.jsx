@@ -78,7 +78,10 @@ const MagazinePage = () => {
           // Solo agrega la opción de editar si no se está editando el zoom
           contextMenuItems.unshift({
             label: 'Editar',
-            action: () => setIsEditingZoom(true),
+            action: () => {
+              setIsEditingZoom(true);
+              setSelectedImage({ columnIndex, cardIndex });
+            },
           });
         }
   
@@ -101,7 +104,6 @@ const MagazinePage = () => {
             reader.onload = (e) => {
               const newUploadedImages = [...uploadedImages];
               // Calculate the correct index within the flattened array
-              
               newUploadedImages[columnIndex][calculatedCardIndex] = e.target.result;
               setUploadedImages(newUploadedImages);
             };
@@ -116,32 +118,36 @@ const MagazinePage = () => {
   };
 
   const ZoomSlider = ({ columnIndex, cardIndex }) => {
-
     const calculatedCardIndex = columnIndex * numCardsPerColumn + cardIndex;
-
+  
     const handleZoomChange = (newZoom) => {
       const newZoomLevels = [...zoomLevels];
       newZoomLevels[columnIndex][cardIndex] = newZoom;
       setZoomLevels(newZoomLevels);
     };
-
+  
     const handleConfirmClick = () => {
       setIsEditingZoom(false);
     };
-
+  
     return (
-      <div className={styles.zoomSlider}>
-        <input
-          type="range"
-          min="50"
-          max="200"
-          value={zoomLevels[columnIndex][cardIndex]}
-          onChange={(e) => handleZoomChange(parseInt(e.target.value, 10))}
-        />
-        <button onClick={handleConfirmClick}>Confirmar</button>
+      <div className={styles.zoomSliderContainer}>
+        <div className={styles.zoomSlider}>
+          <input
+            type="range"
+            min="50"
+            max="200"
+            value={zoomLevels[columnIndex][cardIndex]}
+            onChange={(e) => handleZoomChange(parseInt(e.target.value, 10))}
+          />
+        </div>
+        <button className={styles.confirmButton} onClick={handleConfirmClick}>
+          Confirmar
+        </button>
       </div>
     );
   };
+  
 
   
   const handleDeleteImage = (columnIndex, cardIndex) => {
@@ -194,15 +200,17 @@ const MagazinePage = () => {
 
   const RenderCards = () => {
     const cards = [];
-  
-    for (let i = 0; i < numColumns; i++) {
-      const numCards = i === columnWithCustomCards ? 11 : numCardsPerColumn;
-      const column = [];
-  
-      for (let j = 0; j < numCards; j++) {
-        const cardIndex = i * numCardsPerColumn + j;
-        const renderOverlay = i !== 0;
-        const isEditingThisZoom = isEditingZoom && j === 0;
+
+  for (let i = 0; i < numColumns; i++) {
+    const numCards = i === columnWithCustomCards ? 11 : numCardsPerColumn;
+    const column = [];
+
+    for (let j = 0; j < numCards; j++) {
+      const cardIndex = i * numCardsPerColumn + j;
+      const renderOverlay = i !== 0;
+      const isEditingThisZoom =
+        isEditingZoom && selectedImage && selectedImage.columnIndex === i && selectedImage.cardIndex === j;
+
   
         let imageSrc = uploadedImages[i][cardIndex];
   
@@ -233,9 +241,8 @@ const MagazinePage = () => {
                 {overlayCardTextsLeft[i][j]}
               </div>
             )}
-            {isEditingThisZoom && (
-              <ZoomSlider columnIndex={i} cardIndex={j} />
-            )}
+            {isEditingThisZoom && <ZoomSlider columnIndex={i} cardIndex={j} />}
+
           </div>
         );
       }

@@ -93,3 +93,29 @@
   max-width: 100%;
   max-height: 100%;
 }
+
+.zoomSliderContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px; /* Ajusta según sea necesario */
+}
+
+.zoomSlider {
+  margin-bottom: 5px; /* Ajusta según sea necesario */
+}
+
+.confirmButton {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+  cursor: pointer;
+}
