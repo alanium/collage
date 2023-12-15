@@ -60,7 +60,7 @@ const MagazinePage = () => {
 
   const handleCardClick = (columnIndex, cardIndex, event) => {
     event.preventDefault();
-
+    const calculatedCardIndex = columnIndex * numCardsPerColumn + cardIndex;
     const handleZoomChange = (newZoom) => {
       const newZoomLevels = [...zoomLevels];
       newZoomLevels[columnIndex][cardIndex] = newZoom;
@@ -69,7 +69,7 @@ const MagazinePage = () => {
     // Check if the clicked element is the card itself or one of its children
     if (event.target === event.currentTarget) {
       // If an image is already uploaded, show a context menu with the option to delete
-      if (uploadedImages[columnIndex][cardIndex]) {
+      if (uploadedImages[columnIndex][calculatedCardIndex]) {
         setContextMenu({
           x: event.clientX,
           y: event.clientY,
@@ -77,7 +77,7 @@ const MagazinePage = () => {
             {
               label: 'Editar',
               action: () => {
-                const newZoom = prompt('Ingrese el nuevo nivel de zoom:', zoomLevels[columnIndex][cardIndex]);
+                const newZoom = prompt('Ingrese el nuevo nivel de zoom:', zoomLevels[columnIndex][calculatedCardIndex]);
                 if (newZoom !== null) {
                   handleZoomChange(parseInt(newZoom, 10));
                 }
@@ -103,7 +103,7 @@ const MagazinePage = () => {
             reader.onload = (e) => {
               const newUploadedImages = [...uploadedImages];
               // Calculate the correct index within the flattened array
-              const calculatedCardIndex = columnIndex * numCardsPerColumn + cardIndex;
+              
               newUploadedImages[columnIndex][calculatedCardIndex] = e.target.result;
               setUploadedImages(newUploadedImages);
             };
