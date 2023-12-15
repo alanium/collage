@@ -131,19 +131,21 @@ const MagazinePage = () => {
     };
   
     return (
-      <div className={styles.zoomSliderContainer}>
-        <div className={styles.zoomSlider}>
-          <input
-            type="range"
-            min="50"
-            max="200"
-            value={zoomLevels[columnIndex][cardIndex]}
-            onChange={(e) => handleZoomChange(parseInt(e.target.value, 10))}
-          />
+      <div className={styles.sidebar}>
+        <div className={styles.zoomSliderContainer}>
+          <div className={styles.zoomSlider}>
+            <input
+              type="range"
+              min="50"
+              max="200"
+              value={zoomLevels[columnIndex][cardIndex]}
+              onChange={(e) => handleZoomChange(parseInt(e.target.value, 10))}
+            />
+          </div>
+          <button className={styles.confirmButton} onClick={handleConfirmClick}>
+            Confirmar
+          </button>
         </div>
-        <button className={styles.confirmButton} onClick={handleConfirmClick}>
-          Confirmar
-        </button>
       </div>
     );
   };
