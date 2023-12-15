@@ -6,6 +6,8 @@ const MagazinePage = () => {
   const numColumns = 4;
   const numCardsPerColumn = 7;
 
+  const [isEditingZoom, setIsEditingZoom] = useState(false);
+
   const initialOverlayTexts = Array(numColumns * numCardsPerColumn).fill('');
   const [overlayTexts, setOverlayTexts] = useState(initialOverlayTexts);
 
@@ -18,7 +20,8 @@ const MagazinePage = () => {
 
   const [contextMenu, setContextMenu] = useState(null);
 
-  const initialZoomLevels = Array.from({ length: numColumns }, () => Array(numCardsPerColumn).fill(100));
+  let initialZoomLevels = Array.from({ length: numColumns }, () => Array(numCardsPerColumn).fill(100));
+  initialZoomLevels[0] = Array(11).fill(100)
   const [zoomLevels, setZoomLevels] = useState(initialZoomLevels);
   
 
@@ -61,33 +64,28 @@ const MagazinePage = () => {
   const handleCardClick = (columnIndex, cardIndex, event) => {
     event.preventDefault();
     const calculatedCardIndex = columnIndex * numCardsPerColumn + cardIndex;
-    const handleZoomChange = (newZoom) => {
-      const newZoomLevels = [...zoomLevels];
-      newZoomLevels[columnIndex][cardIndex] = newZoom;
-      setZoomLevels(newZoomLevels);
-    };
-    // Check if the clicked element is the card itself or one of its children
+  
     if (event.target === event.currentTarget) {
-      // If an image is already uploaded, show a context menu with the option to delete
       if (uploadedImages[columnIndex][calculatedCardIndex]) {
+        const contextMenuItems = [
+          {
+            label: 'Eliminar',
+            action: () => handleDeleteImage(columnIndex, cardIndex),
+          },
+        ];
+  
+        if (!isEditingZoom) {
+          // Solo agrega la opción de editar si no se está editando el zoom
+          contextMenuItems.unshift({
+            label: 'Editar',
+            action: () => setIsEditingZoom(true),
+          });
+        }
+  
         setContextMenu({
           x: event.clientX,
           y: event.clientY,
-          items: [
-            {
-              label: 'Editar',
-              action: () => {
-                const newZoom = prompt('Ingrese el nuevo nivel de zoom:', zoomLevels[columnIndex][calculatedCardIndex]);
-                if (newZoom !== null) {
-                  handleZoomChange(parseInt(newZoom, 10));
-                }
-              },
-            },
-            {
-              label: 'Eliminar',
-              action: () => handleDeleteImage(columnIndex, cardIndex),
-            },
-          ],
+          items: contextMenuItems,
         });
       } else {
         // Otherwise, allow the user to upload a new image
@@ -116,6 +114,35 @@ const MagazinePage = () => {
       }
     }
   };
+
+  const ZoomSlider = ({ columnIndex, cardIndex }) => {
+
+    const calculatedCardIndex = columnIndex * numCardsPerColumn + cardIndex;
+
+    const handleZoomChange = (newZoom) => {
+      const newZoomLevels = [...zoomLevels];
+      newZoomLevels[columnIndex][cardIndex] = newZoom;
+      setZoomLevels(newZoomLevels);
+    };
+
+    const handleConfirmClick = () => {
+      setIsEditingZoom(false);
+    };
+
+    return (
+      <div className={styles.zoomSlider}>
+        <input
+          type="range"
+          min="50"
+          max="200"
+          value={zoomLevels[columnIndex][cardIndex]}
+          onChange={(e) => handleZoomChange(parseInt(e.target.value, 10))}
+        />
+        <button onClick={handleConfirmClick}>Confirmar</button>
+      </div>
+    );
+  };
+
   
   const handleDeleteImage = (columnIndex, cardIndex) => {
     const confirmDelete = window.confirm('¿Seguro que desea eliminar la imagen?');
@@ -167,27 +194,30 @@ const MagazinePage = () => {
 
   const RenderCards = () => {
     const cards = [];
+  
     for (let i = 0; i < numColumns; i++) {
       const numCards = i === columnWithCustomCards ? 11 : numCardsPerColumn;
       const column = [];
+  
       for (let j = 0; j < numCards; j++) {
         const cardIndex = i * numCardsPerColumn + j;
         const renderOverlay = i !== 0;
+        const isEditingThisZoom = isEditingZoom && j === 0;
   
-        // Create a variable to store the image source
         let imageSrc = uploadedImages[i][cardIndex];
   
-        // If it's the first column, handle the images differently
         if (i === 0) {
-          // For the first column, use the same image source for all cards
           imageSrc = uploadedImages[0][cardIndex];
         }
   
         column.push(
           <div key={j} className={styles.card} onClick={(event) => handleCardClick(i, j, event)}>
-            {
-              <img src={imageSrc} alt="Uploaded" className={styles.uploadedImage} style={{ transform: `scale(${zoomLevels[i][j] / 100})` }}/>
-            }
+            <img
+              src={imageSrc}
+              alt="Uploaded"
+              className={styles.uploadedImage}
+              style={{ transform: `scale(${zoomLevels[i][j] / 100})` }}
+            />
             {renderOverlay && (
               <div className={styles.overlayCard} onClick={() => handleOverlayCardClick(i, j)}>
                 {overlayCardTexts[i][j]}
@@ -203,15 +233,20 @@ const MagazinePage = () => {
                 {overlayCardTextsLeft[i][j]}
               </div>
             )}
+            {isEditingThisZoom && (
+              <ZoomSlider columnIndex={i} cardIndex={j} />
+            )}
           </div>
         );
       }
+  
       cards.push(
         <div key={i} className={styles.cardColumn}>
           {column}
         </div>
       );
     }
+  
     return cards;
   };
   
