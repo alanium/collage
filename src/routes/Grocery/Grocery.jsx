@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styles from "./Grocery.module.css";
+import html2pdf from "html2pdf.js"; // Importa la biblioteca html2pdf
+
 
 const MagazinePage = () => {
   const numColumns = 4;
@@ -218,13 +220,13 @@ const MagazinePage = () => {
     }
   };
 
-  const ContextMenu = ({ x, y, items }) => (
+  const ContextMenu = ({ x, y, items, onClose }) => (
     <div
       style={{
         position: "fixed",
         top: `${y}px`,
         left: `${x}px`,
-        backgroundColor: "white",
+        backgroundColor: "black",
         border: "1px solid black",
         borderRadius: "5px",
         zIndex: "1000",
@@ -237,15 +239,21 @@ const MagazinePage = () => {
           style={{ cursor: "pointer" }}
           onClick={() => {
             item.action();
-            setContextMenu(null);
+            onClose(); // Cierra el menú contextual al hacer clic en una opción
           }}
         >
           {item.label}
         </div>
       ))}
+      <div
+        style={{ cursor: "pointer", marginTop: "5px" }}
+        onClick={() => onClose()} // Agrega una opción para cancelar y cerrar el menú contextual
+      >
+        Cancelar
+      </div>
     </div>
   );
-
+  
   useEffect(() => {
     // Puedes hacer algo con overlayCardTexts después de cada cambio si es necesario
   }, [overlayCardTexts]);
@@ -286,7 +294,6 @@ const MagazinePage = () => {
           >
             <img
               src={imageSrc}
-              
               className={styles.uploadedImage}
               style={{
                 transform: `scale(${zoomLevels[i][j] / 100}) translate(${
@@ -334,18 +341,38 @@ const MagazinePage = () => {
     return cards;
   };
 
+  const handleConvertToPDF = () => {
+    const container = document.getElementById("magazineContainer");
+
+    if (container) {
+      const pdfOptions = {
+        margin: 10,
+        filename: "grocery_magazine.pdf",
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      };
+
+      html2pdf().from(container).set(pdfOptions).save();
+    }
+  };
+
   return (
-    <div className={styles.containerDivBorder}>
-      <div className={styles.containerDiv}>
-        <RenderCards />
-        {contextMenu && (
-          <ContextMenu
-            x={contextMenu.x}
-            y={contextMenu.y}
-            items={contextMenu.items}
-          />
-        )}
-        <div className={styles.overlay}>GROCERY</div>
+    <div>
+      <button onClick={handleConvertToPDF}>Convertir a PDF</button>
+      <div id="magazineContainer" className={styles.containerDivBorder}>
+        <div className={styles.containerDiv}>
+          <RenderCards />
+          {contextMenu && (
+            <ContextMenu
+              x={contextMenu.x}
+              y={contextMenu.y}
+              items={contextMenu.items}
+              onClose={() => setContextMenu(null)}
+            />
+          )}
+          <div className={styles.overlay}>GROCERY</div>
+        </div>
       </div>
     </div>
   );
