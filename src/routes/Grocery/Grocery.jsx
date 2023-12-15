@@ -1,5 +1,4 @@
-// App.jsx
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from "react";
 import styles from "./Grocery.module.css";
 
 const MagazinePage = () => {
@@ -8,34 +7,53 @@ const MagazinePage = () => {
 
   const [isEditingZoom, setIsEditingZoom] = useState(false);
 
-  const initialOverlayTexts = Array(numColumns * numCardsPerColumn).fill('');
+  const initialOverlayTexts = Array(numColumns * numCardsPerColumn).fill("");
   const [overlayTexts, setOverlayTexts] = useState(initialOverlayTexts);
 
   // const initialOverlayCardTexts = Array(numColumns).fill().map(() => Array(numCardsPerColumn).fill(''));
-  const initialOverlayCardTexts = Array.from({length: numColumns }, () => Array(numCardsPerColumn).fill(''))
-  const [overlayCardTexts, setOverlayCardTexts] = useState(initialOverlayCardTexts);
+  const initialOverlayCardTexts = Array.from({ length: numColumns }, () =>
+    Array(numCardsPerColumn).fill("")
+  );
+  const [overlayCardTexts, setOverlayCardTexts] = useState(
+    initialOverlayCardTexts
+  );
 
-  const initialOverlayCardTextsLeft = Array(numColumns).fill().map(() => Array(numCardsPerColumn).fill(''));
-  const [overlayCardTextsLeft, setOverlayCardTextsLeft] = useState(initialOverlayCardTextsLeft);
+  const initialOverlayCardTextsLeft = Array(numColumns)
+    .fill()
+    .map(() => Array(numCardsPerColumn).fill(""));
+  const [overlayCardTextsLeft, setOverlayCardTextsLeft] = useState(
+    initialOverlayCardTextsLeft
+  );
 
   const [contextMenu, setContextMenu] = useState(null);
 
-  let initialZoomLevels = Array.from({ length: numColumns }, () => Array(numCardsPerColumn).fill(100));
-  initialZoomLevels[0] = Array(11).fill(100)
-  const [zoomLevels, setZoomLevels] = useState(initialZoomLevels);
-  
+  const [imagePositionX, setImagePositionX] = useState(0);
+  const [imagePositionY, setImagePositionY] = useState(0);
+  const [imagePositionsY, setImagePositionsY] = useState(
+    Array.from({ length: numColumns }, () => Array(numCardsPerColumn).fill(0))
+  );
 
-  let initialOverlayImages = Array.from({ length: numColumns }, () => Array(numCardsPerColumn).fill(null))
-  initialOverlayImages[0] = Array(11).fill(null)
-  console.log(initialOverlayImages)
+  const [imagePositions, setImagePositions] = useState(
+    Array.from({ length: numColumns }, () => Array(numCardsPerColumn).fill(0))
+  );
+
+  let initialZoomLevels = Array.from({ length: numColumns }, () =>
+    Array(numCardsPerColumn).fill(100)
+  );
+  initialZoomLevels[0] = Array(11).fill(100);
+  const [zoomLevels, setZoomLevels] = useState(initialZoomLevels);
+
+  let initialOverlayImages = Array.from({ length: numColumns }, () =>
+    Array(numCardsPerColumn).fill(null)
+  );
+  initialOverlayImages[0] = Array(11).fill(null);
 
   const [selectedImage, setSelectedImage] = useState(null);
-
 
   const [uploadedImages, setUploadedImages] = useState(initialOverlayImages);
 
   const handleOverlayTextClick = (cardIndex) => {
-    const newText = prompt('Ingrese el nuevo texto:');
+    const newText = prompt("Ingrese el nuevo texto:");
     if (newText !== null) {
       const newOverlayTexts = [...overlayTexts];
       newOverlayTexts[cardIndex] = newText;
@@ -44,7 +62,7 @@ const MagazinePage = () => {
   };
 
   const handleOverlayCardClick = (columnIndex, cardIndex) => {
-    const newText = prompt('Ingrese el nuevo texto para overlay-card:');
+    const newText = prompt("Ingrese el nuevo texto para overlay-card:");
     if (newText !== null) {
       const newOverlayCardTexts = [...overlayCardTexts];
       newOverlayCardTexts[columnIndex][cardIndex] = newText;
@@ -53,7 +71,9 @@ const MagazinePage = () => {
   };
 
   const handleOverlayCardTextLeftClick = (columnIndex, cardIndex) => {
-    const newText = prompt('Ingrese el nuevo texto para overlay-card-text-left:');
+    const newText = prompt(
+      "Ingrese el nuevo texto para overlay-card-text-left:"
+    );
     if (newText !== null) {
       const newOverlayCardTextsLeft = [...overlayCardTextsLeft];
       newOverlayCardTextsLeft[columnIndex][cardIndex] = newText;
@@ -64,27 +84,27 @@ const MagazinePage = () => {
   const handleCardClick = (columnIndex, cardIndex, event) => {
     event.preventDefault();
     const calculatedCardIndex = columnIndex * numCardsPerColumn + cardIndex;
-  
+
     if (event.target === event.currentTarget) {
       if (uploadedImages[columnIndex][calculatedCardIndex]) {
         const contextMenuItems = [
           {
-            label: 'Eliminar',
+            label: "Eliminar",
             action: () => handleDeleteImage(columnIndex, cardIndex),
           },
         ];
-  
+
         if (!isEditingZoom) {
           // Solo agrega la opción de editar si no se está editando el zoom
           contextMenuItems.unshift({
-            label: 'Editar',
+            label: "Editar",
             action: () => {
               setIsEditingZoom(true);
               setSelectedImage({ columnIndex, cardIndex });
             },
           });
         }
-  
+
         setContextMenu({
           x: event.clientX,
           y: event.clientY,
@@ -92,26 +112,27 @@ const MagazinePage = () => {
         });
       } else {
         // Otherwise, allow the user to upload a new image
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-  
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "image/*";
+
         input.onchange = (event) => {
           const file = event.target.files[0];
-  
+
           if (file) {
             const reader = new FileReader();
             reader.onload = (e) => {
               const newUploadedImages = [...uploadedImages];
               // Calculate the correct index within the flattened array
-              newUploadedImages[columnIndex][calculatedCardIndex] = e.target.result;
+              newUploadedImages[columnIndex][calculatedCardIndex] =
+                e.target.result;
               setUploadedImages(newUploadedImages);
             };
-  
+
             reader.readAsDataURL(file);
           }
         };
-  
+
         input.click();
       }
     }
@@ -124,6 +145,18 @@ const MagazinePage = () => {
       const newZoomLevels = [...zoomLevels];
       newZoomLevels[columnIndex][cardIndex] = newZoom;
       setZoomLevels(newZoomLevels);
+    };
+  
+    const handlePositionChange = (newPositionX) => {
+      const newImagePositions = [...imagePositions];
+      newImagePositions[columnIndex][cardIndex] = newPositionX;
+      setImagePositions(newImagePositions);
+    };
+  
+    const handlePositionChangeY = (newPositionY) => {
+      const newImagePositionsY = [...imagePositionsY];
+      newImagePositionsY[columnIndex][cardIndex] = newPositionY;
+      setImagePositionsY(newImagePositionsY);
     };
   
     const handleConfirmClick = () => {
@@ -139,21 +172,43 @@ const MagazinePage = () => {
               min="50"
               max="200"
               value={zoomLevels[columnIndex][cardIndex]}
-              onChange={(e) => handleZoomChange(parseInt(e.target.value, 10))}
+              onChange={(e) => handleZoomChange(Number(e.target.value))}
             />
           </div>
-          <button className={styles.confirmButton} onClick={handleConfirmClick}>
+          <div className={styles.positionSlider}>
+            <input
+              type="range"
+              min="-100"
+              max="100"
+              value={imagePositions[columnIndex][cardIndex]}
+              onChange={(e) => handlePositionChange(Number(e.target.value))}
+            />
+          </div>
+  
+          <div className={styles.positionSliderY}>
+            <input
+              type="range"
+              min="-100"
+              max="100"
+              value={imagePositionsY[columnIndex][cardIndex]}
+              onChange={(e) => handlePositionChangeY(Number(e.target.value))}
+            />
+          </div>
+          <button
+            className={styles.confirmButton}
+            onClick={handleConfirmClick}
+          >
             Confirmar
           </button>
         </div>
       </div>
     );
   };
-  
 
-  
   const handleDeleteImage = (columnIndex, cardIndex) => {
-    const confirmDelete = window.confirm('¿Seguro que desea eliminar la imagen?');
+    const confirmDelete = window.confirm(
+      "¿Seguro que desea eliminar la imagen?"
+    );
     if (confirmDelete) {
       const newUploadedImages = [...uploadedImages];
       // Calculate the correct index within the flattened array
@@ -162,23 +217,24 @@ const MagazinePage = () => {
       setUploadedImages(newUploadedImages);
     }
   };
-  
+
   const ContextMenu = ({ x, y, items }) => (
     <div
       style={{
-        position: 'fixed',
+        position: "fixed",
         top: `${y}px`,
         left: `${x}px`,
-        backgroundColor: 'black',
-        border: '1px solid black',
-        zIndex: '1000',
-        padding: '5px',
+        backgroundColor: "white",
+        border: "1px solid black",
+        borderRadius: "5px",
+        zIndex: "1000",
+        padding: "5px",
       }}
     >
       {items.map((item, index) => (
         <div
           key={index}
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: "pointer" }}
           onClick={() => {
             item.action();
             setContextMenu(null);
@@ -203,76 +259,96 @@ const MagazinePage = () => {
   const RenderCards = () => {
     const cards = [];
 
-  for (let i = 0; i < numColumns; i++) {
-    const numCards = i === columnWithCustomCards ? 11 : numCardsPerColumn;
-    const column = [];
+    for (let i = 0; i < numColumns; i++) {
+      const numCards = i === columnWithCustomCards ? 11 : numCardsPerColumn;
+      const column = [];
 
-    for (let j = 0; j < numCards; j++) {
-      const cardIndex = i * numCardsPerColumn + j;
-      const renderOverlay = i !== 0;
-      const isEditingThisZoom =
-        isEditingZoom && selectedImage && selectedImage.columnIndex === i && selectedImage.cardIndex === j;
+      for (let j = 0; j < numCards; j++) {
+        const cardIndex = i * numCardsPerColumn + j;
+        const renderOverlay = i !== 0;
+        const isEditingThisZoom =
+          isEditingZoom &&
+          selectedImage &&
+          selectedImage.columnIndex === i &&
+          selectedImage.cardIndex === j;
 
-  
         let imageSrc = uploadedImages[i][cardIndex];
-  
+
         if (i === 0) {
           imageSrc = uploadedImages[0][cardIndex];
         }
-  
+
         column.push(
-          <div key={j} className={styles.card} onClick={(event) => handleCardClick(i, j, event)}>
+          <div
+            key={j}
+            className={styles.card}
+            onClick={(event) => handleCardClick(i, j, event)}
+          >
             <img
               src={imageSrc}
-              alt="Uploaded"
+              
               className={styles.uploadedImage}
-              style={{ transform: `scale(${zoomLevels[i][j] / 100})` }}
+              style={{
+                transform: `scale(${zoomLevels[i][j] / 100}) translate(${
+                  imagePositions[i][j]
+                }px, ${imagePositionsY[i][j]}px)`,
+                
+              }}
             />
-            {renderOverlay && (
-              <div className={styles.overlayCard} onClick={() => handleOverlayCardClick(i, j)}>
+            
+              <div
+                className={styles.overlayCard}
+                onClick={() => handleOverlayCardClick(i, j)}
+              >
                 {overlayCardTexts[i][j]}
               </div>
-            )}
+            
             {renderOverlay && (
-              <div className={styles.overlayCardText} onClick={() => handleOverlayTextClick(cardIndex)}>
+              <div
+                className={styles.overlayCardText}
+                onClick={() => handleOverlayTextClick(cardIndex)}
+              >
                 {overlayTexts[cardIndex]}
               </div>
             )}
             {renderOverlay && (
-              <div className={styles.overlayCardTextLeft} onClick={() => handleOverlayCardTextLeftClick(i, j)}>
+              <div
+                className={styles.overlayCardTextLeft}
+                onClick={() => handleOverlayCardTextLeftClick(i, j)}
+              >
                 {overlayCardTextsLeft[i][j]}
               </div>
             )}
             {isEditingThisZoom && <ZoomSlider columnIndex={i} cardIndex={j} />}
-
           </div>
         );
       }
-  
+
       cards.push(
         <div key={i} className={styles.cardColumn}>
           {column}
         </div>
       );
     }
-  
+
     return cards;
   };
-  
-  
 
   return (
     <div className={styles.containerDivBorder}>
       <div className={styles.containerDiv}>
         <RenderCards />
         {contextMenu && (
-          <ContextMenu x={contextMenu.x} y={contextMenu.y} items={contextMenu.items} />
+          <ContextMenu
+            x={contextMenu.x}
+            y={contextMenu.y}
+            items={contextMenu.items}
+          />
         )}
         <div className={styles.overlay}>GROCERY</div>
       </div>
     </div>
   );
-  
 };
 
 export default MagazinePage;
