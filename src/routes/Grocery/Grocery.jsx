@@ -3,7 +3,6 @@ import styles from "./Grocery.module.css";
 import html2pdf from "html2pdf.js"; // Importa la biblioteca html2pdf
 import FixedBox from "../../components/BoxWithText/BoxWithText";
 
-
 const MagazinePage = () => {
   const numColumns = 4;
   const numCardsPerColumn = 7;
@@ -64,7 +63,12 @@ const MagazinePage = () => {
     }
   };
 
-
+  const handleShowHideOverlayCard = (columnIndex, cardIndex) => {
+    const newOverlayCardTexts = [...overlayCardTexts];
+    newOverlayCardTexts[columnIndex][cardIndex] =
+      newOverlayCardTexts[columnIndex][cardIndex] === null ? "" : null;
+    setOverlayCardTexts(newOverlayCardTexts);
+  };
 
   const handleOverlayCardTextLeftClick = (columnIndex, cardIndex) => {
     const newText = prompt(
@@ -87,6 +91,10 @@ const MagazinePage = () => {
           {
             label: "Delete",
             action: () => handleDeleteImage(columnIndex, cardIndex),
+          },
+          {
+            label: "Show/Hide",
+            action: () => handleShowHideOverlayCard(columnIndex, cardIndex),
           },
         ];
 
@@ -136,29 +144,29 @@ const MagazinePage = () => {
 
   const ZoomSlider = ({ columnIndex, cardIndex }) => {
     const calculatedCardIndex = columnIndex * numCardsPerColumn + cardIndex;
-  
+
     const handleZoomChange = (newZoom) => {
       const newZoomLevels = [...zoomLevels];
       newZoomLevels[columnIndex][cardIndex] = newZoom;
       setZoomLevels(newZoomLevels);
     };
-  
+
     const handlePositionChange = (newPositionX) => {
       const newImagePositions = [...imagePositions];
       newImagePositions[columnIndex][cardIndex] = newPositionX;
       setImagePositions(newImagePositions);
     };
-  
+
     const handlePositionChangeY = (newPositionY) => {
       const newImagePositionsY = [...imagePositionsY];
       newImagePositionsY[columnIndex][cardIndex] = newPositionY;
       setImagePositionsY(newImagePositionsY);
     };
-  
+
     const handleConfirmClick = () => {
       setIsEditingZoom(false);
     };
-  
+
     return (
       <div className={styles.sidebar}>
         <div className={styles.zoomSliderContainer}>
@@ -180,7 +188,7 @@ const MagazinePage = () => {
               onChange={(e) => handlePositionChange(Number(e.target.value))}
             />
           </div>
-  
+
           <div className={styles.positionSliderY}>
             <input
               type="range"
@@ -190,10 +198,7 @@ const MagazinePage = () => {
               onChange={(e) => handlePositionChangeY(Number(e.target.value))}
             />
           </div>
-          <button
-            className={styles.confirmButton}
-            onClick={handleConfirmClick}
-          >
+          <button className={styles.confirmButton} onClick={handleConfirmClick}>
             Confirmar
           </button>
         </div>
@@ -248,7 +253,7 @@ const MagazinePage = () => {
       </div>
     </div>
   );
-  
+
   useEffect(() => {
     // Puedes hacer algo con overlayCardTexts después de cada cambio si es necesario
   }, [overlayCardTexts]);
@@ -294,12 +299,19 @@ const MagazinePage = () => {
                 transform: `scale(${zoomLevels[i][j] / 100}) translate(${
                   imagePositions[i][j]
                 }px, ${imagePositionsY[i][j]}px)`,
-                
               }}
             />
-            
-              <FixedBox key={`fixed-box-${i}-${j}`} overlayCardTexts={overlayCardTexts} setOverlayCardTexts={setOverlayCardTexts} cardIndex={cardIndex} j={j} i={i} />
-            
+
+            <FixedBox
+              key={`fixed-box-${i}-${j}`}
+              overlayCardTexts={overlayCardTexts}
+              setOverlayCardTexts={setOverlayCardTexts}
+              handleShowHideOverlayCard={handleShowHideOverlayCard}
+              cardIndex={cardIndex}
+              j={j}
+              i={i}
+            />
+
             {renderOverlay && (
               <div
                 className={styles.overlayCardText}

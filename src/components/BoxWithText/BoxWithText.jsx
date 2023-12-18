@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import styles from "./BoxWithText.module.css";  // Replace with your actual CSS file
 
-const FixedBox = ({ overlayCardTexts, setOverlayCardTexts, i, j, cardIndex }) => {
+const FixedBox = ({ overlayCardTexts, setOverlayCardTexts, i, j, handleShowHideOverlayCard}) => {
   const [text, setText] = useState("");
   const [fontSize, setFontSize] = useState(32);  // Initial font size
 
@@ -64,7 +64,7 @@ const FixedBox = ({ overlayCardTexts, setOverlayCardTexts, i, j, cardIndex }) =>
     <div
       id={`fixed-box-${i}-${j}`}
       className={styles.box}
-      style={{ fontSize: `${fontSize}px` }}
+      style={{ fontSize: `${fontSize}px`, display: overlayCardTexts[i][j] !== null ? "flex" : "none"  }}
       onClick={handleOverlayCardClick}
     >
       {overlayCardTexts[i][j]}
