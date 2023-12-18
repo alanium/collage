@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styles from "./Grocery.module.css";
 import html2pdf from "html2pdf.js"; // Importa la biblioteca html2pdf
-import FixedBox from "../../components/BoxWithText/BoxWithText";
 
 
 const MagazinePage = () => {
@@ -227,12 +226,12 @@ const MagazinePage = () => {
         position: "fixed",
         top: `${y}px`,
         left: `${x}px`,
-        color: "white",
-        backgroundColor: "gray",
+        backgroundColor: "grey",
         border: "1px solid black",
         borderRadius: "5px",
         zIndex: "1000",
         padding: "5px",
+        color: "white"
       }}
     >
       {items.map((item, index) => (
@@ -241,15 +240,15 @@ const MagazinePage = () => {
           style={{ cursor: "pointer" }}
           onClick={() => {
             item.action();
-            onClose(); // Cierra el menú contextual al hacer clic en una opción
+            onClose();
           }}
         >
           {item.label}
         </div>
       ))}
       <div
-        style={{ cursor: "pointer", marginTop: "5px" }}
-        onClick={() => onClose()} // Agrega una opción para cancelar y cerrar el menú contextual
+        style={{ cursor: "pointer"}}
+        onClick={() => onClose()}
       >
         Cancel
       </div>
@@ -313,7 +312,12 @@ const MagazinePage = () => {
               </div>
             
             {renderOverlay && (
-              <FixedBox />
+              <div
+                className={styles.overlayCardText}
+                onClick={() => handleOverlayTextClick(cardIndex)}
+              >
+                {overlayTexts[cardIndex]}
+              </div>
             )}
             {renderOverlay && (
               <div
