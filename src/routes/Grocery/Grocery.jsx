@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styles from "./Grocery.module.css";
 import html2pdf from "html2pdf.js"; // Importa la biblioteca html2pdf
+import FixedBox from "../../components/BoxWithText/BoxWithText";
 
 
 const MagazinePage = () => {
@@ -91,7 +92,7 @@ const MagazinePage = () => {
       if (uploadedImages[columnIndex][calculatedCardIndex]) {
         const contextMenuItems = [
           {
-            label: "Eliminar",
+            label: "Delete",
             action: () => handleDeleteImage(columnIndex, cardIndex),
           },
         ];
@@ -99,7 +100,7 @@ const MagazinePage = () => {
         if (!isEditingZoom) {
           // Solo agrega la opción de editar si no se está editando el zoom
           contextMenuItems.unshift({
-            label: "Editar",
+            label: "Edit",
             action: () => {
               setIsEditingZoom(true);
               setSelectedImage({ columnIndex, cardIndex });
@@ -226,7 +227,8 @@ const MagazinePage = () => {
         position: "fixed",
         top: `${y}px`,
         left: `${x}px`,
-        backgroundColor: "black",
+        color: "white",
+        backgroundColor: "gray",
         border: "1px solid black",
         borderRadius: "5px",
         zIndex: "1000",
@@ -249,7 +251,7 @@ const MagazinePage = () => {
         style={{ cursor: "pointer", marginTop: "5px" }}
         onClick={() => onClose()} // Agrega una opción para cancelar y cerrar el menú contextual
       >
-        Cancelar
+        Cancel
       </div>
     </div>
   );
@@ -311,12 +313,7 @@ const MagazinePage = () => {
               </div>
             
             {renderOverlay && (
-              <div
-                className={styles.overlayCardText}
-                onClick={() => handleOverlayTextClick(cardIndex)}
-              >
-                {overlayTexts[cardIndex]}
-              </div>
+              <FixedBox />
             )}
             {renderOverlay && (
               <div
