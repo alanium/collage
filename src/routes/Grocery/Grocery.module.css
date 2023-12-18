@@ -59,10 +59,22 @@
   width: 80px;
   height: 50px;
   border-radius: 5px;
-  border: 1px solid rgb(0, 0, 0);
   z-index: 1;
   box-sizing: border-box;
+
+  color: rgb(255, 0, 0);
+  font-size: 200%;
+  font-weight: bold; /* Texto en negrita */
+  overflow: hidden; /* Para ocultar el texto que se sale del contenedor */
+  white-space: nowrap; /* Evita el salto de línea */
+  border: 1px solid black;  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background-color: white;
 }
+
 
 .overlayCardText {
   position: absolute;
@@ -71,19 +83,26 @@
   transform: translate(0, -100%); /* Centra verticalmente entre el top de la card y el top del overlay */
   width: 75px;
   height: 70px;
-  border: 1px solid black; /* Añade un borde si es necesario */
   border-radius: 5px; /* Añade un radio de borde si es necesario */
+  color: black;
+  font-weight: bold;
+  overflow: hidden;
+  justify-content: flex-end; /* Alinea el contenido al extremo derecho */
+  text-align: right; /* Alinea el texto a la derecha dentro del contenedor */
+  padding-right: 5px;
 }
 
 .overlayCardTextLeft {
   position: absolute;
   left: 0;
-  transform: translate(0, 217%);
+  transform: translate(0, 230%);
   width: 100px;
   height: 45px;
-  border: 1px solid black;
   border-radius: 3px;
   z-index: 1;
+  color: black;
+  font-weight: bold;
+  overflow: hidden;
 }
 
 .uploadedImage {
