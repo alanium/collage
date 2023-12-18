@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styles from "./Grocery.module.css";
 import html2pdf from "html2pdf.js"; // Importa la biblioteca html2pdf
+import FixedBox from "../../components/BoxWithText/BoxWithText";
 
 
 const MagazinePage = () => {
@@ -63,14 +64,7 @@ const MagazinePage = () => {
     }
   };
 
-  const handleOverlayCardClick = (columnIndex, cardIndex) => {
-    const newText = prompt("Ingrese el nuevo texto para overlay-card:");
-    if (newText !== null) {
-      const newOverlayCardTexts = [...overlayCardTexts];
-      newOverlayCardTexts[columnIndex][cardIndex] = newText;
-      setOverlayCardTexts(newOverlayCardTexts);
-    }
-  };
+
 
   const handleOverlayCardTextLeftClick = (columnIndex, cardIndex) => {
     const newText = prompt(
@@ -226,12 +220,12 @@ const MagazinePage = () => {
         position: "fixed",
         top: `${y}px`,
         left: `${x}px`,
-        backgroundColor: "grey",
+        color: "white",
+        backgroundColor: "gray",
         border: "1px solid black",
         borderRadius: "5px",
         zIndex: "1000",
         padding: "5px",
-        color: "white"
       }}
     >
       {items.map((item, index) => (
@@ -240,15 +234,15 @@ const MagazinePage = () => {
           style={{ cursor: "pointer" }}
           onClick={() => {
             item.action();
-            onClose();
+            onClose(); // Cierra el menú contextual al hacer clic en una opción
           }}
         >
           {item.label}
         </div>
       ))}
       <div
-        style={{ cursor: "pointer"}}
-        onClick={() => onClose()}
+        style={{ cursor: "pointer", marginTop: "5px" }}
+        onClick={() => onClose()} // Agrega una opción para cancelar y cerrar el menú contextual
       >
         Cancel
       </div>
@@ -304,12 +298,7 @@ const MagazinePage = () => {
               }}
             />
             
-              <div
-                className={styles.overlayCard}
-                onClick={() => handleOverlayCardClick(i, j)}
-              >
-                {overlayCardTexts[i][j]}
-              </div>
+              <FixedBox key={`fixed-box-${i}-${j}`} overlayCardTexts={overlayCardTexts} setOverlayCardTexts={setOverlayCardTexts} cardIndex={cardIndex} j={j} i={i} />
             
             {renderOverlay && (
               <div

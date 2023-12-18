@@ -63,6 +63,7 @@
   box-sizing: border-box;
 
   color: rgb(255, 0, 0);
+  font-size: 200%;
   font-weight: bold; /* Texto en negrita */
   overflow: hidden; /* Para ocultar el texto que se sale del contenedor */
   white-space: nowrap; /* Evita el salto de línea */

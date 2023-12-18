@@ -1,23 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styles from "./BoxWithText.module.css";  // Replace with your actual CSS file
 
-const FixedBox = () => {
-  const [text, setText] = useState('Click to edit');
+const FixedBox = ({ overlayCardTexts, setOverlayCardTexts, i, j, cardIndex }) => {
+  const [text, setText] = useState("");
   const [fontSize, setFontSize] = useState(32);  // Initial font size
 
-  const handleDoubleClick = () => {
-    const newText = prompt('Enter text:', text);
+  const handleOverlayCardClick = () => {
+    const newText = prompt("Ingrese el nuevo texto para overlay-card:");
     if (newText !== null) {
-      setText(newText || '');
-    }
-  };
+      const newOverlayCardTexts = [...overlayCardTexts];
+      newOverlayCardTexts[i][j] = newText;
+      setOverlayCardTexts(newOverlayCardTexts);
+    }}
 
   useEffect(() => {
     adjustFontSize();
-  }, [text]);
+  }, [overlayCardTexts[i][j]]);
 
   const adjustFontSize = () => {
-    const box = document.getElementById('fixed-box');
+    const box = document.getElementById(`fixed-box-${i}-${j}`);
     const boxWidth = box.clientWidth;
     const boxHeight = box.clientHeight;
 
@@ -30,7 +31,7 @@ const FixedBox = () => {
     document.body.appendChild(tempDiv);
 
     // Set the temp div content to the current text
-    tempDiv.innerHTML = text;
+    tempDiv.innerHTML = overlayCardTexts[i][j];
 
     let newFontSize = fontSize;
     let safetyCounter = 0; // Safety counter to prevent an infinite loop
@@ -61,12 +62,12 @@ const FixedBox = () => {
 
   return (
     <div
-      id="fixed-box"
+      id={`fixed-box-${i}-${j}`}
       className={styles.box}
       style={{ fontSize: `${fontSize}px` }}
-      onClick={handleDoubleClick}
+      onClick={handleOverlayCardClick}
     >
-      {text}
+      {overlayCardTexts[i][j]}
     </div>
   );
 };
