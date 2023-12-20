@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import styles from "./TripleBoxWithText.module.css";  // Replace with your actual CSS file
+import styles from "./TripleBoxWithText.module.css";  
 
 const TripleBox = ({ overlayCardTexts, setOverlayCardTexts, i, j, smallDivText, setSmallDivText }) => {
   const [topBoxFontSize, setTopBoxFontSize] = useState(40);
@@ -30,25 +30,23 @@ const TripleBox = ({ overlayCardTexts, setOverlayCardTexts, i, j, smallDivText, 
     const boxWidth = box.clientWidth;
     const boxHeight = box.clientHeight;
 
-    box.style.fontSize = '2rem'; // Start with a standard size
+    box.style.fontSize = '2rem'; 
 
-    let newFontSizeValue = 30; // Set a minimum font size
+    let newFontSizeValue = 30; 
 
-    // Check if the text content exceeds the limits of the box
     while (
       (box.scrollWidth > boxWidth || box.scrollHeight > boxHeight) &&
-      newFontSizeValue > 1  // Adjust the lower limit as needed
+      newFontSizeValue > 1
     ) {
       newFontSizeValue -= 1;
       box.style.fontSize = `${newFontSizeValue}px`;
     }
 
-    // Update the font size state
     setFontSize(newFontSizeValue);
   };
 
   const handleOverlayCardClick = () => {
-    const newText = prompt("Enter new amount:");
+    const newText = prompt("Ingrese el nuevo monto:");
     if (newText != null) {
       const newOverlayCardTexts = [...overlayCardTexts];
       newOverlayCardTexts[i][j] = newText;
@@ -57,7 +55,7 @@ const TripleBox = ({ overlayCardTexts, setOverlayCardTexts, i, j, smallDivText, 
   };
 
   const handleSmallDivClick = () => {
-    const newText = prompt("Enter new text: ")
+    const newText = prompt("Ingrese el nuevo texto: ")
     if (newText != null) {
       const newSmallDivTexts = [...smallDivText];
       newSmallDivTexts[i][j] = newText;
@@ -77,15 +75,15 @@ const TripleBox = ({ overlayCardTexts, setOverlayCardTexts, i, j, smallDivText, 
         ref={leftBoxRef}
         style={{ fontSize: `${leftBoxFontSize}px` }}
       >
-        {overlayCardTexts[i][j] && overlayCardTexts[i][j].slice(0, overlayCardTexts[i][j].indexOf("."))}
+        {overlayCardTexts[i][j] && overlayCardTexts[i][j].split(".")[0]}
       </div>
-      <div>
+      <div className={styles.topButtomBox}>
         <div
           className={styles.topBox}
           ref={topBoxRef}
           style={{ fontSize: `${topBoxFontSize}px` }}
         >
-          {overlayCardTexts[i][j] && overlayCardTexts[i][j].slice(overlayCardTexts[i][j].indexOf("."), (overlayCardTexts[i][j].length)).split(".")}
+          {overlayCardTexts[i][j] && overlayCardTexts[i][j].split(".")[1]?.split(" ")[0]}
         </div>
         <div
           onClick={handleSmallDivClick}
@@ -93,7 +91,13 @@ const TripleBox = ({ overlayCardTexts, setOverlayCardTexts, i, j, smallDivText, 
           ref={bottomBoxRef}
           style={{ fontSize: `${bottomBoxFontSize}px` }}
         >
-          {smallDivText[i][j] && smallDivText[i][j]}
+          {overlayCardTexts[i][j] && overlayCardTexts[i][j].includes(" ") ? (
+            overlayCardTexts[i][j].slice(
+              overlayCardTexts[i][j].indexOf(" ") + 1
+            )
+          ) : (
+            overlayCardTexts[i][j]
+          )}
         </div>
       </div>
     </div>
