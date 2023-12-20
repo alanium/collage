@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=League+Gothic&display=swap');
+
 .box {
     word-wrap: break-word;
     white-space: nowrap;
@@ -18,6 +20,8 @@
     justify-content: center;
     text-align: center;
     background-color: white;
+    font-family: 'League Gothic', sans-serif;
+
   }
   
   .box.editing {

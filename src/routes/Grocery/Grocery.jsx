@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styles from "./Grocery.module.css";
 import html2pdf from "html2pdf.js"; // Importa la biblioteca html2pdf
 import FixedBox from "../../components/BoxWithText/BoxWithText";
+import TripleBox from "../../components/TripleBoxWithText/TripleBoxWithText";
 
 const MagazinePage = () => {
   const numColumns = 4;
@@ -19,6 +20,28 @@ const MagazinePage = () => {
   const [overlayCardTexts, setOverlayCardTexts] = useState(
     initialOverlayCardTexts
   );
+
+  let initialSmallDivText = Array.from({ length: numColumns }, () =>
+  Array(numCardsPerColumn).fill("")
+  );
+
+  initialSmallDivText[0] = Array(11).fill("")
+
+  const [smallDivText, setSmallDivText] = useState(
+    initialSmallDivText
+  );
+
+  console.log(smallDivText)
+
+  let initialPriceBoxRender = Array.from({ length: numColumns }, () => 
+    Array(numCardsPerColumn).fill(false)
+  );
+
+  initialPriceBoxRender[0] = Array(11).fill(false)
+
+  const [priceBoxRender, setPriceBoxRender] = useState(
+    initialPriceBoxRender
+  )
 
   const initialOverlayCardTextsLeft = Array(numColumns)
     .fill()
@@ -70,6 +93,13 @@ const MagazinePage = () => {
     setOverlayCardTexts(newOverlayCardTexts);
   };
 
+  const handleSwithcBoxType = (columnIndex, cardIndex) => {
+    const newPriceBoxRender = [...priceBoxRender];
+    newPriceBoxRender[columnIndex][cardIndex] =
+    newPriceBoxRender[columnIndex][cardIndex] === false ? true : false;
+    setPriceBoxRender(newPriceBoxRender);
+  };
+
   const handleOverlayCardTextLeftClick = (columnIndex, cardIndex) => {
     const newText = prompt(
       "Ingrese el nuevo texto para overlay-card-text-left:"
@@ -95,6 +125,10 @@ const MagazinePage = () => {
           {
             label: "Show/Hide",
             action: () => handleShowHideOverlayCard(columnIndex, cardIndex),
+          },
+          {
+            label: "Box1/Box2",
+            action: () => handleSwithcBoxType(columnIndex, cardIndex),
           },
         ];
 
@@ -302,6 +336,22 @@ const MagazinePage = () => {
               }}
             />
 
+            {priceBoxRender[i][j] ? 
+            
+            <TripleBox 
+              key={`triple-box-${i}-${j}`}
+              overlayCardTexts={overlayCardTexts}
+              setOverlayCardTexts={setOverlayCardTexts}
+              handleShowHideOverlayCard={handleShowHideOverlayCard}
+              cardIndex={cardIndex}
+              smallDivText={smallDivText}
+              setSmallDivText={setSmallDivText}
+              j={j}
+              i={i}
+            />
+            
+            : 
+            
             <FixedBox
               key={`fixed-box-${i}-${j}`}
               overlayCardTexts={overlayCardTexts}
@@ -311,7 +361,7 @@ const MagazinePage = () => {
               j={j}
               i={i}
             />
-
+            }
             {renderOverlay && (
               <div
                 className={styles.overlayCardText}
@@ -358,11 +408,30 @@ const MagazinePage = () => {
     }
   };
 
+  const contextMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (contextMenuRef.current && !contextMenuRef.current.contains(event.target)) {
+        // Cerrar el menú contextual si se hace clic fuera de él
+        setContextMenu(null);
+      }
+    };
+
+    // Agregar el event listener al documento
+    document.addEventListener("mousedown", handleClickOutside);
+
+    // Limpiar el event listener al desmontar el componente
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
     <div>
       <button onClick={handleConvertToPDF}>Convertir a PDF</button>
       <div id="magazineContainer" className={styles.containerDivBorder}>
-        <div className={styles.containerDiv}>
+        <div className={styles.containerDiv} ref={contextMenuRef}>
           <RenderCards />
           {contextMenu && (
             <ContextMenu
