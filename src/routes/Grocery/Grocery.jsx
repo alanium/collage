@@ -14,38 +14,38 @@ const MagazinePage = () => {
   const [overlayTexts, setOverlayTexts] = useState(initialOverlayTexts);
 
   // const initialOverlayCardTexts = Array(numColumns).fill().map(() => Array(numCardsPerColumn).fill(''));
-  const initialOverlayCardTexts = Array.from({ length: numColumns }, () =>
+  let initialOverlayCardTexts = Array.from({ length: numColumns }, () =>
     Array(numCardsPerColumn).fill("")
   );
+
+  initialOverlayCardTexts[0] = Array(11).fill(null)
   const [overlayCardTexts, setOverlayCardTexts] = useState(
     initialOverlayCardTexts
   );
 
   let initialSmallDivText = Array.from({ length: numColumns }, () =>
-  Array(numCardsPerColumn).fill("")
+    Array(numCardsPerColumn).fill("")
   );
 
-  initialSmallDivText[0] = Array(11).fill("")
+  initialSmallDivText[0] = Array(11).fill("");
 
-  const [smallDivText, setSmallDivText] = useState(
-    initialSmallDivText
-  );
+  const [smallDivText, setSmallDivText] = useState(initialSmallDivText);
 
-  console.log(smallDivText)
+  console.log(smallDivText);
 
-  let initialPriceBoxRender = Array.from({ length: numColumns }, () => 
+  let initialPriceBoxRender = Array.from({ length: numColumns }, () =>
     Array(numCardsPerColumn).fill(false)
   );
 
-  initialPriceBoxRender[0] = Array(11).fill(false)
+  initialPriceBoxRender[0] = Array(11).fill(false);
 
-  const [priceBoxRender, setPriceBoxRender] = useState(
-    initialPriceBoxRender
-  )
+  const [priceBoxRender, setPriceBoxRender] = useState(initialPriceBoxRender);
 
-  const initialOverlayCardTextsLeft = Array(numColumns)
+  let initialOverlayCardTextsLeft = Array(numColumns)
     .fill()
     .map(() => Array(numCardsPerColumn).fill(""));
+
+  initialOverlayCardTextsLeft[0] = Array(11).fill("")
   const [overlayCardTextsLeft, setOverlayCardTextsLeft] = useState(
     initialOverlayCardTextsLeft
   );
@@ -96,7 +96,7 @@ const MagazinePage = () => {
   const handleSwithcBoxType = (columnIndex, cardIndex) => {
     const newPriceBoxRender = [...priceBoxRender];
     newPriceBoxRender[columnIndex][cardIndex] =
-    newPriceBoxRender[columnIndex][cardIndex] === false ? true : false;
+      newPriceBoxRender[columnIndex][cardIndex] === false ? true : false;
     setPriceBoxRender(newPriceBoxRender);
   };
 
@@ -178,62 +178,52 @@ const MagazinePage = () => {
 
   const ZoomSlider = ({ columnIndex, cardIndex }) => {
     const calculatedCardIndex = columnIndex * numCardsPerColumn + cardIndex;
-
+  
     const handleZoomChange = (newZoom) => {
       const newZoomLevels = [...zoomLevels];
       newZoomLevels[columnIndex][cardIndex] = newZoom;
       setZoomLevels(newZoomLevels);
     };
-
-    const handlePositionChange = (newPositionX) => {
+  
+    const handlePositionChange = (changeAmount) => {
       const newImagePositions = [...imagePositions];
-      newImagePositions[columnIndex][cardIndex] = newPositionX;
+      newImagePositions[columnIndex][cardIndex] += changeAmount;
       setImagePositions(newImagePositions);
     };
-
-    const handlePositionChangeY = (newPositionY) => {
+  
+    const handlePositionChangeY = (changeAmount) => {
       const newImagePositionsY = [...imagePositionsY];
-      newImagePositionsY[columnIndex][cardIndex] = newPositionY;
+      newImagePositionsY[columnIndex][cardIndex] += changeAmount;
       setImagePositionsY(newImagePositionsY);
     };
-
+  
     const handleConfirmClick = () => {
       setIsEditingZoom(false);
     };
-
+  
     return (
       <div className={styles.sidebar}>
         <div className={styles.zoomSliderContainer}>
-          <div className={styles.zoomSlider}>
-            <input
-              type="range"
-              min="50"
-              max="200"
-              value={zoomLevels[columnIndex][cardIndex]}
-              onChange={(e) => handleZoomChange(Number(e.target.value))}
-            />
-          </div>
-          <div className={styles.positionSlider}>
-            <input
-              type="range"
-              min="-100"
-              max="100"
-              value={imagePositions[columnIndex][cardIndex]}
-              onChange={(e) => handlePositionChange(Number(e.target.value))}
-            />
-          </div>
-
-          <div className={styles.positionSliderY}>
-            <input
-              type="range"
-              min="-100"
-              max="100"
-              value={imagePositionsY[columnIndex][cardIndex]}
-              onChange={(e) => handlePositionChangeY(Number(e.target.value))}
-            />
+          <div className={styles.zoomControlsGrid}>
+            <button
+              onClick={() => handleZoomChange(zoomLevels[columnIndex][cardIndex] - 5)}
+              className={styles.bttnGrid} 
+            >
+              -
+            </button>
+            <button
+              onClick={() => handleZoomChange(zoomLevels[columnIndex][cardIndex] + 5)}
+              className={styles.bttnGrid} 
+            >
+              +
+            </button>
+            <button className={styles.bttnGrid} onClick={() => handlePositionChangeY(-5)}>up</button>
+            <button className={styles.bttnGrid}  onClick={() => handlePositionChangeY(5)}>down</button>
+            <button className={styles.bttnGrid}  onClick={() => handlePositionChange(-5)}>left</button>
+            <button className={styles.bttnGrid}  onClick={() => handlePositionChange(5)}>right</button>
           </div>
           <button className={styles.confirmButton} onClick={handleConfirmClick}>
-            Confirmar
+            OK
           </button>
         </div>
       </div>
@@ -335,33 +325,29 @@ const MagazinePage = () => {
                 }px, ${imagePositionsY[i][j]}px)`,
               }}
             />
-
-            {priceBoxRender[i][j] ? 
-            
-            <TripleBox 
-              key={`triple-box-${i}-${j}`}
-              overlayCardTexts={overlayCardTexts}
-              setOverlayCardTexts={setOverlayCardTexts}
-              handleShowHideOverlayCard={handleShowHideOverlayCard}
-              cardIndex={cardIndex}
-              smallDivText={smallDivText}
-              setSmallDivText={setSmallDivText}
-              j={j}
-              i={i}
-            />
-            
-            : 
-            
-            <FixedBox
-              key={`fixed-box-${i}-${j}`}
-              overlayCardTexts={overlayCardTexts}
-              setOverlayCardTexts={setOverlayCardTexts}
-              handleShowHideOverlayCard={handleShowHideOverlayCard}
-              cardIndex={cardIndex}
-              j={j}
-              i={i}
-            />
-            }
+            {priceBoxRender[i][j] ? (
+              <TripleBox
+                key={`triple-box-${i}-${j}`}
+                overlayCardTexts={overlayCardTexts}
+                setOverlayCardTexts={setOverlayCardTexts}
+                handleShowHideOverlayCard={handleShowHideOverlayCard}
+                cardIndex={cardIndex}
+                smallDivText={smallDivText}
+                setSmallDivText={setSmallDivText}
+                j={j}
+                i={i}
+              />
+            ) : (
+              <FixedBox
+                key={`fixed-box-${i}-${j}`}
+                overlayCardTexts={overlayCardTexts}
+                setOverlayCardTexts={setOverlayCardTexts}
+                handleShowHideOverlayCard={handleShowHideOverlayCard}
+                cardIndex={cardIndex}
+                j={j}
+                i={i}
+              />
+            )}
             {renderOverlay && (
               <div
                 className={styles.overlayCardText}
@@ -370,14 +356,14 @@ const MagazinePage = () => {
                 {overlayTexts[cardIndex]}
               </div>
             )}
-            {renderOverlay && (
-              <div
-                className={styles.overlayCardTextLeft}
+            <div
+              className={
+                  i === 0 ? styles.overlayCardTextFirstColumn : styles.overlayCardTextLeft
+              }
                 onClick={() => handleOverlayCardTextLeftClick(i, j)}
               >
-                {overlayCardTextsLeft[i][j]}
-              </div>
-            )}
+              {overlayCardTextsLeft[i][j]}
+            </div>
             {isEditingThisZoom && <ZoomSlider columnIndex={i} cardIndex={j} />}
           </div>
         );
@@ -412,7 +398,10 @@ const MagazinePage = () => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (contextMenuRef.current && !contextMenuRef.current.contains(event.target)) {
+      if (
+        contextMenuRef.current &&
+        !contextMenuRef.current.contains(event.target)
+      ) {
         // Cerrar el menú contextual si se hace clic fuera de él
         setContextMenu(null);
       }
@@ -429,7 +418,7 @@ const MagazinePage = () => {
 
   return (
     <div>
-      <button onClick={handleConvertToPDF}>Convertir a PDF</button>
+      <button style={{ position: "absolute",top: "20px", left: "20px", backgroundColor: "gray", color: "white"}} onClick={handleConvertToPDF}>Convertir a PDF</button>
       <div id="magazineContainer" className={styles.containerDivBorder}>
         <div className={styles.containerDiv} ref={contextMenuRef}>
           <RenderCards />
