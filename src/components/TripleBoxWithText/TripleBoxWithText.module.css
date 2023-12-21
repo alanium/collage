@@ -15,9 +15,12 @@
     color: rgb(255, 0, 0);
     font-weight: bold;
     overflow: hidden;  /* Prevent text overflow */
-    border: 1px solid black;
+    border: 1px solid rgb(0, 0, 0);
     background-color: white;
 }
+.containerBox.editing {
+    border: 1px dashed blue; /* Change the border style when editing */
+  }
 
 .leftBox {
     font-family: 'Paytone One', sans-serif;

@@ -5,7 +5,9 @@ const TripleBox = ({ overlayCardTexts, setOverlayCardTexts, i, j, smallDivText, 
   const [topBoxFontSize, setTopBoxFontSize] = useState(40);
   const [bottomBoxFontSize, setBottomBoxFontSize] = useState(40);
   const [leftBoxFontSize, setLeftBoxFontSize] = useState(40);
+  const [isEditing, setIsEditing] = useState(false);
 
+  const containerRef = useRef(null);
   const topBoxRef = useRef(null);
   const bottomBoxRef = useRef(null);
   const leftBoxRef = useRef(null);
@@ -63,12 +65,23 @@ const TripleBox = ({ overlayCardTexts, setOverlayCardTexts, i, j, smallDivText, 
     }
   }
 
+  const handleMouseEnter = () => {
+    setIsEditing(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsEditing(false);
+  };
+
   return (
     <div
+      ref={containerRef}
       id={`triple-box-${i}-${j}`}
-      className={styles.containerBox}
+      className={`${styles.containerBox} ${isEditing ? styles.editing : ''}`}
       style={{ display: overlayCardTexts[i][j] != null ? "flex" : "none" }}
       onClick={handleOverlayCardClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <div
         className={styles.leftBox}
