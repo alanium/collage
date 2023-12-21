@@ -3,10 +3,13 @@ import styles from "./Grocery.module.css";
 import html2pdf from "html2pdf.js"; // Importa la biblioteca html2pdf
 import FixedBox from "../../components/BoxWithText/BoxWithText";
 import TripleBox from "../../components/TripleBoxWithText/TripleBoxWithText";
+import { useNavigate } from "react-router-dom";
 
 const MagazinePage = () => {
   const numColumns = 4;
   const numCardsPerColumn = 7;
+  
+  const navigate = useNavigate()
 
   const [isEditingZoom, setIsEditingZoom] = useState(false);
 
@@ -333,6 +336,7 @@ const MagazinePage = () => {
                 handleShowHideOverlayCard={handleShowHideOverlayCard}
                 cardIndex={cardIndex}
                 smallDivText={smallDivText}
+                setSmallDivTexts={setSmallDivText}
                 setSmallDivText={setSmallDivText}
                 j={j}
                 i={i}
@@ -418,7 +422,9 @@ const MagazinePage = () => {
 
   return (
     <div>
-      <button style={{ position: "absolute",top: "20px", left: "20px", backgroundColor: "gray", color: "white"}} onClick={handleConvertToPDF}>Convertir a PDF</button>
+      <button style={{ position: "absolute",top: "20px", left: "20px", backgroundColor: "gray", color: "white"}} onClick={handleConvertToPDF}>Convert to PDF</button>
+      <button style={{ position: "absolute",top: "70px", left: "20px", backgroundColor: "gray", color: "white"}} onClick={() => navigate("/") }>Back to Home</button>
+
       <div id="magazineContainer" className={styles.containerDivBorder}>
         <div className={styles.containerDiv} ref={contextMenuRef}>
           <RenderCards />

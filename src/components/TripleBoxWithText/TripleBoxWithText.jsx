@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from "./TripleBoxWithText.module.css";  
 
-const TripleBox = ({ overlayCardTexts, setOverlayCardTexts, i, j, smallDivText, setSmallDivText }) => {
-  const [topBoxFontSize, setTopBoxFontSize] = useState(40);
-  const [bottomBoxFontSize, setBottomBoxFontSize] = useState(40);
-  const [leftBoxFontSize, setLeftBoxFontSize] = useState(40);
+const TripleBox = ({ overlayCardTexts, setOverlayCardTexts, i, j }) => {
+  const [topBoxFontSize, setTopBoxFontSize] = useState(50);
+  const [bottomBoxFontSize, setBottomBoxFontSize] = useState(10);
+  const [leftBoxFontSize, setLeftBoxFontSize] = useState(60);
   const [isEditing, setIsEditing] = useState(false);
 
   const containerRef = useRef(null);
@@ -21,31 +21,54 @@ const TripleBox = ({ overlayCardTexts, setOverlayCardTexts, i, j, smallDivText, 
   }, [overlayCardTexts[i][j]]);
 
   useEffect(() => {
-    adjustTextSize(bottomBoxRef, smallDivText[i][j], setBottomBoxFontSize);
-  }, [smallDivText[i][j]]);
+    adjustTextSize(bottomBoxRef, [overlayCardTexts[i][j]], setBottomBoxFontSize);
+  }, [overlayCardTexts[i][j]]);
 
   const adjustTextSize = (boxRef, content, setFontSize) => {
     const box = boxRef.current;
-
+  
     if (!box) return;
-
+  
+    const isBottomBox = boxRef === bottomBoxRef;
     const boxWidth = box.clientWidth;
     const boxHeight = box.clientHeight;
-
-    box.style.fontSize = '2rem'; 
-
-    let newFontSizeValue = 30; 
-
+  
+    box.style.fontSize = '2rem';
+  
+    let newFontSizeValue = 50;
+  
+    // Set maximum and minimum font size
+    const maximumFontSize = 60;
+    const minimumFontSize = 23;
+    const bottomBoxMinimumFontSize = 10;
+  
     while (
       (box.scrollWidth > boxWidth || box.scrollHeight > boxHeight) &&
-      newFontSizeValue > 1
+      newFontSizeValue > (isBottomBox ? bottomBoxMinimumFontSize : minimumFontSize)
     ) {
       newFontSizeValue -= 1;
       box.style.fontSize = `${newFontSizeValue}px`;
     }
-
-    setFontSize(newFontSizeValue);
+  
+    // Ensure font size does not exceed the maximum
+    setFontSize(Math.min(newFontSizeValue, maximumFontSize));
+  
+    // Adjust font size for left box dynamically based on overflow
+    if (!isBottomBox) {
+      const leftBoxContainer = containerRef.current;
+      const leftBoxContainerWidth = leftBoxContainer.clientWidth;
+  
+      // Check if left box overflows
+      if (box.scrollWidth > leftBoxContainerWidth) {
+        // Adjust font size for left box based on overflow
+        const ratio = leftBoxContainerWidth / box.scrollWidth;
+        const adjustedFontSize = Math.floor(newFontSizeValue * ratio);
+        box.style.fontSize = `${adjustedFontSize}px`;
+        setFontSize(adjustedFontSize);
+      }
+    }
   };
+  
 
   const handleOverlayCardClick = () => {
     const newText = prompt("Ingrese el nuevo monto:");
@@ -56,14 +79,6 @@ const TripleBox = ({ overlayCardTexts, setOverlayCardTexts, i, j, smallDivText, 
     }
   };
 
-  const handleSmallDivClick = () => {
-    const newText = prompt("Ingrese el nuevo texto: ")
-    if (newText != null) {
-      const newSmallDivTexts = [...smallDivText];
-      newSmallDivTexts[i][j] = newText;
-      setSmallDivText(newText)
-    }
-  }
 
   const handleMouseEnter = () => {
     setIsEditing(true);
@@ -99,7 +114,6 @@ const TripleBox = ({ overlayCardTexts, setOverlayCardTexts, i, j, smallDivText, 
           {overlayCardTexts[i][j] && overlayCardTexts[i][j].split(".")[1]?.split(" ")[0]}
         </div>
         <div
-          onClick={handleSmallDivClick}
           className={styles.bottomBox}
           ref={bottomBoxRef}
           style={{ fontSize: `${bottomBoxFontSize}px` }}
