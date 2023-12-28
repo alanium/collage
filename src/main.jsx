@@ -6,7 +6,7 @@ import {
 } from "react-router-dom";
 import './index.css'
 import Root from './routes/root.jsx';
-import MagazinePage from './routes/Grocery/Grocery.jsx';
+import Grocery from './routes/Grocery/Grocery2.jsx';
 
 const router = createBrowserRouter([
   {
@@ -15,7 +15,7 @@ const router = createBrowserRouter([
   },
   {
     path:"/grocery",
-    element: <MagazinePage />
+    element: <Grocery />
   },
 ]);
 

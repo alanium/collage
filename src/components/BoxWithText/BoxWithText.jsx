@@ -1,18 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from "./BoxWithText.module.css";
 
-const FixedBox = ({ overlayCardTexts, setOverlayCardTexts, i, j }) => {
+const FixedBox = ({ textBoxes, setTextBoxes, i, j, cardIndex }) => {
   const [isEditing, setIsEditing] = useState(false);
 
   const boxRef = useRef(null);
   const textRef = useRef(null);
 
-  const handleOverlayCardClick = () => {
-    const newText = prompt("Enter new amount:");
-    if (newText !== null) {
-      const newOverlayCardTexts = [...overlayCardTexts];
-      newOverlayCardTexts[i][j] = newText;
-      setOverlayCardTexts(newOverlayCardTexts);
+  const handlePriceBoxClick = () => {
+    const newText = prompt("Enter new amount: ");
+    if (newText != null) {
+      const newTextBoxes = [...textBoxes];
+      newTextBoxes[cardIndex].text.bottom = newText;
+      setTextBoxes(newTextBoxes);
     }
   };
 
@@ -26,7 +26,7 @@ const FixedBox = ({ overlayCardTexts, setOverlayCardTexts, i, j }) => {
 
   useEffect(() => {
     adjustTextSize();
-  }, [overlayCardTexts[i][j]]);
+  }, [textBoxes]);
 
   const adjustTextSize = () => {
     const box = boxRef.current;
@@ -57,9 +57,9 @@ const FixedBox = ({ overlayCardTexts, setOverlayCardTexts, i, j }) => {
       id={`fixed-box-${i}-${j}`}
       className={`${styles.box} ${isEditing ? styles.editing : ''}`}
       style={{
-        display: overlayCardTexts[i][j] !== null ? "flex" : "none",
+        display: textBoxes[cardIndex].text.bottom !== null ? "flex" : "none",
       }}
-      onClick={handleOverlayCardClick}
+      onClick={handlePriceBoxClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -69,7 +69,7 @@ const FixedBox = ({ overlayCardTexts, setOverlayCardTexts, i, j }) => {
           fontSize: '1rem', // Start with a standard size
         }}
       >
-        {overlayCardTexts[i][j]}
+        {textBoxes[cardIndex].text.bottom}
       </div>
     </div>
   );

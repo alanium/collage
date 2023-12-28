@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from "./TripleBoxWithText.module.css";  
 
-const TripleBox = ({ overlayCardTexts, setOverlayCardTexts, i, j }) => {
+const TripleBox = ({ textBoxes, setTextBoxes , i, j, cardIndex }) => {
   const [topBoxFontSize, setTopBoxFontSize] = useState(50);
   const [bottomBoxFontSize, setBottomBoxFontSize] = useState(10);
   const [leftBoxFontSize, setLeftBoxFontSize] = useState(60);
@@ -13,18 +13,18 @@ const TripleBox = ({ overlayCardTexts, setOverlayCardTexts, i, j }) => {
   const leftBoxRef = useRef(null);
 
   useEffect(() => {
-    adjustTextSize(leftBoxRef, overlayCardTexts[i][j], setLeftBoxFontSize);
-  }, [overlayCardTexts[i][j]]);
+    adjustTextSize(leftBoxRef, textBoxes[cardIndex].text.left, setLeftBoxFontSize);
+  }, textBoxes);
 
   useEffect(() => {
-    adjustTextSize(topBoxRef, overlayCardTexts[i][j], setTopBoxFontSize);
-  }, [overlayCardTexts[i][j]]);
+    adjustTextSize(topBoxRef, textBoxes[cardIndex].text.top, setTopBoxFontSize);
+  }, textBoxes);
 
   useEffect(() => {
-    adjustTextSize(bottomBoxRef, [overlayCardTexts[i][j]], setBottomBoxFontSize);
-  }, [overlayCardTexts[i][j]]);
+    adjustTextSize(bottomBoxRef, textBoxes[cardIndex].text.bottom, setBottomBoxFontSize);
+  }, textBoxes);
 
-  const adjustTextSize = (boxRef, content, setFontSize) => {
+  const adjustTextSize = (boxRef, textBox ,setFontSize) => {
     const box = boxRef.current;
   
     if (!box) return;
@@ -70,12 +70,12 @@ const TripleBox = ({ overlayCardTexts, setOverlayCardTexts, i, j }) => {
   };
   
 
-  const handleOverlayCardClick = () => {
-    const newText = prompt("Ingrese el nuevo monto:");
+  const handlePriceBoxClick = () => {
+    const newText = prompt("Enter new amount: ");
     if (newText != null) {
-      const newOverlayCardTexts = [...overlayCardTexts];
-      newOverlayCardTexts[i][j] = newText;
-      setOverlayCardTexts(newOverlayCardTexts);
+      const newTextBoxes = [...textBoxes];
+      newTextBoxes[cardIndex].text.bottom = newText;
+      setTextBoxes(newTextBoxes);
     }
   };
 
@@ -93,8 +93,8 @@ const TripleBox = ({ overlayCardTexts, setOverlayCardTexts, i, j }) => {
       ref={containerRef}
       id={`triple-box-${i}-${j}`}
       className={`${styles.containerBox} ${isEditing ? styles.editing : ''}`}
-      style={{ display: overlayCardTexts[i][j] != null ? "flex" : "none" }}
-      onClick={handleOverlayCardClick}
+      style={{ display: textBoxes[cardIndex].text.bottom != null ? "flex" : "none" }}
+      onClick={handlePriceBoxClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -103,7 +103,7 @@ const TripleBox = ({ overlayCardTexts, setOverlayCardTexts, i, j }) => {
         ref={leftBoxRef}
         style={{ fontSize: `${leftBoxFontSize}px` }}
       >
-        {overlayCardTexts[i][j] && overlayCardTexts[i][j].split(".")[0]}
+        {textBoxes[cardIndex].text.bottom && textBoxes[cardIndex].text.bottom.split(".")[0]}
       </div>
       <div className={styles.topButtomBox}>
         <div
@@ -111,19 +111,19 @@ const TripleBox = ({ overlayCardTexts, setOverlayCardTexts, i, j }) => {
           ref={topBoxRef}
           style={{ fontSize: `${topBoxFontSize}px` }}
         >
-          {overlayCardTexts[i][j] && overlayCardTexts[i][j].split(".")[1]?.split(" ")[0]}
+          {textBoxes[cardIndex].text.bottom && textBoxes[cardIndex].text.bottom.split(".")[1]?.split(" ")[0]}
         </div>
         <div
           className={styles.bottomBox}
           ref={bottomBoxRef}
           style={{ fontSize: `${bottomBoxFontSize}px` }}
         >
-          {overlayCardTexts[i][j] && overlayCardTexts[i][j].includes(" ") ? (
-            overlayCardTexts[i][j].slice(
-              overlayCardTexts[i][j].indexOf(" ") + 1
+          {textBoxes[cardIndex].text.bottom && textBoxes[cardIndex].text.bottom.includes(" ") ? (
+            textBoxes[cardIndex].text.bottom.slice(
+              textBoxes[cardIndex].text.bottom.indexOf(" ") + 1
             )
           ) : (
-            overlayCardTexts[i][j]
+            textBoxes[cardIndex].text.bottom
           )}
         </div>
       </div>
