@@ -93,12 +93,6 @@ const Grocery = () => {
     });
   };
 
-  useEffect(() => {
-  }, [uploadedImages]);
-
-  useEffect(() => {
-    console.log("Component re-rendered");
-  }, [priceBox]);
 
   const handleDeleteImage = (cardIndex, index) => {
     const confirmDelete = window.confirm(
@@ -306,10 +300,6 @@ const Grocery = () => {
     event.preventDefault()
     const contextMenuItems = [
       {
-        label: "Delete 1",
-        action: () => handleDeleteImage(cardIndex, 0),
-      },
-      {
         label: "Edit ",
         action: () => {
           setIsEditingZoom(true);
@@ -362,6 +352,20 @@ const Grocery = () => {
           action: () => handleDeleteImage(cardIndex, 1),
         },
       );
+    } if (uploadedImages[cardIndex].img[0].src == "") {
+      contextMenuItems.push(
+        {
+          label: "Upload 1",
+          action: () => handleImageUpload(event, cardIndex)
+        }
+      )
+    } if (uploadedImages[cardIndex].img[0].src != "") {
+      contextMenuItems.push(
+        {
+          label: "Delete 1",
+          action: () => handleDeleteImage(cardIndex, 0),
+        },
+      );
     }
 
     const containerRect = contextMenuRef.current.getBoundingClientRect();
@@ -382,7 +386,7 @@ const Grocery = () => {
     const images = [...uploadedImages];
     const image = uploadedImages[cardIndex];
   
-    if (image.img[0].src === "") {
+    if (image.img[0].src === "" && image.img[1].src  === "") {
       handleImageUpload(event, cardIndex);
     } else {
       handleContextMenu(event, cardIndex, image);
@@ -406,19 +410,23 @@ const Grocery = () => {
 
   const handleTopText = (cardIndex) => {
     const newText = prompt("Input new text: ");
-    if (newText != null) {
-      const newTextBoxes = [...textBoxes];
-      newTextBoxes[cardIndex].top = newText;
-      setTextBoxes(newTextBoxes);
+    if (newText !== null) {
+      setTextBoxes((prevTextBoxes) => {
+        const newTextBoxes = [...prevTextBoxes];
+        newTextBoxes[cardIndex].text.top = newText;
+        return newTextBoxes;
+      });
     }
   };
-
+  
   const handleLeftText = (cardIndex) => {
     const newText = prompt("Input new text: ");
-    if (newText != null) {
-      const newTextBoxes = [...textBoxes];
-      newTextBoxes[cardIndex].left = newText;
-      setTextBoxes(newTextBoxes);
+    if (newText !== null) {
+      setTextBoxes((prevTextBoxes) => {
+        const newTextBoxes = [...prevTextBoxes];
+        newTextBoxes[cardIndex].text.left = newText;
+        return newTextBoxes;
+      });
     }
   };
 
@@ -522,7 +530,7 @@ const Grocery = () => {
               className={textBoxLeftStyle(cardIndex, i)}
               onClick={() => handleLeftText(cardIndex)}
             >
-              {textBoxes[cardIndex] && textBoxes[cardIndex].text ? (textBoxes[cardIndex].text.left) : ""}
+              {textBoxes[cardIndex].text.left}
             </div>
             {isEditingThisZoom && <ZoomSlider cardIndex={selectedImage.cardIndex} />}
           </div>

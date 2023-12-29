@@ -115,6 +115,7 @@
     padding-right: 3px;
     word-wrap: break-word; /* Agregado para permitir saltos de línea */
     white-space: pre-line;
+    z-index: 1;
   }
   
   .overlayCardTextLeft {
