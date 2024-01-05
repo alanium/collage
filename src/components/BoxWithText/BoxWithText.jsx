@@ -7,11 +7,13 @@ const FixedBox = ({ textBoxes, setTextBoxes, i, j, cardIndex }) => {
   const boxRef = useRef(null);
   const textRef = useRef(null);
 
+  const index = (cardIndex > 20? cardIndex - 21 : cardIndex)
+
   const handlePriceBoxClick = () => {
     const newText = prompt("Enter new amount: ");
     if (newText != null) {
       const newTextBoxes = [...textBoxes];
-      newTextBoxes[cardIndex].text.bottom = newText;
+      newTextBoxes[index].text.bottom = newText;
       setTextBoxes(newTextBoxes);
     }
   };
@@ -26,7 +28,7 @@ const FixedBox = ({ textBoxes, setTextBoxes, i, j, cardIndex }) => {
 
   useEffect(() => {
     adjustTextSize();
-  }, [textBoxes]);
+  }, [textBoxes[index]]);
 
   const adjustTextSize = () => {
     const box = boxRef.current;
@@ -57,7 +59,7 @@ const FixedBox = ({ textBoxes, setTextBoxes, i, j, cardIndex }) => {
       id={`fixed-box-${i}-${j}`}
       className={`${styles.box} ${isEditing ? styles.editing : ''}`}
       style={{
-        display: textBoxes[cardIndex].text.bottom !== null ? "flex" : "none",
+        display: textBoxes[index].text.bottom !== null ? "flex" : "none",
       }}
       onClick={handlePriceBoxClick}
       onMouseEnter={handleMouseEnter}
@@ -69,7 +71,7 @@ const FixedBox = ({ textBoxes, setTextBoxes, i, j, cardIndex }) => {
           fontSize: '1rem', // Start with a standard size
         }}
       >
-        {textBoxes[cardIndex].text.bottom}
+        {textBoxes[index].text.bottom}
       </div>
     </div>
   );

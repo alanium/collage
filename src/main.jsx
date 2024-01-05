@@ -6,7 +6,7 @@ import {
 } from "react-router-dom";
 import './index.css'
 import Root from './routes/root.jsx';
-import Grocery from './routes/Grocery/Grocery2.jsx';
+import Grocery from './routes/Grocery2/Grocery.jsx';
 
 const router = createBrowserRouter([
   {

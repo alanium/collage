@@ -12,16 +12,18 @@ const TripleBox = ({ textBoxes, setTextBoxes , i, j, cardIndex }) => {
   const bottomBoxRef = useRef(null);
   const leftBoxRef = useRef(null);
 
+  const auxIndex = (cardIndex > 20 ? cardIndex - 21 : cardIndex)
+
   useEffect(() => {
-    adjustTextSize(leftBoxRef, textBoxes[cardIndex].text.left, setLeftBoxFontSize);
+    adjustTextSize(leftBoxRef, textBoxes[auxIndex].text.left, setLeftBoxFontSize);
   }, textBoxes);
 
   useEffect(() => {
-    adjustTextSize(topBoxRef, textBoxes[cardIndex].text.top, setTopBoxFontSize);
+    adjustTextSize(topBoxRef, textBoxes[auxIndex].text.top, setTopBoxFontSize);
   }, textBoxes);
 
   useEffect(() => {
-    adjustTextSize(bottomBoxRef, textBoxes[cardIndex].text.bottom, setBottomBoxFontSize);
+    adjustTextSize(bottomBoxRef, textBoxes[auxIndex].text.bottom, setBottomBoxFontSize);
   }, textBoxes);
 
   const adjustTextSize = (boxRef, textBox ,setFontSize) => {
@@ -74,7 +76,7 @@ const TripleBox = ({ textBoxes, setTextBoxes , i, j, cardIndex }) => {
     const newText = prompt("Enter new amount: ");
     if (newText != null) {
       const newTextBoxes = [...textBoxes];
-      newTextBoxes[cardIndex].text.bottom = newText;
+      newTextBoxes[auxIndex].text.bottom = newText;
       setTextBoxes(newTextBoxes);
     }
   };
@@ -93,7 +95,7 @@ const TripleBox = ({ textBoxes, setTextBoxes , i, j, cardIndex }) => {
       ref={containerRef}
       id={`triple-box-${i}-${j}`}
       className={`${styles.containerBox} ${isEditing ? styles.editing : ''}`}
-      style={{ display: textBoxes[cardIndex].text.bottom != null ? "flex" : "none" }}
+      style={{ display: textBoxes[auxIndex].text.bottom != null ? "flex" : "none" }}
       onClick={handlePriceBoxClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -103,7 +105,7 @@ const TripleBox = ({ textBoxes, setTextBoxes , i, j, cardIndex }) => {
         ref={leftBoxRef}
         style={{ fontSize: `${leftBoxFontSize}px` }}
       >
-        {textBoxes[cardIndex].text.bottom && textBoxes[cardIndex].text.bottom.split(".")[0]}
+        {textBoxes[auxIndex].text.bottom && textBoxes[auxIndex].text.bottom.split(".")[0]}
       </div>
       <div className={styles.topButtomBox}>
         <div
@@ -111,19 +113,19 @@ const TripleBox = ({ textBoxes, setTextBoxes , i, j, cardIndex }) => {
           ref={topBoxRef}
           style={{ fontSize: `${topBoxFontSize}px` }}
         >
-          {textBoxes[cardIndex].text.bottom && textBoxes[cardIndex].text.bottom.split(".")[1]?.split(" ")[0]}
+          {textBoxes[auxIndex].text.bottom && textBoxes[auxIndex].text.bottom.split(".")[1]?.split(" ")[0]}
         </div>
         <div
           className={styles.bottomBox}
           ref={bottomBoxRef}
           style={{ fontSize: `${bottomBoxFontSize}px` }}
         >
-          {textBoxes[cardIndex].text.bottom && textBoxes[cardIndex].text.bottom.includes(" ") ? (
-            textBoxes[cardIndex].text.bottom.slice(
-              textBoxes[cardIndex].text.bottom.indexOf(" ") + 1
+          {textBoxes[auxIndex].text.bottom && textBoxes[auxIndex].text.bottom.includes(" ") ? (
+            textBoxes[auxIndex].text.bottom.slice(
+              textBoxes[auxIndex].text.bottom.indexOf(" ") + 1
             )
           ) : (
-            textBoxes[cardIndex].text.bottom
+            textBoxes[auxIndex].text.bottom
           )}
         </div>
       </div>
