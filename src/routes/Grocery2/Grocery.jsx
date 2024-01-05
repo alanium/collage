@@ -135,12 +135,27 @@ function Grocery() {
       }
     });
     }
-
-    
-    
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        contextMenuRef.current &&
+        !contextMenuRef.current.contains(event.target)
+      ) {
+        // Cerrar el menú contextual si se hace clic fuera de él
+        setContextMenu(null);
+      }
+    };
 
+    // Agregar el event listener al documento
+    document.addEventListener("mousedown", handleClickOutside);
+
+    // Limpiar el event listener al desmontar el componente
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleDeleteImage = (cardIndex, index) => {
     const confirmDelete = window.confirm(
