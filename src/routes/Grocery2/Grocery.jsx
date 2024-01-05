@@ -272,7 +272,8 @@ function Grocery() {
         boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
         borderRadius: "4px",
         padding: "5px",
-        zIndex: "1000"
+        zIndex: "1000",
+        color: "gray"
       }}
     >
       {items.map((item, index) => (
