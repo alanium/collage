@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from "./TripleBoxWithText.module.css";  
 
-const TripleBox = ({ textBoxes, setTextBoxes , i, j, cardIndex }) => {
+const TripleBox = ({ textBoxes, setTextBoxes , i, cardIndex, backgroundColor }) => {
   const [topBoxFontSize, setTopBoxFontSize] = useState(50);
   const [bottomBoxFontSize, setBottomBoxFontSize] = useState(10);
   const [leftBoxFontSize, setLeftBoxFontSize] = useState(60);
@@ -25,6 +25,10 @@ const TripleBox = ({ textBoxes, setTextBoxes , i, j, cardIndex }) => {
   useEffect(() => {
     adjustTextSize(bottomBoxRef, textBoxes[auxIndex].text.bottom, setBottomBoxFontSize);
   }, textBoxes);
+
+  useEffect(() => {
+    console.log(backgroundColor)
+  }, [backgroundColor])
 
   const adjustTextSize = (boxRef, textBox ,setFontSize) => {
     const box = boxRef.current;
@@ -81,6 +85,16 @@ const TripleBox = ({ textBoxes, setTextBoxes , i, j, cardIndex }) => {
     }
   };
 
+  const setBackgroundColor = () => {
+    const color = backgroundColor ? 'red' : 'white';
+  console.log('Background Color:', color);
+  return color;
+  };
+
+  const setTextColor = () => {
+    return backgroundColor ? 'white' : 'red';
+  };
+
 
   const handleMouseEnter = () => {
     setIsEditing(true);
@@ -93,9 +107,13 @@ const TripleBox = ({ textBoxes, setTextBoxes , i, j, cardIndex }) => {
   return (
     <div
       ref={containerRef}
-      id={`triple-box-${i}-${j}`}
+      id={`triple-box-${i}`}
       className={`${styles.containerBox} ${isEditing ? styles.editing : ''}`}
-      style={{ display: textBoxes[auxIndex].text.bottom != null ? "flex" : "none" }}
+      style={{
+        display: textBoxes[auxIndex].text.bottom != null ? 'flex' : 'none',
+        backgroundColor: backgroundColor ? 'red' : 'white', // Use setBackgroundColor directly here
+        color: setTextColor(), // Use setTextColor directly here
+      }}
       onClick={handlePriceBoxClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}

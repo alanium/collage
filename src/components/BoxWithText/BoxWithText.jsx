@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from "./BoxWithText.module.css";
 
-const FixedBox = ({ textBoxes, setTextBoxes, i, j, cardIndex }) => {
+const FixedBox = ({ textBoxes, setTextBoxes, i, cardIndex, backgroundColor }) => {
   const [isEditing, setIsEditing] = useState(false);
 
   const boxRef = useRef(null);
@@ -28,38 +28,56 @@ const FixedBox = ({ textBoxes, setTextBoxes, i, j, cardIndex }) => {
 
   useEffect(() => {
     adjustTextSize();
-  }, [textBoxes[index]]);
+  }, [textBoxes[index].text.bottom]);
 
   const adjustTextSize = () => {
     const box = boxRef.current;
     const text = textRef.current;
-
+  
     if (!box || !text) return;
+  
+    // Set the font size to 50px
+    let fontSize = 50;
+  
+    // Ensure the text container occupies 100% of the box width and height
+    text.style.width = '100%';
+    text.style.height = '100%';
+    text.style.fontSize = `${fontSize}px`;
+  
+    // Check if the text still overflows after resizing, and reduce the font size further if needed
+    while ((text.scrollWidth !== box.clientWidth && text.scrollHeight !== box.clientHeight)) {
 
-    const boxWidth = box.clientWidth;
-    const boxHeight = box.clientHeight;
+      if (text.scrollWidth > box.clientWidth) {
+        fontSize--;
+      }
+  
+      if (text.scrollWidth < box.clientWidth) {
+        fontSize++;
+      }
+  
+      text.style.fontSize = `${fontSize}px`;
 
-    text.style.fontSize = '2rem'; // Start with a standard size
-
-    let newFontSizeValue = 30; // Set a minimum font size
-
-    // Verifica si el texto excede los límites del cuadro
-    while (
-      (text.offsetWidth > boxWidth || text.offsetHeight > boxHeight) &&
-      newFontSizeValue > 1  // Adjust the lower limit as needed
-    ) {
-      newFontSizeValue -= 1;
-      text.style.fontSize = `${newFontSizeValue}px`;
     }
+  }
+
+  const setBackgroundColor = () => {
+    const color = backgroundColor ? 'red' : 'white';
+  console.log('Background Color:', color);
+  return color;
   };
 
+  const setTextColor = () => {
+    return backgroundColor ? 'white' : 'red';
+  };
+  
   return (
     <div
       ref={boxRef}
-      id={`fixed-box-${i}-${j}`}
+      id={`fixed-box-${i}`}
       className={`${styles.box} ${isEditing ? styles.editing : ''}`}
-      style={{
-        display: textBoxes[index].text.bottom !== null ? "flex" : "none",
+      style={{ display: textBoxes[index].text.bottom != null ? "flex" : "none",
+        backgroundColor: setBackgroundColor(), // Use setBackgroundColor directly here
+        color: setTextColor(), // Use setTextColor directly here
       }}
       onClick={handlePriceBoxClick}
       onMouseEnter={handleMouseEnter}
@@ -67,9 +85,7 @@ const FixedBox = ({ textBoxes, setTextBoxes, i, j, cardIndex }) => {
     >
       <div
         ref={textRef}
-        style={{
-          fontSize: '1rem', // Start with a standard size
-        }}
+        className={styles.textContainer}
       >
         {textBoxes[index].text.bottom}
       </div>

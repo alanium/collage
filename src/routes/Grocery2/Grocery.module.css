@@ -1,6 +1,4 @@
-.longColumn {
-    
-}
+
 
 .contextMenu {
     position : fixed;
@@ -205,6 +203,26 @@
     display: flex;
     flex-direction: column;
   }
+
+  .overlayCard:hover,
+.overlayCard.editing {
+    border: 1px dashed blue; /* Change the border style on hover and when editing */
+}
+
+.overlayCardText:hover,
+.overlayCardText.editing {
+    border: 1px dashed blue; /* Change the border style on hover and when editing */
+}
+
+.overlayCardTextLeft:hover,
+.overlayCardTextLeft.editing {
+    border: 1px dashed blue; /* Change the border style on hover and when editing */
+}
+
+.overlayCardTextFirstColumn:hover,
+.overlayCardTextFirstColumn.editing {
+    border: 1px dashed blue; /* Change the border style on hover and when editing */
+}
   
   .positionSliderY {
     margin-top: 3px;
