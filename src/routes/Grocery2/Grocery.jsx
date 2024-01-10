@@ -71,7 +71,7 @@ function Grocery() {
           top: "",
           left: "",
           bottom: "",
-          priceBoxType: 1,
+          priceBoxType: 0,
           priceBoxColor: true,
           renderPriceBox: false,
         },
@@ -217,7 +217,7 @@ function Grocery() {
     console.log("switchBoxType")
     if (cardIndex > 20) {
       const newDynamicColumn = [...dynamicColumn];
-      if (newDynamicColumn[cardIndex - 21].text.priceBoxType < 3) {
+      if (newDynamicColumn[cardIndex - 21].text.priceBoxType < 2) {
         newDynamicColumn[cardIndex - 21].text.priceBoxType++;
       } else {
         newDynamicColumn[cardIndex - 21].text.priceBoxType = 0; // Reset to 0 if it's already 3
@@ -666,7 +666,6 @@ function Grocery() {
                     dynamicColumn,
                     setDynamicColumn,
                     cardIndex - 21,
-                    cardIndex,
                     dynamicColumn[cardIndex - 21].text.priceBoxColor
                   )}
                 </div>
