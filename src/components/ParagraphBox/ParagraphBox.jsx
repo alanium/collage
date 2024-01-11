@@ -4,7 +4,7 @@ import styles from "./TextBoxLeft.module.css";
 export default function TextBoxLeft({ textBoxes, setTextBoxes, cardIndex }) {
   const calculatedIndex = cardIndex > 20 ? cardIndex - 21 : cardIndex;
 
-  const [fontSize, setFontSize] = useState(16);
+  const [fontSize, setFontSize] = useState(14);
 
   const handleLeftText = () => {
     const newText = prompt("Input new text: ");

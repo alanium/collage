@@ -3,7 +3,7 @@ import styles from "./TopTextBox.module.css"
 
 export default function TopTextBox ({textBoxes, setTextBoxes, cardIndex}) {
 
-    const [fontSize, setFontSize] = useState(16);
+    const [fontSize, setFontSize] = useState(14);
 
     const handleTopText = () => {
         const newText = prompt("Input new text: ");
