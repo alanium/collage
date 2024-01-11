@@ -81,15 +81,16 @@ const TripleBox = ({ textBoxes, setTextBoxes , i, cardIndex, backgroundColor }) 
     if (newText != null) {
       const newTextBoxes = [...textBoxes];
       newTextBoxes[auxIndex].text.bottom = newText;
+      if (newText.includes("/")) {
+        newTextBoxes[auxIndex].text.priceBoxType = 0
+      } else if (newText.toLowerCase().includes("for")) {
+        newTextBoxes[auxIndex].text.priceBoxType = 2
+      }
       setTextBoxes(newTextBoxes);
+      
     }
   };
 
-  const setBackgroundColor = () => {
-    const color = backgroundColor ? 'red' : 'white';
-  console.log('Background Color:', color);
-  return color;
-  };
 
   const setTextColor = () => {
     return backgroundColor ? 'white' : 'red';

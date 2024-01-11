@@ -26,6 +26,11 @@ const AmountForPrice = ({ textBoxes, setTextBoxes, i, j, cardIndex, backgroundCo
         if (newText != null) {
           const newTextBoxes = [...textBoxes];
           newTextBoxes[auxIndex].text.bottom = newText;
+          if (newText.includes("/")) {
+            newTextBoxes[auxIndex].text.priceBoxType = 0
+          } else if (newText.includes("each" || "oz")) {
+            newTextBoxes[auxIndex].text.priceBoxType = 1
+          }
           setTextBoxes(newTextBoxes);
         }
       };

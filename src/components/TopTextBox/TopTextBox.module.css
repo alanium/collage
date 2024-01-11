@@ -1,0 +1,25 @@
+.overlayCardText {
+
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translate(0, -80%);
+    width: 60px;
+    height: 90px;
+    border-radius: 3px;
+    color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-weight: bold;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    white-space: pre-line;
+    overflow: hidden;
+  }
+
+  .overlayCardText:hover,
+.overlayCardText.editing {
+    border: 1px dashed blue; /* Change the border style on hover and when editing */
+}

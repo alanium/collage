@@ -13,6 +13,11 @@ const FixedBox = ({ textBoxes, setTextBoxes, i, cardIndex, backgroundColor }) =>
     const newText = prompt("Enter new amount: ");
     if (newText != null) {
       const newTextBoxes = [...textBoxes];
+      if (newText.toLowerCase().includes("for")) {
+        newTextBoxes[index].text.priceBoxType = 2
+      } else if (newText.includes("each" || "oz")) {
+        newTextBoxes[index].text.priceBoxType = 1
+      }
       newTextBoxes[index].text.bottom = newText;
       setTextBoxes(newTextBoxes);
     }

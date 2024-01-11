@@ -96,25 +96,7 @@
     background-color: white;
   }
   
-  .overlayCardText {
 
-    position: absolute;
-    top: 50%;
-    right: 0;
-    transform: translate(0, -80%);
-    width: 60px;
-    height: 90px;
-    border-radius: 3px;
-    color: black;
-    font-weight: bold;
-    overflow: hidden;
-    justify-content: flex-end;
-    text-align: center;
-    padding-right: 3px;
-    word-wrap: break-word; /* Agregado para permitir saltos de línea */
-    white-space: pre-line;
-    z-index: 1;
-  }
   
   .overlayCardTextLeft {
   

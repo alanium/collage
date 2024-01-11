@@ -5,6 +5,8 @@ import FixedBox from "../../components/BoxWithText/BoxWithText";
 import TripleBox from "../../components/TripleBoxWithText/TripleBoxWithText";
 import { useNavigate } from "react-router-dom";
 import AmountForPrice from "../../components/AmountForPrice/AmountForPrice";
+import TextBoxLeft from "../../components/ParagraphBox/ParagraphBox";
+import TopTextBox from "../../components/TopTextBox/TopTextBox";
 
 function Grocery() {
   const [staticColumns, setStaticColumns] = useState(
@@ -246,39 +248,6 @@ function Grocery() {
       setStaticColumns(newStaticColumns)
     }
   } 
-
-  const handleTopText = (cardIndex) => {
-    const newText = prompt("Input new text: ");
-    if (newText !== null) {
-      setStaticColumns((prevStaticColumns) => {
-        const newStaticColumns = [...prevStaticColumns];
-        newStaticColumns[cardIndex].text.top = newText;
-        return newStaticColumns;
-      });
-    }
-  };
-
-  const handleLeftText = (cardIndex) => {
-    const newText = prompt("Input new text: ");
-
-    if (cardIndex > 20) {
-      if (newText !== null) {
-        setDynamicColumn((prevDynamicColumn) => {
-          const newTextBoxes = [...prevDynamicColumn];
-          newTextBoxes[cardIndex - 21].text.left = newText;
-          return newTextBoxes;
-        });
-      }
-    } else {
-      if (newText !== null) {
-        setStaticColumns((prevStaticColumns) => {
-          const newStaticColumns = [...prevStaticColumns];
-          newStaticColumns[cardIndex].text.left = newText;
-          return newStaticColumns;
-        });
-      }
-    }
-  };
 
   const ContextMenu = ({ x, y, items, onClose }) => (
     <div
@@ -670,12 +639,7 @@ function Grocery() {
                   )}
                 </div>
               ) : null}
-              <div
-                className={styles.overlayCardTextFirstColumn}
-                onClick={() => handleLeftText(cardIndex)}
-              >
-                {dynamicColumn[cardIndex - 21].text.left}
-              </div>
+              <TextBoxLeft textBoxes={dynamicColumn} setTextBoxes={setDynamicColumn} cardIndex={cardIndex} />
               {isEditingThisZoom && (
                 <ZoomSlider cardIndex={selectedImage.cardIndex} />
               )}
@@ -751,19 +715,9 @@ function Grocery() {
               </div>
             ) : null}
 
-            <div
-              className={styles.overlayCardText}
-              onClick={() => handleTopText(cardIndex)}
-            >
-              {staticColumns[cardIndex].text.top}
-            </div>
+            <TopTextBox textBoxes={staticColumns} setTextBoxes={setStaticColumns} cardIndex={cardIndex} />
 
-            <div
-              className={styles.overlayCardTextLeft}
-              onClick={() => handleLeftText(cardIndex)}
-            >
-              {staticColumns[cardIndex].text.left}
-            </div>
+            <TextBoxLeft textBoxes={staticColumns} setTextBoxes={setStaticColumns} cardIndex={cardIndex} />
             {isEditingThisZoom && (
               <ZoomSlider cardIndex={selectedImage.cardIndex} />
             )}

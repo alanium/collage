@@ -1,0 +1,44 @@
+.overlayCardTextLeft {
+    position: absolute;
+    left: 0;
+    transform: translate(0,235%);
+    width: 90px;
+    height: 40px;
+    z-index: 1;
+    color: black;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    word-wrap: break-word;
+    white-space: pre-line;
+    overflow: hidden;
+}
+  
+.overlayCardTextFirstColumn {
+    position: absolute;
+    left: 0;
+    width: 80px;
+    height: 80%;
+    z-index: 1;
+    color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-weight: bold;
+    word-wrap: break-word;
+    white-space: pre-line;
+    overflow: hidden;
+}
+
+.overlayCardTextLeft:hover,
+.overlayCardTextLeft.editing {
+    border: 1px dashed blue; /* Change the border style on hover and when editing */
+}
+
+.overlayCardTextFirstColumn:hover,
+.overlayCardTextFirstColumn.editing {
+    border: 1px dashed blue; /* Change the border style on hover and when editing */
+}
