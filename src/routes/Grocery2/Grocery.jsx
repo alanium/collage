@@ -216,7 +216,7 @@ function Grocery() {
   };
 
   const switchBoxType = (cardIndex) => {
-    console.log("switchBoxType")
+    console.log("switchBoxType");
     if (cardIndex > 20) {
       const newDynamicColumn = [...dynamicColumn];
       if (newDynamicColumn[cardIndex - 21].text.priceBoxType < 2) {
@@ -226,28 +226,29 @@ function Grocery() {
       }
       setDynamicColumn(newDynamicColumn);
     } else {
-      
-        const newStaticColumns = [...staticColumns];
-        if (newStaticColumns[cardIndex].text.priceBoxType < 2) {
-            newStaticColumns[cardIndex].text.priceBoxType++;
-        } else {
-          newStaticColumns[cardIndex].text.priceBoxType = 0;
-        }
-      setStaticColumns(newStaticColumns)
+      const newStaticColumns = [...staticColumns];
+      if (newStaticColumns[cardIndex].text.priceBoxType < 2) {
+        newStaticColumns[cardIndex].text.priceBoxType++;
+      } else {
+        newStaticColumns[cardIndex].text.priceBoxType = 0;
+      }
+      setStaticColumns(newStaticColumns);
     }
   };
 
   const changePriceBoxColor = (cardIndex) => {
     if (cardIndex > 20) {
       const newDynamicColumn = [...dynamicColumn];
-      newDynamicColumn[cardIndex - 21].text.priceBoxColor = !newDynamicColumn[cardIndex - 21].text.priceBoxColor
-      setDynamicColumn(newDynamicColumn)
+      newDynamicColumn[cardIndex - 21].text.priceBoxColor =
+        !newDynamicColumn[cardIndex - 21].text.priceBoxColor;
+      setDynamicColumn(newDynamicColumn);
     } else {
       const newStaticColumns = [...staticColumns];
-      newStaticColumns[cardIndex].text.priceBoxColor = !newStaticColumns[cardIndex].text.priceBoxColor
-      setStaticColumns(newStaticColumns)
+      newStaticColumns[cardIndex].text.priceBoxColor =
+        !newStaticColumns[cardIndex].text.priceBoxColor;
+      setStaticColumns(newStaticColumns);
     }
-  } 
+  };
 
   const ContextMenu = ({ x, y, items, onClose }) => (
     <div
@@ -316,7 +317,7 @@ function Grocery() {
       {
         label: "Change PriceBox Color",
         action: () => changePriceBoxColor(cardIndex),
-      }
+      },
     ];
 
     if (selectedColumn[index].img[1].src == "") {
@@ -513,6 +514,20 @@ function Grocery() {
               right
             </button>
           </div>
+            <button
+              className={styles.confirmButton}
+              style={{backgroundColor: "red", height: "41.9"}}
+              onClick={() => handleDeleteImage(cardIndex, 0)}
+            >
+              Delete 1
+            </button>
+            <button
+              className={styles.confirmButton}
+              style={{backgroundColor: "red", height: "41.9"}}
+              onClick={() => handleDeleteImage(cardIndex, 1)}
+            >
+              Delete 2
+            </button>
           <button className={styles.confirmButton} onClick={handleConfirmClick}>
             OK
           </button>
@@ -538,7 +553,13 @@ function Grocery() {
     }
   };
 
-  const renderPriceBox = (number, column, setColumn, cardIndex, backgroundColor) => {
+  const renderPriceBox = (
+    number,
+    column,
+    setColumn,
+    cardIndex,
+    backgroundColor
+  ) => {
     const priceBoxes = [
       <FixedBox
         key={`fixed-box-${cardIndex}`}
@@ -577,14 +598,10 @@ function Grocery() {
     return isFirstColumnEmpty ? (
       <div
         className={styles.cardColumn}
-        style={{justifyContent: "center"}}
+        style={{ justifyContent: "center" }}
         onClick={(event) => handleDynamicColumns(event)}
       >
-        <label
-        style={{fontSize: "84px", textAlign: "center"}}
-        >
-          +
-        </label>
+        <label style={{ fontSize: "84px", textAlign: "center" }}>+</label>
       </div>
     ) : (
       <div className={styles.cardColumn}>
@@ -639,7 +656,11 @@ function Grocery() {
                   )}
                 </div>
               ) : null}
-              <TextBoxLeft textBoxes={dynamicColumn} setTextBoxes={setDynamicColumn} cardIndex={cardIndex} />
+              <TextBoxLeft
+                textBoxes={dynamicColumn}
+                setTextBoxes={setDynamicColumn}
+                cardIndex={cardIndex}
+              />
               {isEditingThisZoom && (
                 <ZoomSlider cardIndex={selectedImage.cardIndex} />
               )}
@@ -715,9 +736,17 @@ function Grocery() {
               </div>
             ) : null}
 
-            <TopTextBox textBoxes={staticColumns} setTextBoxes={setStaticColumns} cardIndex={cardIndex} />
+            <TopTextBox
+              textBoxes={staticColumns}
+              setTextBoxes={setStaticColumns}
+              cardIndex={cardIndex}
+            />
 
-            <TextBoxLeft textBoxes={staticColumns} setTextBoxes={setStaticColumns} cardIndex={cardIndex} />
+            <TextBoxLeft
+              textBoxes={staticColumns}
+              setTextBoxes={setStaticColumns}
+              cardIndex={cardIndex}
+            />
             {isEditingThisZoom && (
               <ZoomSlider cardIndex={selectedImage.cardIndex} />
             )}
