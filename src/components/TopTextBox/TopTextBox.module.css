@@ -1,11 +1,11 @@
 .overlayCardText {
-
     position: absolute;
     top: 50%;
     right: 0;
     transform: translate(0, -80%);
     width: 75px;
-    height: 90px;
+    height: 85px;
+    max-height: 100%;
     border-radius: 3px;
     color: black;
     display: flex;
@@ -17,6 +17,7 @@
     word-wrap: break-word;
     white-space: pre-line;
     overflow: hidden;
+    line-height: 1.2;
   }
 
   .overlayCardText:hover,

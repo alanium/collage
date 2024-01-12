@@ -74,7 +74,7 @@ function Grocery() {
           left: "",
           bottom: "",
           priceBoxType: 0,
-          priceBoxColor: true,
+          priceBoxColor: false,
           renderPriceBox: false,
         },
         index: i + 21,

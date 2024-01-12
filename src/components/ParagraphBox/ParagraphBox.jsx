@@ -9,9 +9,10 @@ export default function TextBoxLeft({ textBoxes, setTextBoxes, cardIndex }) {
   const handleLeftText = () => {
     const newText = prompt("Input new text: ");
     if (newText !== null) {
+      const formattedText = newText.replace(/\n/g, "<br>");
       setTextBoxes((prevTextBoxes) => {
         const newTextBoxes = [...prevTextBoxes];
-        newTextBoxes[calculatedIndex].text.left = newText;
+        newTextBoxes[calculatedIndex].text.left = formattedText;;
         return newTextBoxes;
       });
     }
@@ -48,7 +49,7 @@ export default function TextBoxLeft({ textBoxes, setTextBoxes, cardIndex }) {
       onClick={() => handleLeftText()}
       style={{ fontSize: `${fontSize}px` }}
     >
-      {textBoxes[calculatedIndex].text.left}
+      <div dangerouslySetInnerHTML={{ __html: textBoxes[calculatedIndex].text.left }} />
     </div>
   );
 }

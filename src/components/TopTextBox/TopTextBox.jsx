@@ -35,8 +35,9 @@ export default function TopTextBox ({textBoxes, setTextBoxes, cardIndex}) {
               id={`topTextBox-${cardIndex}`}
               className={styles.overlayCardText}
               onClick={() => handleTopText()}
+              style={{ fontSize: `${fontSize}px` }}
             >
-              {textBoxes[cardIndex].text.top}
+              <div dangerouslySetInnerHTML={{ __html: textBoxes[cardIndex].text.top }} />
             </div>
     )
 }
