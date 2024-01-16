@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import styles from "./TextPopUp.module.css"
+import styles from "./TextPopup.module.css"
 
 export default function TextPopUp({textBox, setTextBox, setPopup, cardIndex, type, setSelectedImage}) {
   const [text, setText] = useState("");
