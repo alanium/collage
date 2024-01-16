@@ -4,36 +4,43 @@
     transform: translate(0,185%);
     width: 90px;
     height: 47px;
+    border-radius: 3px;
     z-index: 1;
     color: black;
-    font-weight: bold;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
+    font-weight: bold;
+    overflow-wrap: break-word;
     word-wrap: break-word;
     white-space: pre-line;
     overflow: hidden;
-    line-height: 1.0;
+    line-height: 1.2;
     max-height: 100%;
+    
 }
   
 .overlayCardTextFirstColumn {
     position: absolute;
     left: 0;
+    bottom: 0;
     width: 80px;
-    height: 80%;
+    height: 40%;
+    max-height: 100%;
+    border-radius: 3px;
     z-index: 1;
     color: black;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: end;
     text-align: center;
     font-weight: bold;
+    overflow-wrap: break-word;
     word-wrap: break-word;
     white-space: pre-line;
     overflow: hidden;
-    max-height: 100%;
+    line-height: 1.2;
 }
 
 .overlayCardTextLeft:hover,

@@ -67,7 +67,6 @@ const FixedBox = ({ textBoxes, setTextBoxes, i, cardIndex, backgroundColor }) =>
 
   const setBackgroundColor = () => {
     const color = backgroundColor ? 'red' : 'white';
-  console.log('Background Color:', color);
   return color;
   };
 

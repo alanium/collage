@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import AmountForPrice from "../../components/AmountForPrice/AmountForPrice";
 import TextBoxLeft from "../../components/ParagraphBox/ParagraphBox";
 import TopTextBox from "../../components/TopTextBox/TopTextBox";
+import TextPopUp from "../../components/TextPopup/TextPopup";
 
 function Grocery() {
   const [staticColumns, setStaticColumns] = useState(
@@ -38,6 +39,12 @@ function Grocery() {
   const [isEditingZoom, setIsEditingZoom] = useState(false);
 
   const [selectedImage, setSelectedImage] = useState({});
+
+  const [selectedTextBox, setSelectedTextBox] = useState({});
+
+  const [popup, setPopup] = useState(false);
+
+  const [type, setType] = useState("")
 
   const navigate = useNavigate();
 
@@ -179,6 +186,11 @@ function Grocery() {
             // Set the src value to an empty string when deleting
             imageToUpdate.img[index].src = "";
           }
+
+          if (imageToUpdate.img[0].src == "" && imageToUpdate.img[1].src == "") {
+            setIsEditingZoom(false)
+          }
+
           return newDynamicColumn;
         });
       }
@@ -193,6 +205,10 @@ function Grocery() {
           if (imageToUpdate) {
             // Set the src value to an empty string when deleting
             imageToUpdate.img[index].src = "";
+          }
+
+          if (imageToUpdate.img[0].src == "" && imageToUpdate.img[1].src == "") {
+            setIsEditingZoom(false)
           }
 
           return newStaticColumns;
@@ -379,6 +395,9 @@ function Grocery() {
 
   const ZoomSlider = ({ cardIndex }) => {
     const auxIndex = cardIndex > 20 ? cardIndex - 21 : cardIndex;
+
+    const column = cardIndex > 20 ? dynamicColumn : staticColumns;
+
     const handleZoomChange = (newZoom, index) => {
       if (cardIndex > 20) {
         const newUploadedImages = [...dynamicColumn];
@@ -409,125 +428,138 @@ function Grocery() {
 
     return (
       <div className={styles.sidebar}>
-        <div className={styles.zoomSliderContainer}>
-          <label>Image 1</label>
-          <div className={styles.zoomControlsGrid}>
-            <button
-              onClick={() =>
-                handleZoomChange(
-                  (cardIndex > 20 ? dynamicColumn : staticColumns)[auxIndex]
-                    .img[0].zoom - 5,
-                  0
-                )
-              }
-              className={styles.bttnGrid}
-            >
-              -
-            </button>
-            <button
-              onClick={() =>
-                handleZoomChange(
-                  (cardIndex > 20 ? dynamicColumn : staticColumns)[auxIndex]
-                    .img[0].zoom + 5,
-                  0
-                )
-              }
-              className={styles.bttnGrid}
-            >
-              +
-            </button>
-            <button
-              className={styles.bttnGrid}
-              onClick={() => handlePositionChange(-5, 0, "y")}
-            >
-              up
-            </button>
-            <button
-              className={styles.bttnGrid}
-              onClick={() => handlePositionChange(5, 0, "y")}
-            >
-              down
-            </button>
-            <button
-              className={styles.bttnGrid}
-              onClick={() => handlePositionChange(-5, 0, "x")}
-            >
-              left
-            </button>
-            <button
-              className={styles.bttnGrid}
-              onClick={() => handlePositionChange(5, 0, "x")}
-            >
-              right
-            </button>
+        
+          {column[auxIndex].img[0].src != "" ? (
+            <div className={styles.zoomSliderContainer}>
+            <label>Image 1</label>
+            <div className={styles.zoomControlsGrid}>
+              <button
+                onClick={() =>
+                  handleZoomChange(
+                    (cardIndex > 20 ? dynamicColumn : staticColumns)[auxIndex]
+                      .img[0].zoom - 5,
+                    0
+                  )
+                }
+                className={styles.bttnGrid}
+              >
+                -
+              </button>
+              <button
+                onClick={() =>
+                  handleZoomChange(
+                    (cardIndex > 20 ? dynamicColumn : staticColumns)[auxIndex]
+                      .img[0].zoom + 5,
+                    0
+                  )
+                }
+                className={styles.bttnGrid}
+              >
+                +
+              </button>
+              <button
+                className={styles.bttnGrid}
+                onClick={() => handlePositionChange(-5, 0, "y")}
+              >
+                up
+              </button>
+              <button
+                className={styles.bttnGrid}
+                onClick={() => handlePositionChange(5, 0, "y")}
+              >
+                down
+              </button>
+              <button
+                className={styles.bttnGrid}
+                onClick={() => handlePositionChange(-5, 0, "x")}
+              >
+                left
+              </button>
+              <button
+                className={styles.bttnGrid}
+                onClick={() => handlePositionChange(5, 0, "x")}
+              >
+                right
+              </button>
+            </div>
           </div>
-        </div>
-        <div style={{ top: "400px" }} className={styles.zoomSliderContainer}>
-          <label>Image 2</label>
-          <div className={styles.zoomControlsGrid}>
-            <button
-              onClick={() =>
-                handleZoomChange(
-                  (cardIndex > 20 ? dynamicColumn : staticColumns)[auxIndex]
-                    .img[1].zoom - 5,
-                  1
-                )
-              }
-              className={styles.bttnGrid}
-            >
-              -
-            </button>
-            <button
-              onClick={() =>
-                handleZoomChange(
-                  (cardIndex > 20 ? dynamicColumn : staticColumns)[auxIndex]
-                    .img[1].zoom + 5,
-                  1
-                )
-              }
-              className={styles.bttnGrid}
-            >
-              +
-            </button>
-            <button
-              className={styles.bttnGrid}
-              onClick={() => handlePositionChange(-5, 1, "y", 0)}
-            >
-              up
-            </button>
-            <button
-              className={styles.bttnGrid}
-              onClick={() => handlePositionChange(5, 1, "y")}
-            >
-              down
-            </button>
-            <button
-              className={styles.bttnGrid}
-              onClick={() => handlePositionChange(-5, 1, "x")}
-            >
-              left
-            </button>
-            <button
-              className={styles.bttnGrid}
-              onClick={() => handlePositionChange(5, 1, "x")}
-            >
-              right
-            </button>
+          ) : null}
+          
+        {column[auxIndex].img[1].src != "" ? (
+          <div style={{ top: "350px" }} className={styles.zoomSliderContainer}>
+            <label>Image 2</label>
+            <div className={styles.zoomControlsGrid}>
+              <button
+                onClick={() =>
+                  handleZoomChange(
+                    (cardIndex > 20 ? dynamicColumn : staticColumns)[auxIndex]
+                      .img[1].zoom - 5,
+                    1
+                  )
+                }
+                className={styles.bttnGrid}
+              >
+                -
+              </button>
+              <button
+                onClick={() =>
+                  handleZoomChange(
+                    (cardIndex > 20 ? dynamicColumn : staticColumns)[auxIndex]
+                      .img[1].zoom + 5,
+                    1
+                  )
+                }
+                className={styles.bttnGrid}
+              >
+                +
+              </button>
+              <button
+                className={styles.bttnGrid}
+                onClick={() => handlePositionChange(-5, 1, "y", 0)}
+              >
+                up
+              </button>
+              <button
+                className={styles.bttnGrid}
+                onClick={() => handlePositionChange(5, 1, "y")}
+              >
+                down
+              </button>
+              <button
+                className={styles.bttnGrid}
+                onClick={() => handlePositionChange(-5, 1, "x")}
+              >
+                left
+              </button>
+              <button
+                className={styles.bttnGrid}
+                onClick={() => handlePositionChange(5, 1, "x")}
+              >
+                right
+              </button>
+            </div>
           </div>
+        ) : null}
+        <div style={{ top: "550px" }} className={styles.zoomSliderContainer}>
+        {column[auxIndex].img[0].src != "" ? (
+          <button
+          className={styles.confirmButton}
+          style={{ backgroundColor: "red" }}
+          onClick={() => handleDeleteImage(cardIndex, 0)}
+        >
+          Delete 1
+        </button>
+        ) : null}
+          
+          {column[auxIndex].img[1].src != "" ? (
             <button
               className={styles.confirmButton}
-              style={{backgroundColor: "red", height: "41.9"}}
-              onClick={() => handleDeleteImage(cardIndex, 0)}
-            >
-              Delete 1
-            </button>
-            <button
-              className={styles.confirmButton}
-              style={{backgroundColor: "red", height: "41.9"}}
+              style={{ backgroundColor: "red" }}
               onClick={() => handleDeleteImage(cardIndex, 1)}
             >
               Delete 2
             </button>
+          ) : null}
           <button className={styles.confirmButton} onClick={handleConfirmClick}>
             OK
           </button>
@@ -660,6 +692,10 @@ function Grocery() {
                 textBoxes={dynamicColumn}
                 setTextBoxes={setDynamicColumn}
                 cardIndex={cardIndex}
+                setPopup={setPopup}
+                setSelectedTextBox={setSelectedTextBox}
+                setType={setType}
+                setSelectedImage={setSelectedImage}
               />
               {isEditingThisZoom && (
                 <ZoomSlider cardIndex={selectedImage.cardIndex} />
@@ -740,12 +776,20 @@ function Grocery() {
               textBoxes={staticColumns}
               setTextBoxes={setStaticColumns}
               cardIndex={cardIndex}
+              setPopup={setPopup}
+              setSelectedTextBox={setSelectedTextBox}
+              setType={setType}
+              setSelectedImage={setSelectedImage}
             />
 
             <TextBoxLeft
               textBoxes={staticColumns}
               setTextBoxes={setStaticColumns}
               cardIndex={cardIndex}
+              setPopup={setPopup}
+              setSelectedTextBox={setSelectedTextBox}
+              setType={setType}
+              setSelectedImage={setSelectedImage}
             />
             {isEditingThisZoom && (
               <ZoomSlider cardIndex={selectedImage.cardIndex} />
@@ -765,6 +809,15 @@ function Grocery() {
 
   return (
     <div>
+      {popup ? (
+        <TextPopUp
+          textBox={selectedImage.cardIndex  > 20 ? dynamicColumn : staticColumns}
+          setTextBox={selectedImage.cardIndex  > 20 ? setDynamicColumn : setStaticColumns}
+          setPopup={setPopup}
+          cardIndex={selectedImage}
+          type={type}
+        />
+      ) : null}
       <button
         style={{
           width: "165px",

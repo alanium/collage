@@ -173,7 +173,7 @@
     display: inline-block;
     font-size: 20px;
     padding: 5px;
-    width: 100%;
+    width: 165px;
     cursor: pointer;
     margin-top: 10px;
   }
@@ -194,6 +194,11 @@
 .overlayCardText:hover,
 .overlayCardText.editing {
     border: 1px dashed blue; /* Change the border style on hover and when editing */
+}
+
+.card:hover,
+.card.editing {
+  border: 1px dashed blue;
 }
 
 .overlayCardTextLeft:hover,
