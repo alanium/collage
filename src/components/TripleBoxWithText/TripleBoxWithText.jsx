@@ -46,7 +46,7 @@ const TripleBox = ({ textBoxes, setTextBoxes , i, cardIndex, backgroundColor }) 
     // Set maximum and minimum font size
     const maximumFontSize = 60;
     const minimumFontSize = 23;
-    const bottomBoxMinimumFontSize = 10;
+    const bottomBoxMinimumFontSize = 14;
   
     while (
       (box.scrollWidth > boxWidth || box.scrollHeight > boxHeight) &&
@@ -130,7 +130,7 @@ const TripleBox = ({ textBoxes, setTextBoxes , i, cardIndex, backgroundColor }) 
         <div
           className={styles.topBox}
           ref={topBoxRef}
-          style={{ fontSize: `${topBoxFontSize}px` }}
+          style={{ fontSize: `min(${topBoxFontSize}px, 22px)`}}
         >
           {textBoxes[auxIndex].text.bottom && textBoxes[auxIndex].text.bottom.split(".")[1]?.split(" ")[0]}
         </div>

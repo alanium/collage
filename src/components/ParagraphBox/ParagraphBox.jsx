@@ -26,8 +26,11 @@ export default function TextBoxLeft({ textBoxes, setTextBoxes, cardIndex, setPop
   };
 
   useEffect(() => {
-    const textBoxElement = document.getElementById(`textBoxLeft-${cardIndex.cardIndex}`);
-    if (textBoxElement) {
+    const textBoxElement = document.getElementById(`textBoxLeft-${cardIndex}`);
+    const currentTextBox = textBoxes[calculatedIndex];
+
+  if (textBoxElement && currentTextBox && currentTextBox.text && currentTextBox.text.left) {
+    // Rest of your code
       const textContent = textBoxes[calculatedIndex].text.left;
       const lines = textContent.split('\n');
       const textHeight = textBoxElement.scrollHeight;
@@ -70,10 +73,10 @@ export default function TextBoxLeft({ textBoxes, setTextBoxes, cardIndex, setPop
 
   return (
     <div
-      id={`textBoxLeft-${cardIndex.cardIndex}`}
+      id={`textBoxLeft-${cardIndex}`}
       className={textBoxLeftStyle()}
       onClick={() => handleLeftText()}
-      style={{ fontSize: `${fontSize}px` }}
+      style={{ fontSize: `${fontSize}px`, width: `${textBoxes[calculatedIndex].text.priceBoxType == 2 ? "65px" : "90px"}` }}
     >
       <div dangerouslySetInnerHTML={{ __html: textBoxes[calculatedIndex].text.left }} />
     </div>

@@ -51,7 +51,7 @@ const AmountForPrice = ({ textBoxes, setTextBoxes, i, j, cardIndex, backgroundCo
         const boxWidth = box.clientWidth;
         const boxHeight = box.clientHeight;
       
-        let fontSize = 32;
+        let fontSize = 44;
       
         while ((box.scrollWidth !== box.clientWidth && box.scrollHeight !== box.clientHeight)) {
           if (box.scrollWidth > box.clientWidth) {
@@ -102,7 +102,7 @@ const AmountForPrice = ({ textBoxes, setTextBoxes, i, j, cardIndex, backgroundCo
           ref={middleBoxRef}
           style={{ fontSize: `10px` }}
         >
-          {textBoxes[auxIndex].text.bottom && textBoxes[auxIndex].text.bottom.split(" ")[1]}
+          {textBoxes[auxIndex].text.bottom && textBoxes[auxIndex].text.bottom.split(" ")[1].toUpperCase()}
         </div>
         <div
           className={styles.rightBox}

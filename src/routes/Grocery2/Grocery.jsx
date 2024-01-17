@@ -428,7 +428,6 @@ function Grocery() {
 
     return (
       <div className={styles.sidebar}>
-        
           {column[auxIndex].img[0].src != "" ? (
             <div className={styles.zoomSliderContainer}>
             <label>Image 1</label>
@@ -486,7 +485,7 @@ function Grocery() {
           ) : null}
           
         {column[auxIndex].img[1].src != "" ? (
-          <div style={{ top: "350px" }} className={styles.zoomSliderContainer}>
+          <div className={styles.zoomSliderContainer}>
             <label>Image 2</label>
             <div className={styles.zoomControlsGrid}>
               <button
@@ -540,7 +539,7 @@ function Grocery() {
             </div>
           </div>
         ) : null}
-        <div style={{ top: "550px" }} className={styles.zoomSliderContainer}>
+        <div className={styles.zoomSliderContainer}>
         {column[auxIndex].img[0].src != "" ? (
           <button
           className={styles.confirmButton}
@@ -633,7 +632,7 @@ function Grocery() {
         style={{ justifyContent: "center" }}
         onClick={(event) => handleDynamicColumns(event)}
       >
-        <label style={{ fontSize: "84px", textAlign: "center" }}>+</label>
+        <label style={{ fontSize: "84px", textAlign: "center", color: "gray" }}>+</label>
       </div>
     ) : (
       <div className={styles.cardColumn}>

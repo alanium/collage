@@ -17,6 +17,9 @@
     overflow: hidden;  /* Prevent text overflow */
     border: 1px solid rgb(0, 0, 0);
     background-color: white;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
 }
 .containerBox.editing {
     border: 1px dashed blue; /* Change the border style when editing */
@@ -48,9 +51,11 @@
     width: 100%;
     top: 0;
     right: 0; /* Adjusted to be at the top right */
+    margin: 0;
+    padding: 0;
     display: grid;
-    align-items: center;
-    justify-content: left;
+    align-items: start;
+    justify-content: top;
     text-align: center;
     word-wrap: break-word;
     white-space: nowrap;
