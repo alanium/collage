@@ -34,13 +34,19 @@
     border: 2px solid red;
     position: relative;
   }
+  .firstCardColumn {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+  }
   
   .cardColumn {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     flex: 1;
-    border-right: 1px solid rgb(0, 0, 0)
+    border-left: 1px solid rgb(0, 0, 0)
   }
   
   .card {

@@ -42,6 +42,8 @@ function Grocery() {
 
   const [selectedTextBox, setSelectedTextBox] = useState({});
 
+  const [info, setInfo] = useState(false)
+
   const [popup, setPopup] = useState(false);
 
   const [type, setType] = useState("")
@@ -168,6 +170,56 @@ function Grocery() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const RenderInfo = () => {
+    return (
+      <div
+        style={{backgroundColor:"gray", color: "white", position: "absolute", top: "80px", right: "20px", border: "1px solid #666666", padding: "15px", borderRadius: "5px"}}
+      >
+        <div>
+        Info:
+        </div>
+        <div>
+          <label>
+            This tab explains how to use the functionalities of the page
+          </label>
+        </div>
+        <div>
+          Click on the plus sign to the left column to input the number of cards you want to have in the first column
+        </div>
+        <div>
+          Click on a card to upload an image
+        </div>
+        <div>
+          Click again on the uploaded image to open the context menu, where you can:
+          <div>
+            1- Edit the size and position of the image
+          </div>
+          <div>
+            2- Show or hide the Price Box
+          </div>
+          <div>
+            3- Change the Price Box Type
+          </div>
+          <div>
+            4- Change the price box color
+          </div>
+          <div>
+            5- upload a second image
+          </div>
+          <div>
+            6- Cancel
+          </div>
+        </div>
+        <div>
+          Click on the Price Box, to write the content of the pricebox:
+          <div>
+            1. If you write Number / $Number
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const handleDeleteImage = (cardIndex, index) => {
     const confirmDelete = window.confirm(
@@ -628,14 +680,14 @@ function Grocery() {
 
     return isFirstColumnEmpty ? (
       <div
-        className={styles.cardColumn}
+        className={styles.firstCardColumn}
         style={{ justifyContent: "center" }}
         onClick={(event) => handleDynamicColumns(event)}
       >
         <label style={{ fontSize: "84px", textAlign: "center", color: "gray" }}>+</label>
       </div>
     ) : (
-      <div className={styles.cardColumn}>
+      <div className={styles.firstCardColumn}>
         {dynamicColumn.map((card) => {
           const cardIndex = card.index;
           const isEditingThisZoom =
@@ -822,6 +874,19 @@ function Grocery() {
           width: "165px",
           position: "fixed",
           top: "20px",
+          left: "200px",
+          backgroundColor: "gray",
+          color: "white",
+        }}
+        onClick={() => setInfo(!info)}
+      >
+        Info
+      </button>
+      <button
+        style={{
+          width: "165px",
+          position: "fixed",
+          top: "20px",
           left: "15px",
           backgroundColor: "gray",
           color: "white",
@@ -843,9 +908,12 @@ function Grocery() {
       >
         Back to Home
       </button>
+      
       <div id="magazineContainer" className={styles.containerDivBorder}>
         <div className={styles.containerDiv} ref={contextMenuRef}>
+          
           <RenderCards />
+          
           {contextMenu && (
             <ContextMenu
               x={contextMenu.x}
@@ -856,7 +924,9 @@ function Grocery() {
           )}
           <div className={styles.overlay}>GROCERY</div>
         </div>
+        
       </div>
+      {info ? <RenderInfo /> : null }
     </div>
   );
 }
