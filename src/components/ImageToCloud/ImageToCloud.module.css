@@ -1,0 +1,8 @@
+.uploadButton{
+    width: 165px;
+    position: relative;
+    background-color: gray;
+    color: white;
+    margin-bottom: 10px;
+    z-index: 1;
+}

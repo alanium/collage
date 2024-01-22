@@ -8,6 +8,23 @@ import AmountForPrice from "../../components/AmountForPrice/AmountForPrice";
 import TextBoxLeft from "../../components/ParagraphBox/ParagraphBox";
 import TopTextBox from "../../components/TopTextBox/TopTextBox";
 import TextPopUp from "../../components/TextPopup/TextPopup";
+import { initializeApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore/lite';
+import ImageUploader from "../../components/ImageToCloud/ImageToCloud";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
+  authDomain: "napervillecollageapp.firebaseapp.com",
+  projectId: "napervillecollageapp",
+  storageBucket: "napervillecollageapp.appspot.com",
+  messagingSenderId: "658613882469",
+  appId: "1:658613882469:web:23da7f1eb31c54a021808c",
+  measurementId: "G-DNB21PCJ7T"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 
 function Grocery() {
   const [staticColumns, setStaticColumns] = useState(
@@ -30,25 +47,17 @@ function Grocery() {
       }))
   );
 
-  const contextMenuRef = useRef(null);
-
   const [dynamicColumn, setDynamicColumn] = useState([]);
-
   const [contextMenu, setContextMenu] = useState(null);
-
   const [isEditingZoom, setIsEditingZoom] = useState(false);
-
   const [selectedImage, setSelectedImage] = useState({});
-
   const [selectedTextBox, setSelectedTextBox] = useState({});
-
-  const [info, setInfo] = useState(false)
-
+  const [info, setInfo] = useState(false);
   const [popup, setPopup] = useState(false);
-
-  const [type, setType] = useState("")
+  const [type, setType] = useState("");
 
   const navigate = useNavigate();
+  const contextMenuRef = useRef(null);
 
   const handleConvertToPDF = () => {
     const container = document.getElementById("magazineContainer");
@@ -173,59 +182,49 @@ function Grocery() {
 
   const RenderInfo = () => {
     return (
-      <div
-        style={{backgroundColor:"gray", color: "white", position: "absolute", top: "80px", right: "20px", border: "1px solid #666666", padding: "15px", borderRadius: "5px"}}
-      >
-        <div>
-        Info:
-        </div>
+      <div className={styles.infoTab}>
+        <div>Info:</div>
         <div>
           <label>
             This tab explains how to use the functionalities of the page
           </label>
         </div>
         <div>
-          Click on the plus sign to the left column to input the number of cards you want to have in the first column
+          Click on the plus sign to the left column to input the number of cards
+          you want to have in the first column
         </div>
+        <div>Click on a card to upload an image</div>
         <div>
-          Click on a card to upload an image
-        </div>
-        <div>
-          Click again on the uploaded image to open the context menu, where you can:
+          Click again on the uploaded image to open the context menu, where you
+          can:
+          <div>1- Edit the size and position of the image</div>
+          <div>2- Show or hide the Price Box</div>
           <div>
-            1- Edit the size and position of the image
+            3- Manually change the Price Box Type (not recommended since it can
+            lead to unwanted behaviour)
           </div>
-          <div>
-            2- Show or hide the Price Box
-          </div>
-          <div>
-            3- Manually change the Price Box Type (not recommended since it can lead to unwanted behaviour)
-          </div>
-          <div>
-            4- Change the price box color
-          </div>
-          <div>
-            5- upload a second image
-          </div>
-          <div>
-            6- Cancel
-          </div>
+          <div>4- Change the price box color</div>
+          <div>5- upload a second image</div>
+          <div>6- Cancel</div>
         </div>
         <div>
           Click on the Price Box, to write the content of the pricebox:
           <div>
-            1. If you write "Number / $Number" the price box type 1 is automatically selected
+            1. If you write "Number / $Number" the price box type 1 is
+            automatically selected
           </div>
           <div>
-            2. If you write "Number . Number + each/oz/lb/pk" the price box type 2 is automatically selected
+            2. If you write "Number . Number + each/oz/lb/pk" the price box type
+            2 is automatically selected
           </div>
           <div>
-            3. If you write "Number for $ Number" the price box type 3 is automatically selected
+            3. If you write "Number for $ Number" the price box type 3 is
+            automatically selected
           </div>
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   const handleDeleteImage = (cardIndex, index) => {
     const confirmDelete = window.confirm(
@@ -245,8 +244,11 @@ function Grocery() {
             imageToUpdate.img[index].src = "";
           }
 
-          if (imageToUpdate.img[0].src == "" && imageToUpdate.img[1].src == "") {
-            setIsEditingZoom(false)
+          if (
+            imageToUpdate.img[0].src == "" &&
+            imageToUpdate.img[1].src == ""
+          ) {
+            setIsEditingZoom(false);
           }
 
           return newDynamicColumn;
@@ -265,8 +267,11 @@ function Grocery() {
             imageToUpdate.img[index].src = "";
           }
 
-          if (imageToUpdate.img[0].src == "" && imageToUpdate.img[1].src == "") {
-            setIsEditingZoom(false)
+          if (
+            imageToUpdate.img[0].src == "" &&
+            imageToUpdate.img[1].src == ""
+          ) {
+            setIsEditingZoom(false);
           }
 
           return newStaticColumns;
@@ -486,8 +491,8 @@ function Grocery() {
 
     return (
       <div className={styles.sidebar}>
-          {column[auxIndex].img[0].src != "" ? (
-            <div className={styles.zoomSliderContainer}>
+        {column[auxIndex].img[0].src != "" ? (
+          <div className={styles.zoomSliderContainer}>
             <label>Image 1</label>
             <div className={styles.zoomControlsGrid}>
               <button
@@ -540,8 +545,8 @@ function Grocery() {
               </button>
             </div>
           </div>
-          ) : null}
-          
+        ) : null}
+
         {column[auxIndex].img[1].src != "" ? (
           <div className={styles.zoomSliderContainer}>
             <label>Image 2</label>
@@ -598,16 +603,16 @@ function Grocery() {
           </div>
         ) : null}
         <div className={styles.zoomSliderContainer}>
-        {column[auxIndex].img[0].src != "" ? (
-          <button
-          className={styles.confirmButton}
-          style={{ backgroundColor: "red" }}
-          onClick={() => handleDeleteImage(cardIndex, 0)}
-        >
-          Delete 1
-        </button>
-        ) : null}
-          
+          {column[auxIndex].img[0].src != "" ? (
+            <button
+              className={styles.confirmButton}
+              style={{ backgroundColor: "red" }}
+              onClick={() => handleDeleteImage(cardIndex, 0)}
+            >
+              Delete 1
+            </button>
+          ) : null}
+
           {column[auxIndex].img[1].src != "" ? (
             <button
               className={styles.confirmButton}
@@ -640,6 +645,53 @@ function Grocery() {
     } else {
       handleContextMenu(event, cardIndex, image);
     }
+  };
+
+  const saveTemplate = (event) => {
+    const newText = prompt("Enter template name: ");
+    const blob = new Blob(
+      [
+        JSON.stringify({
+          firstColumn: dynamicColumn,
+          otherColumns: staticColumns,
+        }),
+      ],
+      { type: "application/json" }
+    );
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${newText}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const loadTemplate = (event) => {
+    event.preventDefault();
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json"; // Corrected file extension
+    input.onchange = (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = e.target.result;
+          try {
+            const parsedResult = JSON.parse(result);
+            setStaticColumns(parsedResult.otherColumns);
+            setDynamicColumn(parsedResult.firstColumn);
+          } catch (error) {
+            console.error("Error parsing JSON:", error);
+          }
+        };
+        reader.readAsText(file); // Use readAsText to read JSON content
+      }
+    };
+    input.click();
   };
 
   const renderPriceBox = (
@@ -690,7 +742,9 @@ function Grocery() {
         style={{ justifyContent: "center" }}
         onClick={(event) => handleDynamicColumns(event)}
       >
-        <label style={{ fontSize: "84px", textAlign: "center", color: "gray" }}>+</label>
+        <label style={{ fontSize: "84px", textAlign: "center", color: "gray" }}>
+          +
+        </label>
       </div>
     ) : (
       <div className={styles.firstCardColumn}>
@@ -707,6 +761,7 @@ function Grocery() {
           cards.push(
             <div
               className={styles.card}
+              style={{}}
               key={cardIndex}
               onClick={(event) => handleCardClick(cardIndex, event)}
             >
@@ -868,26 +923,16 @@ function Grocery() {
     <div>
       {popup ? (
         <TextPopUp
-          textBox={selectedImage.cardIndex  > 20 ? dynamicColumn : staticColumns}
-          setTextBox={selectedImage.cardIndex  > 20 ? setDynamicColumn : setStaticColumns}
+          textBox={selectedImage.cardIndex > 20 ? dynamicColumn : staticColumns}
+          setTextBox={
+            selectedImage.cardIndex > 20 ? setDynamicColumn : setStaticColumns
+          }
           setPopup={setPopup}
           cardIndex={selectedImage}
           type={type}
         />
       ) : null}
-      <button
-        style={{
-          width: "165px",
-          position: "fixed",
-          top: "20px",
-          left: "200px",
-          backgroundColor: "gray",
-          color: "white",
-        }}
-        onClick={() => setInfo(!info)}
-      >
-        Info
-      </button>
+
       <button
         style={{
           width: "165px",
@@ -914,12 +959,61 @@ function Grocery() {
       >
         Back to Home
       </button>
-      
+      <div className={styles.sidebar} style={{ top: "120px" }}>
+        <div
+          style={{
+            position: "relative",
+            left: "12px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            padding: "3px",
+          }}
+        >
+          <button
+            style={{
+              width: "165px",
+              position: "relative",
+              backgroundColor: "gray",
+              color: "white",
+              marginBottom: "10px",
+              zIndex: "1"
+            }}
+            onClick={() => setInfo(!info)}
+          >
+            Info
+          </button>
+          <ImageUploader />
+          <button
+            style={{
+              width: "165px",
+              position: "relative",
+              backgroundColor: "gray",
+              marginBottom: "10px",
+              color: "white",
+            }}
+            onClick={(event) => saveTemplate(event)}
+          >
+            Download Template
+          </button>
+          <button
+            style={{
+              width: "165px",
+              position: "relative",
+              backgroundColor: "gray",
+              color: "white",
+            }}
+            onClick={(event) => loadTemplate(event)}
+          >
+            Load Template
+          </button>
+        </div>
+      </div>
+
       <div id="magazineContainer" className={styles.containerDivBorder}>
         <div className={styles.containerDiv} ref={contextMenuRef}>
-          
           <RenderCards />
-          
+
           {contextMenu && (
             <ContextMenu
               x={contextMenu.x}
@@ -930,9 +1024,8 @@ function Grocery() {
           )}
           <div className={styles.overlay}>GROCERY</div>
         </div>
-        
       </div>
-      {info ? <RenderInfo /> : null }
+      {info ? <RenderInfo /> : null}
     </div>
   );
 }
