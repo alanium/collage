@@ -13,27 +13,26 @@ export default function ImageFromCloud({
   const [downloadedImageUrl, setDownloadedImageUrl] = useState(null);
   const [imagesPreview, setImagesPreview] = useState([]);
   const [visibleImages, setVisibleImages] = useState(8);
+  const [renderedImages, setRenderedImages] = useState([]);
   const storage = getStorage();
 
   const handleImageChange = (event, imagePreview) => {
-    event.preventDefault()
+    event.preventDefault();
     setSelectedImage(imagePreview);
   };
 
   const handleConfirmSelection = (event) => {
     event.preventDefault();
-    // Do something with the selected image, for example, update state
-    // or pass it to a parent component via a callback function
-        const newSelectedColumn = [...selectedColumn];
-        const calculatedCardIndex = cardIndex > 20 ? cardIndex - 21 : cardIndex;
-        newSelectedColumn[calculatedCardIndex].img[0].src = selectedImage;
-        setSelectedColumn(newSelectedColumn);
-        setSelectedImage(null);
-        setImages(null); // Reset selectedImage to null for future selections
+    const newSelectedColumn = [...selectedColumn];
+    const calculatedCardIndex = cardIndex > 20 ? cardIndex - 21 : cardIndex;
+    newSelectedColumn[calculatedCardIndex].img[0].src = selectedImage;
+    setSelectedColumn(newSelectedColumn);
+    setSelectedImage(null);
+    setImages(null); // Reset selectedImage to null for future selections
   };
 
   const loadMoreImages = () => {
-    setVisibleImages(prevCount => prevCount + 8);
+    setVisibleImages((prevCount) => prevCount + 8);
   };
 
   const renderImages = () => {
@@ -54,15 +53,22 @@ export default function ImageFromCloud({
     renderImages();
   }, []);
 
-  return (   
-      <div className={styles.container}>
+  useEffect(() => {
+    const copiedArray = imagesPreview.slice(0, visibleImages);
+    setRenderedImages(copiedArray);
+  }, [imagesPreview, visibleImages]);
+
+  return (
+    <div className={styles.container}>
       <h1>Explorador de Archivos</h1>
       <div className={styles.gridContainer}>
-      {imagesPreview.map((imagePreview, index) => (
+        {renderedImages.map((imagePreview, index) => (
           <div
             key={index}
-            className={`${styles.gridItem} ${index === selectedImage ? styles.selected : ''}`}
-            onClick={() => handleImageClick(index)}
+            className={`${styles.gridItem} ${
+              index === selectedImage ? styles.selected : ""
+            }`}
+            onClick={() => handleImageChange(index)}
           >
             <img
               key={index}
@@ -70,7 +76,7 @@ export default function ImageFromCloud({
               onClick={(event) => handleImageChange(event, imagePreview)}
               src={imagePreview}
               alt={`Image ${index}`}
-          />
+            />
           </div>
         ))}
       </div>
