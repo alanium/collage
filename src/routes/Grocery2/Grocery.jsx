@@ -8,9 +8,13 @@ import AmountForPrice from "../../components/AmountForPrice/AmountForPrice";
 import TextBoxLeft from "../../components/ParagraphBox/ParagraphBox";
 import TopTextBox from "../../components/TopTextBox/TopTextBox";
 import TextPopUp from "../../components/TextPopup/TextPopup";
-import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore/lite';
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore/lite";
 import ImageUploader from "../../components/ImageToCloud/ImageToCloud";
+import { getStorage, ref, listAll, uploadBytes } from "firebase/storage";
+import ImageFromCloud from "../../components/ImageFromCloud/ImageFromCloud";
+import TemplatesFromCloud from "../../components/TemplatesFromCloud/TemplatesFromCloud";
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
@@ -19,12 +23,11 @@ const firebaseConfig = {
   storageBucket: "napervillecollageapp.appspot.com",
   messagingSenderId: "658613882469",
   appId: "1:658613882469:web:23da7f1eb31c54a021808c",
-  measurementId: "G-DNB21PCJ7T"
+  measurementId: "G-DNB21PCJ7T",
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
 
 function Grocery() {
   const [staticColumns, setStaticColumns] = useState(
@@ -52,9 +55,26 @@ function Grocery() {
   const [isEditingZoom, setIsEditingZoom] = useState(false);
   const [selectedImage, setSelectedImage] = useState({});
   const [selectedTextBox, setSelectedTextBox] = useState({});
+
+  const [selectedColumn, setSelectedColumn] = useState({});
+
+  const [selectedCardIndex, setSelectedCardIndex] = useState({});
+
   const [info, setInfo] = useState(false);
   const [popup, setPopup] = useState(false);
   const [type, setType] = useState("");
+
+  const [popup2, setPopup2] = useState(false);
+
+  const [templates, setTemplates] = useState(null);
+
+  const [images, setImages] = useState(null);
+
+  const storage = getStorage();
+
+  const imagesRef = ref(storage, "images/");
+
+  const templatesRef = ref(storage, "templates/");
 
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
@@ -404,6 +424,8 @@ function Grocery() {
       contextMenuItems.push({
         label: "Upload Image 2",
         action: () => {
+          setPopup2(true);
+          setSelectedCardIndex(cardIndex);
           const input = document.createElement("input");
           input.type = "file";
           input.accept = "image/*";
@@ -641,7 +663,8 @@ function Grocery() {
     const image = (cardIndex > 20 ? dynamicColumn : staticColumns)[auxIndex];
 
     if (image.img[0].src === "" && image.img[1].src === "") {
-      handleImageUpload(event, cardIndex);
+      setPopup2(true);
+      setSelectedCardIndex(cardIndex);
     } else {
       handleContextMenu(event, cardIndex, image);
     }
@@ -669,6 +692,24 @@ function Grocery() {
     URL.revokeObjectURL(url);
   };
 
+  const getImageList = () => {
+    listAll(imagesRef)
+      .then((result) => {
+        // 'items' is an array that contains references to each item in the list
+        const items = result.items;
+
+        // Extract image names from references
+        const names = items.map((item) => item.name);
+
+        setImages(names);
+        console.log(names);
+      })
+      .then(() => setPopup2(false))
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
   const loadTemplate = (event) => {
     event.preventDefault();
     const input = document.createElement("input");
@@ -692,6 +733,51 @@ function Grocery() {
       }
     };
     input.click();
+  };
+
+  const uploadTemplateToCloud = async () => {
+    const fileName = prompt('Enter the name of the file');
+    const fileContent = JSON.stringify({
+      firstColumn: dynamicColumn,
+      otherColumns: staticColumns,
+    });
+  
+    // Validate file name and content
+    if (!fileName || fileName.trim() === "") {
+      console.error("File name is required");
+      return;
+    }
+  
+    const blob = new Blob([fileContent], { type: "text/plain" });
+  
+    if (fileName && blob) {
+      try {
+        const storageRef = ref(storage, `templates/${fileName}`);
+        await uploadBytes(storageRef, blob);
+        console.log("File uploaded successfully");
+      } catch (error) {
+        console.error("Error uploading file:", error.message);
+      }
+    } else {
+      console.error("File name and content are required");
+    }
+  };
+
+  const downloadTemplateFromCloud = (event) => {
+    listAll(templatesRef)
+      .then((result) => {
+        // 'items' is an array that contains references to each item in the list
+        const items = result.items;
+
+        // Extract image names from references
+        const names = items.map((item) => item.name);
+
+        setTemplates(names);
+        console.log(names);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   const renderPriceBox = (
@@ -933,6 +1019,24 @@ function Grocery() {
         />
       ) : null}
 
+      {popup2 ? (
+        <div className={styles.infoTab} style={{ zIndex: "1" }}>
+          <label>
+            Do you wish to upload an image from your machine or use an image
+            from the database?
+          </label>
+          <button
+            onClick={(event) => handleImageUpload(event, selectedCardIndex)}
+          >
+            Import from your device
+          </button>
+          <button onClick={(event) => getImageList(event)}>
+            Import from database
+          </button>
+          <button onClick={() => setPopup2(false)}>Close</button>
+        </div>
+      ) : null}
+
       <button
         style={{
           width: "165px",
@@ -977,13 +1081,13 @@ function Grocery() {
               backgroundColor: "gray",
               color: "white",
               marginBottom: "10px",
-              zIndex: "1"
+              zIndex: "1",
             }}
             onClick={() => setInfo(!info)}
           >
             Info
           </button>
-          <ImageUploader />
+          
           <button
             style={{
               width: "165px",
@@ -1002,11 +1106,49 @@ function Grocery() {
               position: "relative",
               backgroundColor: "gray",
               color: "white",
+              marginBottom: "10px",
             }}
             onClick={(event) => loadTemplate(event)}
           >
             Load Template
           </button>
+          <button
+            style={{
+              width: "165px",
+              position: "relative",
+              backgroundColor: "gray",
+              color: "white",
+              marginBottom: "10px",
+            }}
+            onClick={() => getImageList()}
+          >
+            Download Image From Cloud
+          </button>
+          <button
+            style={{
+              width: "165px",
+              position: "relative",
+              backgroundColor: "gray",
+              color: "white",
+              marginBottom: "10px",
+            }}
+            onClick={(event) => uploadTemplateToCloud(event)}
+          >
+            Upload Template To Cloud
+          </button>
+          <button
+            style={{
+              width: "165px",
+              position: "relative",
+              backgroundColor: "gray",
+              color: "white",
+              marginBottom: "10px",
+            }}
+            onClick={(event) => downloadTemplateFromCloud(event)}
+          >
+            Download Template From Cloud
+          </button>
+          <ImageUploader />
         </div>
       </div>
 
@@ -1026,6 +1168,27 @@ function Grocery() {
         </div>
       </div>
       {info ? <RenderInfo /> : null}
+      {images != null ? (
+        <ImageFromCloud
+          images={images}
+          cardIndex={selectedCardIndex}
+          selectedColumn={
+            selectedCardIndex > 20 ? dynamicColumn : staticColumns
+          }
+          setSelectedColumn={
+            selectedCardIndex > 20 ? setDynamicColumn : setStaticColumns
+          }
+          setImages={setImages}
+        />
+      ) : null}
+      {templates != null ? (
+        <TemplatesFromCloud
+          templates={templates}
+          setDynamicColumn={setDynamicColumn}
+          setStaticColumns={setStaticColumns}
+          setTemplates={setTemplates}
+        />
+      ) : null}
     </div>
   );
 }

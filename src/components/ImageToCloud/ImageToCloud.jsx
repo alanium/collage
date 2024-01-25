@@ -37,7 +37,7 @@ const ImageUploader = () => {
 
   return (
     <button className={styles.uploadButton} onClick={handleButtonClick}>
-      Choose and Upload Image
+      Upload Image To Cloud
     </button>
   );
 };
