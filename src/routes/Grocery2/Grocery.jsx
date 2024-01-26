@@ -81,19 +81,41 @@ function Grocery() {
 
   const handleConvertToPDF = () => {
     const container = document.getElementById("magazineContainer");
-
+  
     if (container) {
+      // Clone the container
+      const containerClone = container.cloneNode(true);
+      containerClone.id = "magazineClone";
+  
+      // Apply the specified styles to the clone
+      containerClone.style.display = "flex";
+      containerClone.style.alignItems = "center";
+      containerClone.style.justifyContent = "center";
+      containerClone.style.position = "relative";
+      containerClone.style.zIndex = "0";
+      containerClone.style.width = "21cm";
+      containerClone.style.height = "29.6cm";
+      containerClone.style.backgroundColor = "white";
+      containerClone.style.top = "0"
+      // Apply overflow hidden to the clone with a height of 100px
+      containerClone.style.overflow = "hidden";
+      
+      document.body.appendChild(containerClone);
+  
       const pdfOptions = {
         filename: "grocery_magazine.pdf",
         image: { type: "png", quality: 1 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       };
-
-      html2pdf().from(container).set(pdfOptions).save();
+  
+      // Generate PDF from the clone
+      html2pdf().from(containerClone).set(pdfOptions).save();
+  
+      // Remove the clone from the DOM after generating PDF
+      containerClone.parentNode.removeChild(containerClone);
     }
   };
-
   const handleDynamicColumns = (event) => {
     const cardAmount = prompt(
       "Enter the amount of cards you want on the first column: "
@@ -991,7 +1013,7 @@ function Grocery() {
   };
 
   return (
-    <div style={{overflow: "auto"}}>
+    <div >
       {popup ? (
         <TextPopUp
           textBox={selectedImage.cardIndex > 20 ? dynamicColumn : staticColumns}
@@ -1126,7 +1148,7 @@ function Grocery() {
       </div>
 
       <div id="magazineContainer" className={styles.containerDivBorder}>
-        <div className={styles.containerDiv} ref={contextMenuRef}>
+        <div  className={styles.containerDiv} ref={contextMenuRef}>
           <RenderCards />
 
           {contextMenu && (
