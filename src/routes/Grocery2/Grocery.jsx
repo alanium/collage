@@ -56,8 +56,6 @@ function Grocery() {
   const [selectedImage, setSelectedImage] = useState({});
   const [selectedTextBox, setSelectedTextBox] = useState({});
 
-  const [selectedColumn, setSelectedColumn] = useState({});
-
   const [selectedCardIndex, setSelectedCardIndex] = useState({});
 
   const [info, setInfo] = useState(false);
@@ -69,6 +67,8 @@ function Grocery() {
   const [templates, setTemplates] = useState(null);
 
   const [images, setImages] = useState(null);
+
+  const [imgIndex, setImgIndex] = useState(null)
 
   const storage = getStorage();
 
@@ -122,7 +122,7 @@ function Grocery() {
     setDynamicColumn(cards);
   };
 
-  const handleImageUpload = (event, cardIndex) => {
+  const handleImageUpload = (event, cardIndex, img) => {
     // Added 'cardIndex' parameter
     event.preventDefault();
     if (cardIndex > 20) {
@@ -141,7 +141,7 @@ function Grocery() {
               reader.onload = (e) => {
                 const result = e.target.result;
                 const newDynamicColumn = [...dynamicColumn];
-                newDynamicColumn[cardIndex - 21].img[0].src = result;
+                newDynamicColumn[cardIndex - 21].img[img].src = result;
                 setDynamicColumn(newDynamicColumn);
               };
 
@@ -167,7 +167,7 @@ function Grocery() {
               reader.onload = (e) => {
                 const result = e.target.result;
                 const newStaticColumns = [...staticColumns];
-                newStaticColumns[cardIndex].img[0].src = result;
+                newStaticColumns[cardIndex].img[img].src = result;
                 setStaticColumns(newStaticColumns);
               };
 
@@ -424,30 +424,9 @@ function Grocery() {
       contextMenuItems.push({
         label: "Upload Image 2",
         action: () => {
+          setImgIndex(1)
           setPopup2(true);
           setSelectedCardIndex(cardIndex);
-          const input = document.createElement("input");
-          input.type = "file";
-          input.accept = "image/*";
-
-          input.onchange = (event) => {
-            const file = event.target.files[0];
-
-            if (file) {
-              const reader = new FileReader();
-              reader.onload = (e) => {
-                const newUploadedImages = [...selectedColumn];
-                newUploadedImages[index].img[1].src = e.target.result;
-
-                if (cardIndex > 20) setDynamicColumn(newUploadedImages);
-                else setStaticColumns(newUploadedImages);
-              };
-
-              reader.readAsDataURL(file);
-            }
-          };
-
-          input.click();
         },
       });
     } else if (selectedColumn[index].img[1].src != "") {
@@ -460,7 +439,9 @@ function Grocery() {
     if (selectedColumn[index].img[0].src == "") {
       contextMenuItems.push({
         label: "Upload 1",
-        action: () => handleImageUpload(event, cardIndex),
+        action: () => { setImgIndex(0)
+          setPopup2(true);
+          setSelectedCardIndex(cardIndex);},
       });
     }
     if (selectedColumn[index].img[0].src != "") {
@@ -655,6 +636,8 @@ function Grocery() {
   const handleCardClick = (cardIndex, event) => {
     // Check if the click event target is not the card element
 
+    setImgIndex(0)
+
     const auxIndex = cardIndex > 20 ? cardIndex - 21 : cardIndex;
 
     if (!event.target.classList.contains(styles.card)) {
@@ -672,24 +655,26 @@ function Grocery() {
 
   const saveTemplate = (event) => {
     const newText = prompt("Enter template name: ");
-    const blob = new Blob(
-      [
-        JSON.stringify({
-          firstColumn: dynamicColumn,
-          otherColumns: staticColumns,
-        }),
-      ],
-      { type: "application/json" }
-    );
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${newText}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    if (newText) {
+      const blob = new Blob(
+        [
+          JSON.stringify({
+            firstColumn: dynamicColumn,
+            otherColumns: staticColumns,
+          }),
+        ],
+        { type: "application/json" }
+      );
+      const url = URL.createObjectURL(blob);
+  
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${newText}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
   };
 
   const getImageList = () => {
@@ -1006,7 +991,7 @@ function Grocery() {
   };
 
   return (
-    <div>
+    <div style={{overflow: "auto"}}>
       {popup ? (
         <TextPopUp
           textBox={selectedImage.cardIndex > 20 ? dynamicColumn : staticColumns}
@@ -1026,7 +1011,7 @@ function Grocery() {
             from the database?
           </label>
           <button
-            onClick={(event) => handleImageUpload(event, selectedCardIndex)}
+            onClick={(event) => handleImageUpload(event, selectedCardIndex, imgIndex)}
           >
             Import from your device
           </button>
@@ -1120,18 +1105,6 @@ function Grocery() {
               color: "white",
               marginBottom: "10px",
             }}
-            onClick={() => getImageList()}
-          >
-            Download Image From Cloud
-          </button>
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-            }}
             onClick={(event) => uploadTemplateToCloud(event)}
           >
             Upload Template To Cloud
@@ -1179,6 +1152,7 @@ function Grocery() {
             selectedCardIndex > 20 ? setDynamicColumn : setStaticColumns
           }
           setImages={setImages}
+          imgIndex={imgIndex}
         />
       ) : null}
       {templates != null ? (

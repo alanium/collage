@@ -16,7 +16,7 @@ export default function TemplatesFromCloud({ templates, setDynamicColumn, setSta
   const handleConfirmSelection = (event) => {
     event.preventDefault();
   
-    if (!selectedTemplate) {
+    if (selectedTemplate == null) {
       console.error("No template selected");
       return;
     }

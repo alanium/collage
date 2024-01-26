@@ -7,17 +7,13 @@ const ImageUploader = () => {
 
   const storage = getStorage();
 
-  const imagesRef = ref(storage, "images");
-
-  const handleUpload = () => {
-    const imgName = prompt("Enter the name of the image");
-
-    if (imgName && selectedImage) {
+  const handleUpload = async (imgName, selectedImage) => {
+    try {
       const storageRef = ref(storage, `images/${imgName}`);
-      uploadBytes(storageRef, selectedImage)
-        
-    } else {
-      console.error("Image name and file are required");
+      await uploadBytes(storageRef, selectedImage);
+      console.log("Upload successful");
+    } catch (error) {
+      console.error("Error uploading image:", error);
     }
   };
 
@@ -25,11 +21,16 @@ const ImageUploader = () => {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/*";
-    input.onchange = (event) => {
+    input.onchange = async (event) => {
       const file = event.target.files[0];
       if (file) {
         setSelectedImage(file);
-        handleUpload();
+        const imgName = prompt("Enter the name of the image");
+        if (imgName) {
+          await handleUpload(imgName, file);
+        } else {
+          console.error("Image name is required");
+        }
       }
     };
     input.click();

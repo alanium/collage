@@ -8,6 +8,7 @@ export default function ImageFromCloud({
   selectedColumn,
   setSelectedColumn,
   setImages,
+  imgIndex
 }) {
   const [selectedImage, setSelectedImage] = useState(null);
   const [downloadedImageUrl, setDownloadedImageUrl] = useState(null);
@@ -25,7 +26,7 @@ export default function ImageFromCloud({
     event.preventDefault();
     const newSelectedColumn = [...selectedColumn];
     const calculatedCardIndex = cardIndex > 20 ? cardIndex - 21 : cardIndex;
-    newSelectedColumn[calculatedCardIndex].img[0].src = selectedImage;
+    newSelectedColumn[calculatedCardIndex].img[imgIndex].src = selectedImage;
     setSelectedColumn(newSelectedColumn);
     setSelectedImage(null);
     setImages(null); // Reset selectedImage to null for future selections
@@ -60,19 +61,17 @@ export default function ImageFromCloud({
 
   return (
     <div className={styles.container}>
-      <h1>Explorador de Archivos</h1>
+      <h1>Archive Explorer</h1>
       <div className={styles.gridContainer}>
         {renderedImages.map((imagePreview, index) => (
           <div
             key={index}
-            className={`${styles.gridItem} ${
-              index === selectedImage ? styles.selected : ""
-            }`}
+            className={styles.gridItem}
             onClick={() => handleImageChange(index)}
           >
             <img
               key={index}
-              className={styles.image}
+              className={imagePreview === selectedImage ? `${styles.image} ${styles.selected}` : styles.image}
               onClick={(event) => handleImageChange(event, imagePreview)}
               src={imagePreview}
               alt={`Image ${index}`}
@@ -81,7 +80,7 @@ export default function ImageFromCloud({
         ))}
       </div>
       {visibleImages < images.length && (
-        <button onClick={loadMoreImages}>Ver más</button>
+        <button onClick={loadMoreImages}>Show More</button>
       )}
       <button onClick={handleConfirmSelection}>Confirm Selection</button>
     </div>

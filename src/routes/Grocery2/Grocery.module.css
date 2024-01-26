@@ -28,11 +28,10 @@
     justify-content: center;
     position: relative;
     z-index: 0;
-  
-    /* Set width and height for containerDivBorder */
     width: 21cm;
     height: 29.6cm;
     background-color: white;
+    overflow: auto;
   }
   
   .containerDiv {
@@ -45,6 +44,7 @@
     border-radius: 8px;
     border: 2px solid red;
     position: relative;
+    overflow: auto
   }
   .firstCardColumn {
     display: flex;
@@ -205,27 +205,27 @@
 
   .overlayCard:hover,
 .overlayCard.editing {
-    border: 1px dashed blue; /* Change the border style on hover and when editing */
+  outline: 1px dashed blue; /* Change the border style on hover and when editing */
 }
 
 .overlayCardText:hover,
 .overlayCardText.editing {
-    border: 1px dashed blue; /* Change the border style on hover and when editing */
+  outline: 1px dashed blue; /* Change the border style on hover and when editing */
 }
 
 .card:hover,
 .card.editing {
-  border: 1px dashed blue;
+  outline: 1px dashed blue;
 }
 
 .overlayCardTextLeft:hover,
 .overlayCardTextLeft.editing {
-    border: 1px dashed blue; /* Change the border style on hover and when editing */
+  outline: 1px dashed blue; /* Change the border style on hover and when editing */
 }
 
 .overlayCardTextFirstColumn:hover,
 .overlayCardTextFirstColumn.editing {
-    border: 1px dashed blue; /* Change the border style on hover and when editing */
+  outline: 1px dashed blue; /* Change the border style on hover and when editing */
 }
   
   .positionSliderY {
