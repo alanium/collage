@@ -7,6 +7,7 @@ import {
 import './index.css'
 import Root from './routes/root.jsx';
 import Grocery from './routes/Grocery2/Grocery.jsx';
+import Liquor from './routes/Bakery & Liquor/Liquor/Liquor.jsx';
 
 const router = createBrowserRouter([
   {
@@ -16,6 +17,10 @@ const router = createBrowserRouter([
   {
     path:"/grocery",
     element: <Grocery />
+  },
+  {
+    path:"/liquor",
+    element: <Liquor />
   },
 ]);
 

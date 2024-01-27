@@ -23,7 +23,6 @@ export default function ImageFromCloud({
   };
 
   const handleConfirmSelection = (event) => {
-    event.preventDefault();
     const newSelectedColumn = [...selectedColumn];
     const calculatedCardIndex = cardIndex > 20 ? cardIndex - 21 : cardIndex;
     newSelectedColumn[calculatedCardIndex].img[imgIndex].src = selectedImage;

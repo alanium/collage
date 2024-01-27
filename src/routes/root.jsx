@@ -42,6 +42,7 @@ export default function Root() {
             </div>
             <div>
                 <button onClick={() => navigate("/grocery")} >Grocery</button>
+                <button onClick={() => navigate("/liquor")} >Liquor</button>
             </div>
             {mobile ? (
             <p>This page doesnt have mobile or tablet compatibility yet</p>
