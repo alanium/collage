@@ -9,6 +9,7 @@ export default function TopTextBox({ textBoxes, setTextBoxes, cardIndex, setPopu
     setSelectedImage({ cardIndex });
     setSelectedTextBox(textBoxes[cardIndex]);
     setType("top");
+    console.log(cardIndex)
   };
 
   useEffect(() => {

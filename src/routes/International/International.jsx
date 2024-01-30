@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import styles from "./Grocery.module.css";
+import styles from "./International.module.css";
 import html2pdf from "html2pdf.js"; // Importa la biblioteca html2pdf
 import FixedBox from "../../components/BoxWithText/BoxWithText";
 import TripleBox from "../../components/TripleBoxWithText/TripleBoxWithText";
@@ -28,7 +28,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-function Grocery() {
+function International() {
   const [staticColumns, setStaticColumns] = useState(
     Array(21)
       .fill()
@@ -917,7 +917,7 @@ function Grocery() {
   };
 
   const RenderCards = () => {
-    const cards = [<RenderDynamicColumn />];
+    const cards = [];
 
     for (let i = 0; i < 3; i++) {
       const column = [];
@@ -1009,11 +1009,12 @@ function Grocery() {
       }
 
       cards.push(
-        <div key={i + 1} className={styles.cardColumn}>
+        <div key={i} className={styles.cardColumn}>
           {column}
         </div>
       );
     }
+    cards.push(<RenderDynamicColumn />)
     return cards;
   };
 
@@ -1172,7 +1173,7 @@ function Grocery() {
               onClose={() => setContextMenu(null)}
             />
           )}
-          <div className={styles.overlay}>GROCERY</div>
+          <div className={styles.overlay}>INTERNATIONAL</div>
         </div>
       </div>
       {info ? <RenderInfo /> : null}
@@ -1203,4 +1204,4 @@ function Grocery() {
   );
 }
 
-export default Grocery;
+export default International;

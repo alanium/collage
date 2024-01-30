@@ -8,7 +8,8 @@ export default function ImageFromCloud({
   selectedColumn,
   setSelectedColumn,
   setImages,
-  imgIndex
+  imgIndex,
+  maxCardPosition
 }) {
   const [selectedImage, setSelectedImage] = useState(null);
   const [downloadedImageUrl, setDownloadedImageUrl] = useState(null);
@@ -24,7 +25,7 @@ export default function ImageFromCloud({
 
   const handleConfirmSelection = (event) => {
     const newSelectedColumn = [...selectedColumn];
-    const calculatedCardIndex = cardIndex > 20 ? cardIndex - 21 : cardIndex;
+    const calculatedCardIndex = cardIndex > maxCardPosition ? cardIndex - (maxCardPosition + 1) : cardIndex;
     newSelectedColumn[calculatedCardIndex].img[imgIndex].src = selectedImage;
     setSelectedColumn(newSelectedColumn);
     setSelectedImage(null);
@@ -60,7 +61,8 @@ export default function ImageFromCloud({
 
   return (
     <div className={styles.container}>
-      <h1>Archive Explorer</h1>
+      <h1 className={styles.title}>Database Explorer</h1>
+      <hr></hr>
       <div className={styles.gridContainer}>
         {renderedImages.map((imagePreview, index) => (
           <div
@@ -79,9 +81,13 @@ export default function ImageFromCloud({
         ))}
       </div>
       {visibleImages < images.length && (
-        <button onClick={loadMoreImages}>Show More</button>
+        <button className={styles.showMoreButton} onClick={loadMoreImages}>
+          Show More
+        </button>
       )}
-      <button onClick={handleConfirmSelection}>Confirm Selection</button>
+      <button className={styles.confirmButton} onClick={handleConfirmSelection}>
+        Confirm Selection
+      </button>
     </div>
-  );
+      );
 }

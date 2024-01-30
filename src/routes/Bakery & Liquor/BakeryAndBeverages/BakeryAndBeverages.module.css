@@ -22,14 +22,49 @@
           border-radius: 5px;
 }
 
+.popUp2 {
+  background-color: #333;
+  color: white;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid #666;
+  padding: 15px;
+  border-radius: 5px;
+  max-width: 250px;
+  text-align: center;
+}
+
+.actionButton {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px;
+  background-color: #000000;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.closeButton {
+  width: 100%;
+  padding: 10px;
+  background-color: #797979;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
 .containerDivBorder {
-    display: flex;
+    display: grid;
     top: 100px;
     left: 0%;
     position: relative;
     z-index: 0;
     width: 21cm;
-    height: 14.8cm;
+    height: 29.6cm;
     background-color: white;
     
   }
@@ -42,10 +77,43 @@
     margin: 5px;
     padding: 2px;
     border-radius: 8px;
-    border: 2px solid gray;
+    border: 2px solid #F1B319;
     position: relative;
     
   }
+
+  .secondContainerDiv {
+    width: 95%; /* Increased by 3% */
+    height: 95%;; /* Adjust to your desired height */
+    display: flex;
+    flex-direction: row;
+    margin: 5px;
+    padding: 2px;
+    border-radius: 8px;
+    border: 2px solid gray;
+    position: relative;
+  }
+
+  .secondOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 240px;
+    height: 25px;
+    border-radius: 5px;
+    background-color: gray;
+    box-sizing: border-box;
+    z-index: 1;
+    font-weight: bold;
+    text-align: center;
+    color: white;
+  
+    /* Centrar horizontal y verticalmente */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
   .firstCardColumn {
     display: flex;
     flex-direction: column;
@@ -78,7 +146,7 @@
     width: 120px;
     height: 25px;
     border-radius: 5px;
-    background-color: gray;
+    background-color: #F1B319;
     box-sizing: border-box;
     z-index: 1;
     font-weight: bold;

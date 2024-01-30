@@ -22,8 +22,43 @@
           border-radius: 5px;
 }
 
+.popUp2 {
+  background-color: #333;
+  color: white;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid #666;
+  padding: 15px;
+  border-radius: 5px;
+  max-width: 250px;
+  text-align: center;
+}
+
+.actionButton {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px;
+  background-color: #000000;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.closeButton {
+  width: 100%;
+  padding: 10px;
+  background-color: #797979;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
 .containerDivBorder {
-    display: flex;
+    display: grid;
     top: 100px;
     left: 0%;
     position: relative;
@@ -36,16 +71,49 @@
   
   .containerDiv {
     width: 95%; /* Increased by 3% */
-    height: 95%;; /* Adjust to your desired height */
+    height: 97%;; /* Adjust to your desired height */
     display: flex;
     flex-direction: row;
     margin: 5px;
     padding: 2px;
     border-radius: 8px;
-    border: 2px solid red;
+    border: 2px solid #19d1f1;
     position: relative;
     
   }
+
+  .secondContainerDiv {
+    width: 95%; /* Increased by 3% */
+    height: 70%;; /* Adjust to your desired height */
+    display: flex;
+    flex-direction: row;
+    margin: 5px;
+    padding: 2px;
+    border-radius: 8px;
+    border: 2px solid rgb(24, 64, 150);
+    position: relative;
+  }
+
+  .secondOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 240px;
+    height: 25px;
+    border-radius: 5px;
+    background-color: rgb(24, 64, 150);
+    box-sizing: border-box;
+    z-index: 1;
+    font-weight: bold;
+    text-align: center;
+    color: white;
+  
+    /* Centrar horizontal y verticalmente */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
   .firstCardColumn {
     display: flex;
     flex-direction: column;
@@ -58,7 +126,7 @@
     flex-direction: column;
     justify-content: space-between;
     flex: 1;
-    border-left: 1px solid rgb(0, 0, 0)
+    border-right: 1px solid rgb(0, 0, 0)
   }
   
   .card {
@@ -78,7 +146,7 @@
     width: 120px;
     height: 25px;
     border-radius: 5px;
-    background-color: red;
+    background-color: #19d1f1;
     box-sizing: border-box;
     z-index: 1;
     font-weight: bold;
@@ -194,42 +262,6 @@
     cursor: pointer;
     margin-top: 10px;
   }
-
-  .popUp2 {
-    background-color: #333;
-    color: white;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    border: 1px solid #666;
-    padding: 15px;
-    border-radius: 5px;
-    max-width: 250px;
-    text-align: center;
-  }
-
-  .actionButton {
-    width: 100%;
-    margin-bottom: 10px;
-    padding: 10px;
-    background-color: #000000;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .closeButton {
-    width: 100%;
-    padding: 10px;
-    background-color: #797979;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
   
   .sidebar {
     position: fixed;

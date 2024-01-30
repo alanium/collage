@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from "./BoxWithText.module.css";
 
-const FixedBox = ({ textBoxes, setTextBoxes, i, cardIndex, backgroundColor }) => {
+const FixedBox = ({ textBoxes, setTextBoxes, i, cardIndex, backgroundColor, maxStaticIndex  }) => {
   const [isEditing, setIsEditing] = useState(false);
 
   const boxRef = useRef(null);
   const textRef = useRef(null);
 
-  const index = (cardIndex > 20? cardIndex - 21 : cardIndex)
+  const index = (cardIndex > maxStaticIndex  ? cardIndex - (maxStaticIndex  + 1) : cardIndex)
 
   const handlePriceBoxClick = () => {
     const newText = prompt("Enter new amount: ");

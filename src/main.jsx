@@ -7,7 +7,10 @@ import {
 import './index.css'
 import Root from './routes/root.jsx';
 import Grocery from './routes/Grocery2/Grocery.jsx';
-import Liquor from './routes/Bakery & Liquor/Liquor/Liquor.jsx';
+import BakeryLiquor from './routes/Bakery & Liquor/BakeryAndBeverages/BakeryAndBeverages.jsx';
+import International from './routes/International/International.jsx';
+import DairyAndSnacks from './routes/Dairy&Snacks/Dairy&Snacks.jsx';
+import FrozenAndBeverages from './routes/Frozen&Beverages/Frozen&Beverages.jsx';
 
 const router = createBrowserRouter([
   {
@@ -19,9 +22,21 @@ const router = createBrowserRouter([
     element: <Grocery />
   },
   {
-    path:"/liquor",
-    element: <Liquor />
+    path:"/liquor&bakery",
+    element: <BakeryLiquor />
   },
+  {
+    path:"/international",
+    element: <International />
+  },
+  {
+    path:"/Dairy&Snacks",
+    element: <DairyAndSnacks />
+  },
+  {
+    path:"/Frozen&Beverages",
+    element: <FrozenAndBeverages />
+  }
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(

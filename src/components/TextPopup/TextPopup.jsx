@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import styles from "./TextPopup.module.css"
 
-export default function TextPopUp({textBox, setTextBox, setPopup, cardIndex, type, setSelectedImage}) {
+export default function TextPopUp({textBox, setTextBox, setPopup, cardIndex, type, setSelectedImage, maxCardPosition}) {
   const [text, setText] = useState("");
 
-  const calculatedIndex = ( cardIndex.cardIndex  > 20 ? cardIndex.cardIndex  - 21 : cardIndex.cardIndex )
+  const calculatedIndex = ( cardIndex.cardIndex  > maxCardPosition ? cardIndex.cardIndex  - (maxCardPosition + 1) : cardIndex.cardIndex )
 
   const handleChange = (event) => {
     setText(event.target.value);

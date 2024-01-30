@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from "./TripleBoxWithText.module.css";  
 
-const TripleBox = ({ textBoxes, setTextBoxes , i, cardIndex, backgroundColor }) => {
+const TripleBox = ({ textBoxes, setTextBoxes , i, cardIndex, backgroundColor, maxStaticIndex }) => {
   const [topBoxFontSize, setTopBoxFontSize] = useState(50);
   const [bottomBoxFontSize, setBottomBoxFontSize] = useState(10);
   const [leftBoxFontSize, setLeftBoxFontSize] = useState(60);
@@ -12,7 +12,7 @@ const TripleBox = ({ textBoxes, setTextBoxes , i, cardIndex, backgroundColor }) 
   const bottomBoxRef = useRef(null);
   const leftBoxRef = useRef(null);
 
-  const auxIndex = (cardIndex > 20 ? cardIndex - 21 : cardIndex)
+  const auxIndex = (cardIndex > maxStaticIndex ? cardIndex - (maxStaticIndex + 1) : cardIndex)
 
   useEffect(() => {
     adjustTextSize(leftBoxRef, textBoxes[auxIndex].text.left, setLeftBoxFontSize);

@@ -1,8 +1,8 @@
 .overlayCardTextLeft {
     position: absolute;
     left: 4px;
-    transform: translate(0,185%);
-    width: 90px;
+    bottom: 3px;
+    width: 40%;
     height: 47px;
     border-radius: 3px;
     z-index: 1;

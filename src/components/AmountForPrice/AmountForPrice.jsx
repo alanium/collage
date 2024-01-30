@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from "./AmountForPrice.module.css";
 
-const AmountForPrice = ({ textBoxes, setTextBoxes, i, j, cardIndex, backgroundColor }) => {
+const AmountForPrice = ({ textBoxes, setTextBoxes, i, j, cardIndex, backgroundColor, maxStaticIndex }) => {
     const [middleBoxFontSize, setMiddleBoxFontSize] = useState(50);
     const [rightBoxFontSize, setRightBoxFontSize] = useState(10);
     const [leftBoxFontSize, setLeftBoxFontSize] = useState(60);
@@ -11,7 +11,7 @@ const AmountForPrice = ({ textBoxes, setTextBoxes, i, j, cardIndex, backgroundCo
     const rightBoxRef = useRef(null);
     const leftBoxRef = useRef(null);
   
-    const auxIndex = (cardIndex > 20 ? cardIndex - 21 : cardIndex)
+    const auxIndex = (cardIndex > maxStaticIndex ? cardIndex - (maxStaticIndex + 1) : cardIndex)
   
     useEffect(() => {
       adjustTextSize(leftBoxRef, setLeftBoxFontSize);

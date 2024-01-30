@@ -1,23 +1,39 @@
 import React, { useEffect, useRef, useState } from "react";
-import styles from "./Liquor.module.css"
-import { getStorage, listAll, ref } from "firebase/storage";
+import styles from "./Dairy&Snacks.module.css";
+import html2pdf from "html2pdf.js"; // Importa la biblioteca html2pdf
+import FixedBox from "../../components/BoxWithText/BoxWithText";
+import TripleBox from "../../components/TripleBoxWithText/TripleBoxWithText";
 import { useNavigate } from "react-router-dom";
-import TemplatesFromCloud from "../../../components/TemplatesFromCloud/TemplatesFromCloud";
-import ImageFromCloud from "../../../components/ImageFromCloud/ImageFromCloud";
-import ImageUploader from "../../../components/ImageToCloud/ImageToCloud";
-import TextBoxLeft from "../../../components/ParagraphBox/ParagraphBox";
-import TopTextBox from "../../../components/TopTextBox/TopTextBox";
-import AmountForPrice from "../../../components/AmountForPrice/AmountForPrice";
-import TripleBox from "../../../components/TripleBoxWithText/TripleBoxWithText";
-import FixedBox from "../../../components/BoxWithText/BoxWithText";
-import TextPopUp from "../../../components/TextPopup/TextPopup";
-import { html2pdf } from "html2pdf.js";
+import AmountForPrice from "../../components/AmountForPrice/AmountForPrice";
+import TextBoxLeft from "../../components/ParagraphBox/ParagraphBox";
+import TopTextBox from "../../components/TopTextBox/TopTextBox";
+import TextPopUp from "../../components/TextPopup/TextPopup";
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore/lite";
+import ImageUploader from "../../components/ImageToCloud/ImageToCloud";
+import { getStorage, ref, listAll, uploadBytes } from "firebase/storage";
+import ImageFromCloud from "../../components/ImageFromCloud/ImageFromCloud";
+import TemplatesFromCloud from "../../components/TemplatesFromCloud/TemplatesFromCloud";
 
-export default function Liquor() {
+const firebaseConfig = {
+  apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
+  authDomain: "napervillecollageapp.firebaseapp.com",
+  projectId: "napervillecollageapp",
+  storageBucket: "napervillecollageapp.appspot.com",
+  messagingSenderId: "658613882469",
+  appId: "1:658613882469:web:23da7f1eb31c54a021808c",
+  measurementId: "G-DNB21PCJ7T",
+};
 
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+export default function DairyAndSnacks() {
+  const cardsInStatic = 25;
+  const maxStaticIndex = cardsInStatic - 1;
 
   const [staticColumns, setStaticColumns] = useState(
-    Array(16)
+    Array(cardsInStatic)
       .fill()
       .map((_, index) => ({
         img: [
@@ -36,10 +52,10 @@ export default function Liquor() {
       }))
   );
 
+  const [dynamicColumn, setDynamicColumn] = useState([]);
   const [contextMenu, setContextMenu] = useState(null);
   const [isEditingZoom, setIsEditingZoom] = useState(false);
   const [selectedImage, setSelectedImage] = useState({});
-  const [selectedTextBox, setSelectedTextBox] = useState({});
   const [selectedCardIndex, setSelectedCardIndex] = useState({});
   const [info, setInfo] = useState(false);
   const [popup, setPopup] = useState(false);
@@ -48,8 +64,7 @@ export default function Liquor() {
   const [templates, setTemplates] = useState(null);
   const [images, setImages] = useState(null);
   const [imgIndex, setImgIndex] = useState(null);
-
-
+  const [selectedTextBox, setSelectedTextBox] = useState({});
 
   const storage = getStorage();
   const imagesRef = ref(storage, "images/");
@@ -57,74 +72,69 @@ export default function Liquor() {
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
 
-
-
   const handleConvertToPDF = () => {
     const container = document.getElementById("magazineContainer");
-  
+
     if (container) {
       // Clone the container
       const containerClone = container.cloneNode(true);
       containerClone.id = "magazineClone";
-  
+
       // Apply the specified styles to the clone
-      containerClone.style.display = "flex";
-      containerClone.style.alignItems = "center";
-      containerClone.style.justifyContent = "center";
+      containerClone.style.display = "grid";
+      
       containerClone.style.position = "relative";
       containerClone.style.zIndex = "0";
       containerClone.style.width = "21cm";
-      containerClone.style.height = "14.8cm";
+      containerClone.style.height = "29.6cm";
       containerClone.style.backgroundColor = "white";
-      containerClone.style.top = "0"
+      containerClone.style.top = "0";
       // Apply overflow hidden to the clone with a height of 100px
       containerClone.style.overflow = "hidden";
-      
+
       document.body.appendChild(containerClone);
-  
+
       const pdfOptions = {
-        filename: "grocery_magazine.pdf",
+        filename: "liquor_magazine.pdf",
         image: { type: "png", quality: 1 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       };
-  
+
       // Generate PDF from the clone
       html2pdf().from(containerClone).set(pdfOptions).save();
-  
+
       // Remove the clone from the DOM after generating PDF
       containerClone.parentNode.removeChild(containerClone);
     }
   };
 
-  const handleImageUpload = (event, cardIndex, img) => {
-    // Added 'cardIndex' parameter
-    event.preventDefault();
-    
-      const staticColumnsCopy = [...staticColumns];
-      staticColumnsCopy.map((card) => {
-        if (card.index === cardIndex) {
-          // Changed 'event.target.key' to 'cardIndex'
-          const input = document.createElement("input");
-          input.type = "file";
-          input.accept = "image/*";
-          input.onchange = (event) => {
-            const file = event.target.files[0];
+  const handleDynamicColumns = (event) => {
+    const cardAmount = prompt(
+      "Enter the amount of cards you want on the first column: "
+    );
 
-            if (file) {
-              const reader = new FileReader();
-              reader.onload = (e) => {
-                const result = e.target.result;
-                const newStaticColumns = [...staticColumns];
-                newStaticColumns[cardIndex].img[img].src = result;
-                setStaticColumns(newStaticColumns);
-              };
-              reader.readAsDataURL(file);
-            }
-          };
-          input.click();
-        }
-      });
+    let cards = [...dynamicColumn];
+
+    for (let i = 0; i < Number(cardAmount); i++) {
+      const card = {
+        img: [
+          { src: "", zoom: 100, x: 0, y: 0 },
+          { src: "", zoom: 100, x: 0, y: 0 },
+        ],
+        text: {
+          top: "",
+          left: "",
+          bottom: "",
+          priceBoxType: 0,
+          priceBoxColor: false,
+          renderPriceBox: false,
+        },
+        index: i + cardsInStatic,
+      };
+      cards.push(card);
+    }
+    setDynamicColumn(cards);
   };
 
   useEffect(() => {
@@ -197,6 +207,31 @@ export default function Liquor() {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete the image?"
     );
+
+    if (cardIndex > 11) {
+      if (confirmDelete) {
+        setDynamicColumn((prevDynamicColumn) => {
+          const newDynamicColumn = [...prevDynamicColumn];
+          const imageToUpdate = newDynamicColumn.find(
+            (image) => image.index === cardIndex
+          );
+
+          if (imageToUpdate) {
+            // Set the src value to an empty string when deleting
+            imageToUpdate.img[index].src = "";
+          }
+
+          if (
+            imageToUpdate.img[0].src == "" &&
+            imageToUpdate.img[1].src == ""
+          ) {
+            setIsEditingZoom(false);
+          }
+
+          return newDynamicColumn;
+        });
+      }
+    } else {
       if (confirmDelete) {
         setStaticColumns((prevStaticColumns) => {
           const newStaticColumns = [...prevStaticColumns];
@@ -215,21 +250,42 @@ export default function Liquor() {
           ) {
             setIsEditingZoom(false);
           }
+
           return newStaticColumns;
         });
       }
+    }
   };
 
   const showHidePriceBox = (cardIndex) => {
+    const calculatedCardIndex = cardIndex - cardsInStatic;
+
+    if (cardIndex > maxStaticIndex) {
+      const newDynamicColumn = [...dynamicColumn];
+      newDynamicColumn[calculatedCardIndex].text.renderPriceBox =
+        !newDynamicColumn[calculatedCardIndex].text.renderPriceBox;
+      setDynamicColumn(newDynamicColumn);
+    } else {
       const newStaticColumns = [...staticColumns];
       newStaticColumns[cardIndex].text.renderPriceBox =
-      !newStaticColumns[cardIndex].text.renderPriceBox;
+        !newStaticColumns[cardIndex].text.renderPriceBox;
       setStaticColumns(newStaticColumns);
+    }
   };
 
   const switchBoxType = (cardIndex) => {
     console.log("switchBoxType");
-    
+
+    const calculatedCardIndex = cardIndex - cardsInStatic;
+    if (cardIndex > maxStaticIndex) {
+      const newDynamicColumn = [...dynamicColumn];
+      if (newDynamicColumn[calculatedCardIndex].text.priceBoxType < 2) {
+        newDynamicColumn[calculatedCardIndex].text.priceBoxType++;
+      } else {
+        newDynamicColumn[calculatedCardIndex].text.priceBoxType = 0; // Reset to 0 if it's already 3
+      }
+      setDynamicColumn(newDynamicColumn);
+    } else {
       const newStaticColumns = [...staticColumns];
       if (newStaticColumns[cardIndex].text.priceBoxType < 2) {
         newStaticColumns[cardIndex].text.priceBoxType++;
@@ -237,176 +293,23 @@ export default function Liquor() {
         newStaticColumns[cardIndex].text.priceBoxType = 0;
       }
       setStaticColumns(newStaticColumns);
-    
+    }
   };
 
   const changePriceBoxColor = (cardIndex) => {
-    
+    const calculatedCardIndex = cardIndex - cardsInStatic;
+
+    if (cardIndex > maxStaticIndex) {
+      const newDynamicColumn = [...dynamicColumn];
+      newDynamicColumn[calculatedCardIndex].text.priceBoxColor =
+        !newDynamicColumn[calculatedCardIndex].text.priceBoxColor;
+      setDynamicColumn(newDynamicColumn);
+    } else {
       const newStaticColumns = [...staticColumns];
       newStaticColumns[cardIndex].text.priceBoxColor =
         !newStaticColumns[cardIndex].text.priceBoxColor;
       setStaticColumns(newStaticColumns);
-    
-  };
-
-  const handleCardClick = (cardIndex, event) => {
-    setImgIndex(0)
-    const auxIndex = cardIndex > 20 ? cardIndex - 21 : cardIndex;
-    if (!event.target.classList.contains(styles.card)) {
-      return;
     }
-    const image = (cardIndex > 20 ? dynamicColumn : staticColumns)[auxIndex];
-
-    if (image.img[0].src === "" && image.img[1].src === "") {
-      setPopup2(true);
-      setSelectedCardIndex(cardIndex);
-    } else {
-      handleContextMenu(event, cardIndex, image);
-    }
-  };
-
-  const saveTemplate = (event) => {
-    const newText = prompt("Enter template name: ");
-    if (newText) {
-      const blob = new Blob(
-        [
-          JSON.stringify({
-            columns: staticColumns,
-          }),
-        ],
-        { type: "application/json" }
-      );
-      const url = URL.createObjectURL(blob);
-  
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${newText}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-  };
-
-  const getImageList = () => {
-    listAll(imagesRef)
-      .then((result) => {
-        // 'items' is an array that contains references to each item in the list
-        const items = result.items;
-
-        // Extract image names from references
-        const names = items.map((item) => item.name);
-
-        setImages(names);
-        console.log(names);
-      })
-      .then(() => setPopup2(false))
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  const loadTemplate = (event) => {
-    event.preventDefault();
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".json"; // Corrected file extension
-    input.onchange = (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target.result;
-          try {
-            const parsedResult = JSON.parse(result);
-            setStaticColumns(parsedResult.columns);
-          } catch (error) {
-            console.error("Error parsing JSON:", error);
-          }
-        };
-        reader.readAsText(file); // Use readAsText to read JSON content
-      }
-    };
-    input.click();
-  };
-
-  const uploadTemplateToCloud = async () => {
-    const fileName = prompt('Enter the name of the file');
-    const fileContent = JSON.stringify({
-      columns: staticColumns,
-    });
-  
-    // Validate file name and content
-    if (!fileName || fileName.trim() === "") {
-      console.error("File name is required");
-      return;
-    }
-  
-    const blob = new Blob([fileContent], { type: "text/plain" });
-  
-    if (fileName && blob) {
-      try {
-        const storageRef = ref(storage, `templates/${fileName}`);
-        await uploadBytes(storageRef, blob);
-        console.log("File uploaded successfully");
-      } catch (error) {
-        console.error("Error uploading file:", error.message);
-      }
-    } else {
-      console.error("File name and content are required");
-    }
-  };
-
-  const downloadTemplateFromCloud = (event) => {
-    listAll(templatesRef)
-      .then((result) => {
-
-        const items = result.items;
-        const names = items.map((item) => item.name);
-        setTemplates(names);
-        console.log(names);
-
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  const renderPriceBox = (
-    number,
-    column,
-    setColumn,
-    cardIndex,
-    backgroundColor
-  ) => {
-    const priceBoxes = [
-      <FixedBox
-        key={`fixed-box-${cardIndex}`}
-        textBoxes={column}
-        setTextBoxes={setColumn}
-        backgroundColor={backgroundColor}
-        i={cardIndex}
-        cardIndex={cardIndex}
-      />,
-      <TripleBox
-        key={`fixed-box-${cardIndex}`}
-        textBoxes={column}
-        setTextBoxes={setColumn}
-        backgroundColor={backgroundColor}
-        i={cardIndex}
-        cardIndex={cardIndex}
-      />,
-      <AmountForPrice
-        key={`fixed-box-${cardIndex}`}
-        textBoxes={column}
-        setTextBoxes={setColumn}
-        backgroundColor={backgroundColor}
-        i={cardIndex}
-        cardIndex={cardIndex}
-      />,
-    ];
-
-    return priceBoxes[number];
   };
 
   const ContextMenu = ({ x, y, items, onClose }) => (
@@ -453,9 +356,9 @@ export default function Liquor() {
   const handleContextMenu = (event, cardIndex, column, image) => {
     event.preventDefault();
 
-    const selectedColumn = cardIndex > 20 ? dynamicColumn : staticColumns;
+    const selectedColumn = cardIndex > maxStaticIndex ? dynamicColumn : staticColumns;
 
-    const index = cardIndex > 20 ? cardIndex - 21 : cardIndex;
+    const index = cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
 
     const contextMenuItems = [
       {
@@ -484,7 +387,7 @@ export default function Liquor() {
       contextMenuItems.push({
         label: "Upload Image 2",
         action: () => {
-          setImgIndex(1)
+          setImgIndex(1);
           setPopup2(true);
           setSelectedCardIndex(cardIndex);
         },
@@ -499,9 +402,11 @@ export default function Liquor() {
     if (selectedColumn[index].img[0].src == "") {
       contextMenuItems.push({
         label: "Upload 1",
-        action: () => { setImgIndex(0)
+        action: () => {
+          setImgIndex(0);
           setPopup2(true);
-          setSelectedCardIndex(cardIndex);},
+          setSelectedCardIndex(cardIndex);
+        },
       });
     }
     if (selectedColumn[index].img[0].src != "") {
@@ -520,12 +425,12 @@ export default function Liquor() {
   };
 
   const ZoomSlider = ({ cardIndex }) => {
-    const auxIndex = cardIndex > 20 ? cardIndex - 21 : cardIndex;
+    const auxIndex = cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
 
-    const column = cardIndex > 20 ? dynamicColumn : staticColumns;
+    const column = cardIndex > maxStaticIndex ? dynamicColumn : staticColumns;
 
     const handleZoomChange = (newZoom, index) => {
-      if (cardIndex > 20) {
+      if (cardIndex > maxStaticIndex) {
         const newUploadedImages = [...dynamicColumn];
         newUploadedImages[auxIndex].img[index].zoom = newZoom;
         setDynamicColumn(newUploadedImages);
@@ -537,7 +442,7 @@ export default function Liquor() {
     };
 
     const handlePositionChange = (changeAmount, index, axis) => {
-      if (cardIndex > 20) {
+      if (cardIndex > maxStaticIndex) {
         const newUploadedImages = [...dynamicColumn];
         newUploadedImages[auxIndex].img[index][axis] += changeAmount;
         setDynamicColumn(newUploadedImages);
@@ -561,7 +466,7 @@ export default function Liquor() {
               <button
                 onClick={() =>
                   handleZoomChange(
-                    (cardIndex > 20 ? dynamicColumn : staticColumns)[auxIndex]
+                    (cardIndex > maxStaticIndex ? dynamicColumn : staticColumns)[auxIndex]
                       .img[0].zoom - 5,
                     0
                   )
@@ -573,7 +478,7 @@ export default function Liquor() {
               <button
                 onClick={() =>
                   handleZoomChange(
-                    (cardIndex > 20 ? dynamicColumn : staticColumns)[auxIndex]
+                    (cardIndex > maxStaticIndex ? dynamicColumn : staticColumns)[auxIndex]
                       .img[0].zoom + 5,
                     0
                   )
@@ -617,7 +522,7 @@ export default function Liquor() {
               <button
                 onClick={() =>
                   handleZoomChange(
-                    (cardIndex > 20 ? dynamicColumn : staticColumns)[auxIndex]
+                    (cardIndex > maxStaticIndex ? dynamicColumn : staticColumns)[auxIndex]
                       .img[1].zoom - 5,
                     1
                   )
@@ -629,7 +534,7 @@ export default function Liquor() {
               <button
                 onClick={() =>
                   handleZoomChange(
-                    (cardIndex > 20 ? dynamicColumn : staticColumns)[auxIndex]
+                    (cardIndex > maxStaticIndex ? dynamicColumn : staticColumns)[auxIndex]
                       .img[1].zoom + 5,
                     1
                   )
@@ -693,10 +598,374 @@ export default function Liquor() {
     );
   };
 
-  const RenderCards = () => {
-    const cards = [];
+  const handleCardClick = (cardIndex, event) => {
+    // Check if the click event target is not the card element
+    setImgIndex(0);
 
-    for (let i = 0; i < 4; i++) {
+    const auxIndex = cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
+
+    if (!event.target.classList.contains(styles.card)) {
+      return;
+    }
+    const image = (cardIndex > maxStaticIndex ? dynamicColumn : staticColumns)[auxIndex];
+
+    if (image.img[0].src === "" && image.img[1].src === "") {
+      setPopup2(true);
+      setSelectedCardIndex(cardIndex);
+    } else {
+      handleContextMenu(event, cardIndex, image);
+    }
+  };
+
+  const saveTemplate = (event) => {
+    const newText = prompt("Enter template name: ");
+    if (newText) {
+      const blob = new Blob(
+        [
+          JSON.stringify({
+            firstColumn: dynamicColumn,
+            otherColumns: staticColumns,
+          }),
+        ],
+        { type: "application/json" }
+      );
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${newText}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  const getImageList = () => {
+    listAll(imagesRef)
+      .then((result) => {
+        // 'items' is an array that contains references to each item in the list
+        const items = result.items;
+
+        // Extract image names from references
+        const names = items.map((item) => item.name);
+
+        setImages(names);
+        console.log(names);
+      })
+      .then(() => setPopup2(false))
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const loadTemplate = (event) => {
+    event.preventDefault();
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json"; // Corrected file extension
+    input.onchange = (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = e.target.result;
+          try {
+            const parsedResult = JSON.parse(result);
+            setStaticColumns(parsedResult.otherColumns);
+            setDynamicColumn(parsedResult.firstColumn);
+          } catch (error) {
+            console.error("Error parsing JSON:", error);
+          }
+        };
+        reader.readAsText(file); // Use readAsText to read JSON content
+      }
+    };
+    input.click();
+  };
+
+  const uploadTemplateToCloud = async () => {
+    const fileName = prompt("Enter the name of the file");
+    const fileContent = JSON.stringify({
+      firstColumn: dynamicColumn,
+      otherColumns: staticColumns,
+    });
+
+    // Validate file name and content
+    if (!fileName || fileName.trim() === "") {
+      console.error("File name is required");
+      return;
+    }
+
+    const blob = new Blob([fileContent], { type: "text/plain" });
+
+    if (fileName && blob) {
+      try {
+        const storageRef = ref(storage, `templates/${fileName}`);
+        await uploadBytes(storageRef, blob);
+        console.log("File uploaded successfully");
+      } catch (error) {
+        console.error("Error uploading file:", error.message);
+      }
+    } else {
+      console.error("File name and content are required");
+    }
+  };
+
+  const downloadTemplateFromCloud = (event) => {
+    listAll(templatesRef)
+      .then((result) => {
+        // 'items' is an array that contains references to each item in the list
+        const items = result.items;
+
+        // Extract image names from references
+        const names = items.map((item) => item.name);
+
+        setTemplates(names);
+        console.log(names);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const renderPriceBox = (
+    number,
+    column,
+    setColumn,
+    cardIndex,
+    backgroundColor
+  ) => {
+    const priceBoxes = [
+      <FixedBox
+        key={`fixed-box-${cardIndex}`}
+        textBoxes={column}
+        setTextBoxes={setColumn}
+        backgroundColor={backgroundColor}
+        i={cardIndex}
+        cardIndex={cardIndex}
+        maxStaticIndex={maxStaticIndex}
+      />,
+      <TripleBox
+        key={`fixed-box-${cardIndex}`}
+        textBoxes={column}
+        setTextBoxes={setColumn}
+        backgroundColor={backgroundColor}
+        i={cardIndex}
+        cardIndex={cardIndex}
+        maxStaticIndex={maxStaticIndex}
+      />,
+      <AmountForPrice
+        key={`fixed-box-${cardIndex}`}
+        textBoxes={column}
+        setTextBoxes={setColumn}
+        backgroundColor={backgroundColor}
+        i={cardIndex}
+        cardIndex={cardIndex}
+        maxStaticIndex={maxStaticIndex}
+      />,
+    ];
+
+    return priceBoxes[number];
+  };
+
+  const RenderDynamicColumn = () => {
+    let cards = [];
+
+    const isFirstColumnEmpty = dynamicColumn.length === 0;
+
+    return isFirstColumnEmpty ? (
+      <div
+        className={styles.firstCardColumn}
+        style={{ justifyContent: "center" }}
+        onClick={(event) => handleDynamicColumns(event)}
+      >
+        <label style={{ fontSize: "84px", textAlign: "center", color: "gray" }}>
+          +
+        </label>
+      </div>
+    ) : (
+      <div className={styles.firstCardColumn}>
+        {dynamicColumn.map((card) => {
+          const cardIndex = card.index;
+
+          const calculatedCardIndex = cardIndex - cardsInStatic;
+          const isEditingThisZoom =
+            isEditingZoom &&
+            selectedImage &&
+            selectedImage.cardIndex !== undefined &&
+            selectedImage.cardIndex === cardIndex;
+
+          let images = { ...card };
+
+          cards.push(
+            <div
+              className={styles.card}
+              style={{}}
+              key={cardIndex}
+              onClick={(event) => handleCardClick(cardIndex, event)}
+            >
+              {images.img[0] && ( // Check if img[0] exists before rendering
+                <img
+                  src={images.img[0].src ? images.img[0].src : ""}
+                  className={styles.uploadedImage}
+                  style={{
+                    transform: `scale(${images.img[0].zoom / 100}) translate(${
+                      images.img[0].x
+                    }px, ${images.img[0].y}px)`,
+                  }}
+                />
+              )}
+
+              {images.img[1] && ( // Check if img[1] exists before rendering
+                <img
+                  src={images.img[1] ? images.img[1].src : ""}
+                  className={styles.uploadedImage}
+                  style={{
+                    transform: `scale(${images.img[1].zoom / 100}) translate(${
+                      images.img[1].x
+                    }px, ${images.img[1].y}px)`,
+                  }}
+                />
+              )}
+              {dynamicColumn[calculatedCardIndex] &&
+              dynamicColumn[calculatedCardIndex].text.renderPriceBox ? (
+                <div className="priceBox">
+                  {renderPriceBox(
+                    dynamicColumn[calculatedCardIndex].text.priceBoxType,
+                    dynamicColumn,
+                    setDynamicColumn,
+                    calculatedCardIndex,
+                    dynamicColumn[calculatedCardIndex].text.priceBoxColor
+                  )}
+                </div>
+              ) : null}
+              <TextBoxLeft
+                textBoxes={dynamicColumn}
+                setTextBoxes={setDynamicColumn}
+                cardIndex={cardIndex}
+                setPopup={setPopup}
+                setSelectedTextBox={setSelectedTextBox}
+                setType={setType}
+                setSelectedImage={setSelectedImage}
+                index={cardIndex - cardsInStatic}
+                maxCardPosition={maxStaticIndex}
+              />
+              {isEditingThisZoom && (
+                <ZoomSlider cardIndex={selectedImage.cardIndex} />
+              )}
+            </div>
+          );
+        })}
+        {cards}
+      </div>
+    );
+  };
+
+  const RenderLiquorCards = () => {
+    const cards = [];
+   for (let i = 0; i < 5; i++) {
+      const column = [];
+
+      for (let j = 0; j < 2; j++) {
+        const cardIndex = j + i * 2 + 15;
+
+        const isEditingThisZoom =
+          isEditingZoom &&
+          selectedImage &&
+          selectedImage.cardIndex === cardIndex;
+
+        let images = staticColumns[cardIndex].img;
+
+        const textBoxes = [];
+
+        staticColumns.map((card) => {
+          textBoxes.push(card.text);
+        });
+
+        column.push(
+          <div
+            className={styles.card}
+            key={cardIndex}
+            onClick={(event) => handleCardClick(cardIndex, event)}
+          >
+            {images[0] && ( // Check if img[0] exists before rendering
+              <img
+                src={images[0].src ? images[0].src : ""}
+                className={styles.uploadedImage}
+                style={{
+                  transform: `scale(${images[0].zoom / 100}) translate(${
+                    images[0].x
+                  }px, ${images[0].y}px)`,
+                }}
+              />
+            )}
+
+            {images[1] && ( // Check if img[1] exists before rendering
+              <img
+                src={images[1] ? images[1].src : ""}
+                className={styles.uploadedImage}
+                style={{
+                  transform: `scale(${images[1].zoom / 100}) translate(${
+                    images[1].x
+                  }px, ${images[1].y}px)`,
+                }}
+              />
+            )}
+            {staticColumns[cardIndex] &&
+            staticColumns[cardIndex].text.renderPriceBox ? (
+              <div className="priceBox">
+                {renderPriceBox(
+                  staticColumns[cardIndex].text.priceBoxType,
+                  staticColumns,
+                  setStaticColumns,
+                  cardIndex,
+                  staticColumns[cardIndex].text.priceBoxColor
+                )}
+              </div>
+            ) : null}
+
+            <TopTextBox
+              textBoxes={staticColumns}
+              setTextBoxes={setStaticColumns}
+              cardIndex={cardIndex}
+              setPopup={setPopup}
+              setSelectedTextBox={setSelectedTextBox}
+              setType={setType}
+              setSelectedImage={setSelectedImage}
+              index={cardIndex}
+            />
+
+            <TextBoxLeft
+              textBoxes={staticColumns}
+              setTextBoxes={setStaticColumns}
+              cardIndex={cardIndex}
+              setPopup={setPopup}
+              setSelectedTextBox={setSelectedTextBox}
+              setType={setType}
+              setSelectedImage={setSelectedImage}
+              index={cardIndex}
+            />
+            {isEditingThisZoom && (
+              <ZoomSlider cardIndex={selectedImage.cardIndex} />
+            )}
+          </div>
+        );
+      }
+
+      cards.push(
+        <div key={i} className={styles.cardColumn}>
+          {column}
+        </div>
+      );
+    }
+    return cards;
+  }
+
+  const RenderCards = () => {
+    const cards = [<RenderDynamicColumn />];
+
+    for (let i = 0; i < 3; i++) {
       const column = [];
 
       for (let j = 0; j < 4; j++) {
@@ -765,6 +1034,7 @@ export default function Liquor() {
               setSelectedTextBox={setSelectedTextBox}
               setType={setType}
               setSelectedImage={setSelectedImage}
+              index={cardIndex}
             />
 
             <TextBoxLeft
@@ -775,10 +1045,11 @@ export default function Liquor() {
               setSelectedTextBox={setSelectedTextBox}
               setType={setType}
               setSelectedImage={setSelectedImage}
+              index={cardIndex}
             />
             {isEditingThisZoom && (
-                  <ZoomSlider cardIndex={selectedImage.cardIndex} />
-                )}
+              <ZoomSlider cardIndex={selectedImage.cardIndex} />
+            )}
           </div>
         );
       }
@@ -793,45 +1064,66 @@ export default function Liquor() {
   };
 
   return (
-    <div >
+    <div>
       {popup ? (
         <TextPopUp
-          textBox={selectedImage.cardIndex > 20 ? dynamicColumn : staticColumns}
+          textBox={selectedImage.cardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
           setTextBox={
-            selectedImage.cardIndex > 20 ? setDynamicColumn : setStaticColumns
+            selectedImage.cardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns
           }
           setPopup={setPopup}
           cardIndex={selectedImage}
+          maxCardPosition={maxStaticIndex}
           type={type}
         />
       ) : null}
 
       {popup2 ? (
-        <div className={styles.infoTab} style={{ zIndex: "1" }}>
-          <label>
-            Do you wish to upload an image from your machine or use an image
-            from the database?
-          </label>
+        <div className={styles.popUp2} style={{ zIndex: "1" }}>
           <button
-            onClick={(event) => handleImageUpload(event, selectedCardIndex, imgIndex)}
+            className={styles.actionButton}
+            onClick={(event) =>
+              handleImageUpload(event, selectedCardIndex, imgIndex)
+            }
           >
-            Import from your device
+            Import from Device
           </button>
-          <button onClick={(event) => getImageList(event)}>
-            Import from database
+          <button
+            className={styles.actionButton}
+            onClick={(event) => getImageList(event)}
+          >
+            Import from Database
           </button>
-          <button onClick={() => setPopup2(false)}>Close</button>
+          <button
+            className={styles.closeButton}
+            onClick={() => setPopup2(false)}
+          >
+            Close
+          </button>
         </div>
       ) : null}
 
-      <button
+      
+      <div className={styles.sidebar} style={{ top: "0px" }}>
+        
+        <div
+          style={{
+            position: "relative",
+            left: "px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            padding: "3px",
+          }}
+        >
+          <button
         style={{
           width: "165px",
-          position: "fixed",
-          top: "20px",
-          left: "15px",
-          backgroundColor: "gray",
-          color: "white",
+              position: "relative",
+              backgroundColor: "gray",
+              color: "white",
+              marginBottom: "10px",
+              zIndex: "1",
         }}
         onClick={handleConvertToPDF}
       >
@@ -840,27 +1132,16 @@ export default function Liquor() {
       <button
         style={{
           width: "165px",
-          position: "fixed",
-          top: "70px",
-          left: "15px",
-          backgroundColor: "gray",
-          color: "white",
+              position: "relative",
+              backgroundColor: "gray",
+              color: "white",
+              marginBottom: "10px",
+              zIndex: "1",
         }}
         onClick={() => navigate("/")}
       >
         Back to Home
       </button>
-      <div className={styles.sidebar} style={{ top: "120px" }}>
-        <div
-          style={{
-            position: "relative",
-            left: "12px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-start",
-            padding: "3px",
-          }}
-        >
           <button
             style={{
               width: "165px",
@@ -874,7 +1155,7 @@ export default function Liquor() {
           >
             Info
           </button>
-          
+
           <button
             style={{
               width: "165px",
@@ -928,9 +1209,9 @@ export default function Liquor() {
       </div>
 
       <div id="magazineContainer" className={styles.containerDivBorder}>
-        <div  className={styles.containerDiv} ref={contextMenuRef}>
+        <div className={styles.containerDiv} ref={contextMenuRef}>
           <RenderCards />
-
+          <div className={styles.overlay}>DAIRY</div>
           {contextMenu && (
             <ContextMenu
               x={contextMenu.x}
@@ -939,8 +1220,15 @@ export default function Liquor() {
               onClose={() => setContextMenu(null)}
             />
           )}
-          <div className={styles.overlay}>LIQUOR</div>
         </div>
+        
+        <div className={styles.secondContainerDiv}>
+        <div className={styles.secondOverlay}>SNACKS</div>
+        <RenderLiquorCards /> 
+        
+        </div>
+        
+        
       </div>
       {info ? <RenderInfo /> : null}
       {images != null ? (
@@ -948,13 +1236,14 @@ export default function Liquor() {
           images={images}
           cardIndex={selectedCardIndex}
           selectedColumn={
-            selectedCardIndex > 20 ? dynamicColumn : staticColumns
+            selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
           }
           setSelectedColumn={
-            selectedCardIndex > 20 ? setDynamicColumn : setStaticColumns
+            selectedCardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns
           }
           setImages={setImages}
           imgIndex={imgIndex}
+          maxCardPosition={maxStaticIndex}
         />
       ) : null}
       {templates != null ? (

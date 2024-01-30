@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import styles from "./TextBoxLeft.module.css";
 
-export default function TextBoxLeft({ textBoxes, setTextBoxes, cardIndex, setPopup, setSelectedTextBox, setType, setSelectedImage }) {
-  const calculatedIndex = cardIndex > 20 ? cardIndex - 21 : cardIndex;
+export default function TextBoxLeft({ textBoxes, setTextBoxes, cardIndex, setPopup, setSelectedTextBox, setType, setSelectedImage, index, maxCardPosition }) {
+  const calculatedIndex = index;
 
   const [fontSize, setFontSize] = useState(14);
 
@@ -13,12 +13,10 @@ export default function TextBoxLeft({ textBoxes, setTextBoxes, cardIndex, setPop
     setType("left");
   };
 
-  console.log(calculatedIndex)
-
   const textBoxLeftStyle = () => {
     const textBox = textBoxes[calculatedIndex];
     if (textBoxes[calculatedIndex]) {
-      return cardIndex > 20
+      return cardIndex > maxCardPosition
         ? styles.overlayCardTextFirstColumn
         : styles.overlayCardTextLeft;
     }
@@ -76,7 +74,7 @@ export default function TextBoxLeft({ textBoxes, setTextBoxes, cardIndex, setPop
       id={`textBoxLeft-${cardIndex}`}
       className={textBoxLeftStyle()}
       onClick={() => handleLeftText()}
-      style={{ fontSize: `${fontSize}px`, width: `${textBoxes[calculatedIndex].text.priceBoxType == 2 ? "65px" : "90px"}` }}
+      style={{ fontSize: `${fontSize}px`, width: `${textBoxes[calculatedIndex].text.priceBoxType == 2 ? "65px" : "50%"}` }}
     >
       <div dangerouslySetInnerHTML={{ __html: textBoxes[calculatedIndex].text.left }} />
     </div>

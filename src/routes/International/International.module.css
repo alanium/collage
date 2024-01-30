@@ -42,7 +42,7 @@
     margin: 5px;
     padding: 2px;
     border-radius: 8px;
-    border: 2px solid red;
+    border: 2px solid green;
     position: relative;
     
   }
@@ -58,7 +58,7 @@
     flex-direction: column;
     justify-content: space-between;
     flex: 1;
-    border-left: 1px solid rgb(0, 0, 0)
+    border-right: 1px solid rgb(0, 0, 0)
   }
   
   .card {
@@ -78,7 +78,7 @@
     width: 120px;
     height: 25px;
     border-radius: 5px;
-    background-color: red;
+    background-color: green;
     box-sizing: border-box;
     z-index: 1;
     font-weight: bold;
