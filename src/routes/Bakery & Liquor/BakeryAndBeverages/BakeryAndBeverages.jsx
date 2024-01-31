@@ -14,6 +14,7 @@ import ImageUploader from "../../../components/ImageToCloud/ImageToCloud";
 import { getStorage, ref, listAll, uploadBytes } from "firebase/storage";
 import ImageFromCloud from "../../../components/ImageFromCloud/ImageFromCloud";
 import TemplatesFromCloud from "../../../components/TemplatesFromCloud/TemplatesFromCloud";
+import ZoomSlider from "../../../components/ZoomSlider/ZoomSlider";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
@@ -424,180 +425,6 @@ export default function BakeryLiquor() {
     });
   };
 
-  const ZoomSlider = ({ cardIndex }) => {
-    const auxIndex = cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
-
-    const column = cardIndex > maxStaticIndex ? dynamicColumn : staticColumns;
-
-    const handleZoomChange = (newZoom, index) => {
-      if (cardIndex > maxStaticIndex) {
-        const newUploadedImages = [...dynamicColumn];
-        newUploadedImages[auxIndex].img[index].zoom = newZoom;
-        setDynamicColumn(newUploadedImages);
-      } else {
-        const newUploadedImages = [...staticColumns];
-        newUploadedImages[auxIndex].img[index].zoom = newZoom;
-        setStaticColumns(newUploadedImages);
-      }
-    };
-
-    const handlePositionChange = (changeAmount, index, axis) => {
-      if (cardIndex > maxStaticIndex) {
-        const newUploadedImages = [...dynamicColumn];
-        newUploadedImages[auxIndex].img[index][axis] += changeAmount;
-        setDynamicColumn(newUploadedImages);
-      } else {
-        const newUploadedImages = [...staticColumns];
-        newUploadedImages[auxIndex].img[index][axis] += changeAmount;
-        setStaticColumns(newUploadedImages);
-      }
-    };
-
-    const handleConfirmClick = () => {
-      setIsEditingZoom(false);
-    };
-
-    return (
-      <div className={styles.sidebar}>
-        {column[auxIndex].img[0].src != "" ? (
-          <div className={styles.zoomSliderContainer}>
-            <label>Image 1</label>
-            <div className={styles.zoomControlsGrid}>
-              <button
-                onClick={() =>
-                  handleZoomChange(
-                    (cardIndex > maxStaticIndex ? dynamicColumn : staticColumns)[auxIndex]
-                      .img[0].zoom - 5,
-                    0
-                  )
-                }
-                className={styles.bttnGrid}
-              >
-                -
-              </button>
-              <button
-                onClick={() =>
-                  handleZoomChange(
-                    (cardIndex > maxStaticIndex ? dynamicColumn : staticColumns)[auxIndex]
-                      .img[0].zoom + 5,
-                    0
-                  )
-                }
-                className={styles.bttnGrid}
-              >
-                +
-              </button>
-              <button
-                className={styles.bttnGrid}
-                onClick={() => handlePositionChange(-5, 0, "y")}
-              >
-                up
-              </button>
-              <button
-                className={styles.bttnGrid}
-                onClick={() => handlePositionChange(5, 0, "y")}
-              >
-                down
-              </button>
-              <button
-                className={styles.bttnGrid}
-                onClick={() => handlePositionChange(-5, 0, "x")}
-              >
-                left
-              </button>
-              <button
-                className={styles.bttnGrid}
-                onClick={() => handlePositionChange(5, 0, "x")}
-              >
-                right
-              </button>
-            </div>
-          </div>
-        ) : null}
-
-        {column[auxIndex].img[1].src != "" ? (
-          <div className={styles.zoomSliderContainer}>
-            <label>Image 2</label>
-            <div className={styles.zoomControlsGrid}>
-              <button
-                onClick={() =>
-                  handleZoomChange(
-                    (cardIndex > maxStaticIndex ? dynamicColumn : staticColumns)[auxIndex]
-                      .img[1].zoom - 5,
-                    1
-                  )
-                }
-                className={styles.bttnGrid}
-              >
-                -
-              </button>
-              <button
-                onClick={() =>
-                  handleZoomChange(
-                    (cardIndex > maxStaticIndex ? dynamicColumn : staticColumns)[auxIndex]
-                      .img[1].zoom + 5,
-                    1
-                  )
-                }
-                className={styles.bttnGrid}
-              >
-                +
-              </button>
-              <button
-                className={styles.bttnGrid}
-                onClick={() => handlePositionChange(-5, 1, "y", 0)}
-              >
-                up
-              </button>
-              <button
-                className={styles.bttnGrid}
-                onClick={() => handlePositionChange(5, 1, "y")}
-              >
-                down
-              </button>
-              <button
-                className={styles.bttnGrid}
-                onClick={() => handlePositionChange(-5, 1, "x")}
-              >
-                left
-              </button>
-              <button
-                className={styles.bttnGrid}
-                onClick={() => handlePositionChange(5, 1, "x")}
-              >
-                right
-              </button>
-            </div>
-          </div>
-        ) : null}
-        <div className={styles.zoomSliderContainer}>
-          {column[auxIndex].img[0].src != "" ? (
-            <button
-              className={styles.confirmButton}
-              style={{ backgroundColor: "red" }}
-              onClick={() => handleDeleteImage(cardIndex, 0)}
-            >
-              Delete 1
-            </button>
-          ) : null}
-
-          {column[auxIndex].img[1].src != "" ? (
-            <button
-              className={styles.confirmButton}
-              style={{ backgroundColor: "red" }}
-              onClick={() => handleDeleteImage(cardIndex, 1)}
-            >
-              Delete 2
-            </button>
-          ) : null}
-          <button className={styles.confirmButton} onClick={handleConfirmClick}>
-            OK
-          </button>
-        </div>
-      </div>
-    );
-  };
-
   const handleCardClick = (cardIndex, event) => {
     // Check if the click event target is not the card element
     setImgIndex(0);
@@ -851,9 +678,6 @@ export default function BakeryLiquor() {
                 index={cardIndex - cardsInStatic}
                 maxCardPosition={maxStaticIndex}
               />
-              {isEditingThisZoom && (
-                <ZoomSlider cardIndex={selectedImage.cardIndex} />
-              )}
             </div>
           );
         })}
@@ -946,9 +770,6 @@ export default function BakeryLiquor() {
               setSelectedImage={setSelectedImage}
               index={cardIndex}
             />
-            {isEditingThisZoom && (
-              <ZoomSlider cardIndex={selectedImage.cardIndex} />
-            )}
           </div>
         );
       }
@@ -1077,7 +898,13 @@ export default function BakeryLiquor() {
           type={type}
         />
       ) : null}
-
+      {isEditingZoom && (
+        <ZoomSlider 
+          cardIndex={selectedImage.cardIndex > maxStaticIndex ? selectedImage.cardIndex - cardsInStatic : selectedImage.cardIndex}
+          selectedColumn={selectedImage.cardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
+          setSelectedColumn={selectedImage.cardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns}
+          setIsEditingZoom={setIsEditingZoom} />
+      )}
       {popup2 ? (
         <div className={styles.popUp2} style={{ zIndex: "1" }}>
           <button
