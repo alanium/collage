@@ -45,6 +45,7 @@ function Grocery() {
           priceBoxType: 0,
           priceBoxColor: false,
           renderPriceBox: true,
+          priceBoxBorder: true,
         },
         index,
       }))
@@ -127,6 +128,7 @@ function Grocery() {
           priceBoxType: 0,
           priceBoxColor: false,
           renderPriceBox: false,
+          priceBoxBorder: true,
         },
         index: i + 21,
       };
@@ -362,6 +364,20 @@ function Grocery() {
     }
   };
 
+  const changePriceBoxBorder = (cardIndex) => {
+    if (cardIndex > 20) {
+      const newDynamicColumn = [...dynamicColumn];
+      newDynamicColumn[cardIndex - 21].text.priceBoxBorder =
+        !newDynamicColumn[cardIndex - 21].text.priceBoxBorder;
+      setDynamicColumn(newDynamicColumn);
+    } else {
+      const newStaticColumns = [...staticColumns];
+      newStaticColumns[cardIndex].text.priceBoxBorder =
+        !newStaticColumns[cardIndex].text.priceBoxBorder;
+      setStaticColumns(newStaticColumns);
+    }
+  }
+
   const ContextMenu = ({ x, y, items, onClose }) => (
     <div
       style={{
@@ -430,6 +446,10 @@ function Grocery() {
         label: "Change PriceBox Color",
         action: () => changePriceBoxColor(cardIndex),
       },
+      {
+        label: "Change PriceBox Border",
+        action: () => changePriceBoxBorder(cardIndex),
+      }
     ];
 
     if (selectedColumn[index].img[1].src == "") {
@@ -613,7 +633,8 @@ function Grocery() {
     column,
     setColumn,
     cardIndex,
-    backgroundColor
+    backgroundColor,
+    priceBoxBorder
   ) => {
     const priceBoxes = [
       <FixedBox
@@ -623,6 +644,7 @@ function Grocery() {
         backgroundColor={backgroundColor}
         i={cardIndex}
         cardIndex={cardIndex}
+        priceBoxBorder={priceBoxBorder}
       />,
       <TripleBox
         key={`fixed-box-${cardIndex}`}
@@ -631,6 +653,7 @@ function Grocery() {
         backgroundColor={backgroundColor}
         i={cardIndex}
         cardIndex={cardIndex}
+        priceBoxBorder={priceBoxBorder}
       />,
       <AmountForPrice
         key={`fixed-box-${cardIndex}`}
@@ -639,6 +662,7 @@ function Grocery() {
         backgroundColor={backgroundColor}
         i={cardIndex}
         cardIndex={cardIndex}
+        priceBoxBorder={priceBoxBorder}
       />,
     ];
 
@@ -710,7 +734,9 @@ function Grocery() {
                     dynamicColumn,
                     setDynamicColumn,
                     cardIndex - 21,
-                    dynamicColumn[cardIndex - 21].text.priceBoxColor
+                    dynamicColumn[cardIndex - 21].text.priceBoxColor,
+                    dynamicColumn[cardIndex - 21].text.priceBoxBorder
+                  
                   )}
                 </div>
               ) : null}
@@ -793,7 +819,8 @@ function Grocery() {
                   staticColumns,
                   setStaticColumns,
                   cardIndex,
-                  staticColumns[cardIndex].text.priceBoxColor
+                  staticColumns[cardIndex].text.priceBoxColor,
+                  staticColumns[cardIndex].text.priceBoxBorder
                 )}
               </div>
             ) : null}

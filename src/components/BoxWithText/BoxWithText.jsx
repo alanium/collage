@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from "./BoxWithText.module.css";
 
-const FixedBox = ({ textBoxes, setTextBoxes, i, cardIndex, backgroundColor, maxStaticIndex  }) => {
+const FixedBox = ({ textBoxes, setTextBoxes, i, cardIndex, backgroundColor, maxStaticIndex, priceBoxBorder  }) => {
   const [isEditing, setIsEditing] = useState(false);
 
   const boxRef = useRef(null);
@@ -65,6 +65,10 @@ const FixedBox = ({ textBoxes, setTextBoxes, i, cardIndex, backgroundColor, maxS
     }
   }
 
+  const setBorder = () => {
+    return priceBoxBorder ? '1px solid black' : '0px solid black'
+  }
+
   const setBackgroundColor = () => {
     const color = backgroundColor ? 'red' : 'white';
   return color;
@@ -79,7 +83,9 @@ const FixedBox = ({ textBoxes, setTextBoxes, i, cardIndex, backgroundColor, maxS
       ref={boxRef}
       id={`fixed-box-${i}`}
       className={`${styles.box} ${isEditing ? styles.editing : ''}`}
-      style={{ display: textBoxes[index].text.bottom != null ? "flex" : "none",
+      style={{ 
+        border: setBorder(),
+        display: textBoxes[index].text.bottom != null ? "flex" : "none",
         backgroundColor: setBackgroundColor(), // Use setBackgroundColor directly here
         color: setTextColor(), // Use setTextColor directly here
       }}

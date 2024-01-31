@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from "./AmountForPrice.module.css";
 
-const AmountForPrice = ({ textBoxes, setTextBoxes, i, j, cardIndex, backgroundColor, maxStaticIndex }) => {
+const AmountForPrice = ({ textBoxes, setTextBoxes, i, j, cardIndex, backgroundColor, maxStaticIndex, priceBoxBorder }) => {
     const [middleBoxFontSize, setMiddleBoxFontSize] = useState(50);
     const [rightBoxFontSize, setRightBoxFontSize] = useState(10);
     const [leftBoxFontSize, setLeftBoxFontSize] = useState(60);
@@ -67,6 +67,11 @@ const AmountForPrice = ({ textBoxes, setTextBoxes, i, j, cardIndex, backgroundCo
         // Adjust font size for left box dynamically based on overflow
       };
 
+
+      const setBorder = () => {
+        return priceBoxBorder ? '1px solid black' : '0px solid black'
+      }
+
       const setBackgroundColor = () => {
         const color = backgroundColor ? 'red' : 'white';
       console.log('Background Color:', color);
@@ -82,7 +87,9 @@ const AmountForPrice = ({ textBoxes, setTextBoxes, i, j, cardIndex, backgroundCo
       ref={containerRef}
       id={`triple-box-${i}-${j}`}
       className={`${styles.containerBox} ${isEditing ? styles.editing : ''}`}
-      style={{ display: textBoxes[auxIndex].text.bottom != null ? "flex" : "none",
+      style={{ 
+        border: setBorder(),
+        display: textBoxes[auxIndex].text.bottom != null ? "flex" : "none",
         backgroundColor: setBackgroundColor(), // Use setBackgroundColor directly here
         color: setTextColor(), // Use setTextColor directly here
       }}

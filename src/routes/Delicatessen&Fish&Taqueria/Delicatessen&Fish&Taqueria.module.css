@@ -1,0 +1,394 @@
+
+
+.contextMenu {
+    position : fixed;
+    color: white;
+    background-color: gray;
+    border: 1px solid black;
+    border-radius: 5px;
+    z-index: 1000;
+    padding: 5px;
+}
+
+.infoTab {
+  background-color: gray;
+          color: white;
+          position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+          border: 1px solid #666666;
+          padding: 15px;
+          border-radius: 5px;
+}
+
+.popUp2 {
+  background-color: #333;
+  color: white;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid #666;
+  padding: 15px;
+  border-radius: 5px;
+  max-width: 250px;
+  text-align: center;
+}
+
+.actionButton {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px;
+  background-color: #000000;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.closeButton {
+  width: 100%;
+  padding: 10px;
+  background-color: #797979;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.containerDivBorder {
+    display: grid;
+    top: 100px;
+    left: 0%;
+    position: relative;
+    z-index: 0;
+    width: 21cm;
+    height: 29.6cm;
+    background-color: white;
+    
+  }
+  
+  .containerDiv {
+    width: 95%;
+    height: 80%;
+    display: flex;
+    flex-direction: row;
+    margin: 5px;
+    padding: 2px;
+    border-radius: 8px;
+    border: 2px solid red;
+    position: relative;
+  }
+
+  .taqueriaColumn {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+    margin-top: 20px;
+  }
+
+  .taqueriaCard {
+    flex: 1;
+    border-radius: 3px;
+    position: relative;
+    overflow: hidden;
+    margin: 2px;
+    padding: 3px;
+    padding-top: 100px;
+  }
+
+  .secondContainerDiv {
+    width: 95%;
+    height: 47.5%;;
+    display: flex;
+    flex-direction: row;
+    margin: 5px;
+    padding: 2px;
+    border-radius: 8px;
+    border: 2px solid black;
+    position: relative;
+  }
+
+  .secondOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 170px;
+    height: 25px;
+    border-radius: 5px;
+    background-color: black;
+    box-sizing: border-box;
+    z-index: 1;
+    font-weight: bold;
+    text-align: center;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .thirdContainerDiv {
+    width: 186px; /* Increased by 3% */
+    height: 129%;; /* Adjust to your desired height */
+    display: flex;
+    flex-direction: row;
+    margin: 5px;
+    padding: 2px;
+    border-radius: 8px;
+    border: 2px solid rgb(94, 188, 219);
+    position: relative;
+  }
+
+  .thirdOverlay {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 192px;
+    height: 25px;
+    border-radius: 5px;
+    background-color: rgb(94, 188, 219);
+    box-sizing: border-box;
+    z-index: 1;
+    font-weight: bold;
+    text-align: center;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .fourthContainerDiv {
+    bottom:-200px;
+    width: 100%; /* Increased by 3% */
+    height: 28.5%; /* Adjust to your desired height */
+    display: flex;
+    flex-direction: row;
+    border-radius: 8px;
+    margin: 5px;
+    position: relative;
+  }
+
+  .fourthOverlay {
+    position: absolute;
+    width: 80%;
+    height: 25px;
+    background-color: red;
+    box-sizing: border-box;
+    z-index: 1;
+    font-weight: bold;
+    color: white;
+    display: flex;
+    align-items: center;
+  }
+
+  .fifthOverlay {
+    position: absolute;
+    width: 100%;
+    height: 25px;
+    background-color: red;
+    box-sizing: border-box;
+    z-index: 0;
+    font-weight: bold;
+    justify-content: end;
+    color: white;
+    display: flex;
+    align-items: center;
+  }
+
+  .firstCardColumn {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+  }
+  
+  .cardColumn {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+    border-left: 1px solid rgb(0, 0, 0)
+  }
+  
+  .card {
+    flex: 1;
+    border-bottom: 1px solid gray;
+    border-radius: 3px;
+    position: relative;
+    overflow: hidden;
+    margin: 2px;
+    padding: 3px;
+  }
+  
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 120px;
+    height: 25px;
+    border-radius: 5px;
+    background-color: red;
+    box-sizing: border-box;
+    z-index: 1;
+    font-weight: bold;
+    text-align: center;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  
+  .overlayCard {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 50px;
+    height: 30px;
+    border-radius: 4px;
+    z-index: 1;
+    box-sizing: border-box;
+    color: rgb(255, 0, 0);
+    font-size: 120%;
+    font-weight: bold;
+    overflow: hidden;
+    white-space: nowrap;
+    border: 1px solid black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background-color: white;
+  }
+  
+
+  
+  .overlayCardTextLeft {
+  
+    position: absolute;
+    left: 0;
+    transform: translate(0,235%);
+    width: 90px;
+    height: 40px;
+    z-index: 1;
+    color: black;
+    font-weight: bold;
+    text-align: center;
+    word-wrap: break-word;
+    white-space: pre-line;
+    overflow: hidden;
+  }
+  
+  .overlayCardTextFirstColumn {
+
+    position: absolute;
+    left: 0;
+    width: 80px;
+    height: 80%;
+    z-index: 1;
+    color: black;
+    text-align: center;
+    font-weight: bold;
+    word-wrap: break-word;
+    white-space: pre-line;
+    overflow: hidden;
+  }
+  
+  .uploadedImage {
+    position: absolute;
+    max-width: 100%;
+    max-height: 100%;
+    z-index: -1;
+  }
+  
+  .zoomSliderContainer {
+    position: relative;
+    left: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 3px;
+  }
+  
+  .zoomControlsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 5px;
+  }
+  
+  .bttnGrid{
+    width: 80px;
+    background-color: gray;
+    color: white;
+  }
+  
+  .zoomSlider {
+    margin-bottom: 2px;
+  }
+  
+  .confirmButton {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    padding: 2px 4px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+    padding: 5px;
+    width: 165px;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  
+  .sidebar {
+    position: fixed;
+    width: 300px;
+    height: 700px;
+    top: 0px;
+    left: 0px;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+  }
+
+  .overlayCard:hover,
+.overlayCard.editing {
+  outline: 1px dashed blue; /* Change the border style on hover and when editing */
+}
+
+.overlayCardText:hover,
+.overlayCardText.editing {
+  outline: 1px dashed blue; /* Change the border style on hover and when editing */
+}
+
+.card:hover,
+.card.editing {
+  outline: 1px dashed blue;
+}
+
+.overlayCardTextLeft:hover,
+.overlayCardTextLeft.editing {
+  outline: 1px dashed blue; /* Change the border style on hover and when editing */
+}
+
+.overlayCardTextFirstColumn:hover,
+.overlayCardTextFirstColumn.editing {
+  outline: 1px dashed blue; /* Change the border style on hover and when editing */
+}
+  
+  .positionSliderY {
+    margin-top: 3px;
+  }
+  
+
+  @media (max-width: 2200px) {
+    .infoTab {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  }

@@ -45,6 +45,7 @@ function International() {
           priceBoxType: 0,
           priceBoxColor: false,
           renderPriceBox: true,
+          priceBoxBorder: true,
         },
         index,
       }))
@@ -136,6 +137,7 @@ function International() {
           priceBoxType: 0,
           priceBoxColor: false,
           renderPriceBox: false,
+          priceBoxBorder: true,
         },
         index: i + 21,
       };
@@ -439,6 +441,10 @@ function International() {
         label: "Change PriceBox Color",
         action: () => changePriceBoxColor(cardIndex),
       },
+      {
+        label: "Change PriceBox Border",
+        action: () => changePriceBoxBorder(cardIndex),
+      }
     ];
 
     if (selectedColumn[index].img[1].src == "") {
@@ -502,6 +508,20 @@ function International() {
       handleContextMenu(event, cardIndex, image);
     }
   };
+
+  const changePriceBoxBorder = (cardIndex) => {
+    if (cardIndex > 20) {
+      const newDynamicColumn = [...dynamicColumn];
+      newDynamicColumn[cardIndex - 21].text.priceBoxBorder =
+        !newDynamicColumn[cardIndex - 21].text.priceBoxBorder;
+      setDynamicColumn(newDynamicColumn);
+    } else {
+      const newStaticColumns = [...staticColumns];
+      newStaticColumns[cardIndex].text.priceBoxBorder =
+        !newStaticColumns[cardIndex].text.priceBoxBorder;
+      setStaticColumns(newStaticColumns);
+    }
+  }
 
   const saveTemplate = (event) => {
     const newText = prompt("Enter template name: ");
@@ -620,7 +640,8 @@ function International() {
     column,
     setColumn,
     cardIndex,
-    backgroundColor
+    backgroundColor,
+    priceBoxBorder
   ) => {
     const priceBoxes = [
       <FixedBox
@@ -630,6 +651,7 @@ function International() {
         backgroundColor={backgroundColor}
         i={cardIndex}
         cardIndex={cardIndex}
+        priceBoxBorder={priceBoxBorder}
       />,
       <TripleBox
         key={`fixed-box-${cardIndex}`}
@@ -638,6 +660,7 @@ function International() {
         backgroundColor={backgroundColor}
         i={cardIndex}
         cardIndex={cardIndex}
+        priceBoxBorder={priceBoxBorder}
       />,
       <AmountForPrice
         key={`fixed-box-${cardIndex}`}
@@ -646,6 +669,7 @@ function International() {
         backgroundColor={backgroundColor}
         i={cardIndex}
         cardIndex={cardIndex}
+        priceBoxBorder={priceBoxBorder}
       />,
     ];
 
@@ -717,7 +741,8 @@ function International() {
                     dynamicColumn,
                     setDynamicColumn,
                     cardIndex - 21,
-                    dynamicColumn[cardIndex - 21].text.priceBoxColor
+                    dynamicColumn[cardIndex - 21].text.priceBoxColor,
+                    staticColumns[cardIndex].text.priceBoxBorder
                   )}
                 </div>
               ) : null}
@@ -799,7 +824,8 @@ function International() {
                   staticColumns,
                   setStaticColumns,
                   cardIndex,
-                  staticColumns[cardIndex].text.priceBoxColor
+                  staticColumns[cardIndex].text.priceBoxColor,
+                  staticColumns[cardIndex].text.priceBoxBorder
                 )}
               </div>
             ) : null}

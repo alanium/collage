@@ -1,20 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
-import styles from "./BakeryAndBeverages.module.css";
+import styles from "./Delicatessen&Fish&Taqueria.module.css";
 import html2pdf from "html2pdf.js"; // Importa la biblioteca html2pdf
-import FixedBox from "../../../components/BoxWithText/BoxWithText";
-import TripleBox from "../../../components/TripleBoxWithText/TripleBoxWithText";
+import FixedBox from "../../components/BoxWithText/BoxWithText";
+import TripleBox from "../../components/TripleBoxWithText/TripleBoxWithText";
 import { useNavigate } from "react-router-dom";
-import AmountForPrice from "../../../components/AmountForPrice/AmountForPrice";
-import TextBoxLeft from "../../../components/ParagraphBox/ParagraphBox";
-import TopTextBox from "../../../components/TopTextBox/TopTextBox";
-import TextPopUp from "../../../components/TextPopup/TextPopup";
+import AmountForPrice from "../../components/AmountForPrice/AmountForPrice";
+import TextBoxLeft from "../../components/ParagraphBox/ParagraphBox";
+import TopTextBox from "../../components/TopTextBox/TopTextBox";
+import TextPopUp from "../../components/TextPopup/TextPopup";
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore/lite";
-import ImageUploader from "../../../components/ImageToCloud/ImageToCloud";
+import ImageUploader from "../../components/ImageToCloud/ImageToCloud";
 import { getStorage, ref, listAll, uploadBytes } from "firebase/storage";
-import ImageFromCloud from "../../../components/ImageFromCloud/ImageFromCloud";
-import TemplatesFromCloud from "../../../components/TemplatesFromCloud/TemplatesFromCloud";
-import ZoomSlider from "../../../components/ZoomSlider/ZoomSlider";
+import ImageFromCloud from "../../components/ImageFromCloud/ImageFromCloud";
+import TemplatesFromCloud from "../../components/TemplatesFromCloud/TemplatesFromCloud";
+import ZoomSlider from "../../components/ZoomSlider/ZoomSlider";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
@@ -29,8 +29,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-export default function BakeryLiquor() {
-  const cardsInStatic = 28;
+export default function DelicatessenAndMore() {
+  const cardsInStatic = 26;
   const maxStaticIndex = cardsInStatic - 1;
 
   const [staticColumns, setStaticColumns] = useState(
@@ -84,7 +84,7 @@ export default function BakeryLiquor() {
 
       // Apply the specified styles to the clone
       containerClone.style.display = "grid";
-      
+
       containerClone.style.position = "relative";
       containerClone.style.zIndex = "0";
       containerClone.style.width = "21cm";
@@ -218,12 +218,10 @@ export default function BakeryLiquor() {
           const imageToUpdate = newDynamicColumn.find(
             (image) => image.index === cardIndex
           );
-
           if (imageToUpdate) {
             // Set the src value to an empty string when deleting
             imageToUpdate.img[index].src = "";
           }
-
           if (
             imageToUpdate.img[0].src == "" &&
             imageToUpdate.img[1].src == ""
@@ -241,19 +239,16 @@ export default function BakeryLiquor() {
           const imageToUpdate = newStaticColumns.find(
             (image) => image.index === cardIndex
           );
-
           if (imageToUpdate) {
             // Set the src value to an empty string when deleting
             imageToUpdate.img[index].src = "";
           }
-
           if (
             imageToUpdate.img[0].src == "" &&
             imageToUpdate.img[1].src == ""
           ) {
             setIsEditingZoom(false);
           }
-
           return newStaticColumns;
         });
       }
@@ -375,9 +370,11 @@ export default function BakeryLiquor() {
   const handleContextMenu = (event, cardIndex, column, image) => {
     event.preventDefault();
 
-    const selectedColumn = cardIndex > maxStaticIndex ? dynamicColumn : staticColumns;
+    const selectedColumn =
+      cardIndex > maxStaticIndex ? dynamicColumn : staticColumns;
 
-    const index = cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
+    const index =
+      cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
 
     const contextMenuItems = [
       {
@@ -451,12 +448,15 @@ export default function BakeryLiquor() {
     // Check if the click event target is not the card element
     setImgIndex(0);
 
-    const auxIndex = cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
+    const auxIndex =
+      cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
 
     if (!event.target.classList.contains(styles.card)) {
       return;
     }
-    const image = (cardIndex > maxStaticIndex ? dynamicColumn : staticColumns)[auxIndex];
+    const image = (cardIndex > maxStaticIndex ? dynamicColumn : staticColumns)[
+      auxIndex
+    ];
 
     if (image.img[0].src === "" && image.img[1].src === "") {
       setPopup2(true);
@@ -594,8 +594,8 @@ export default function BakeryLiquor() {
         backgroundColor={backgroundColor}
         i={cardIndex}
         cardIndex={cardIndex}
-        priceBoxBorder={priceBoxBorder}
-      />,
+        maxStaticIndex={maxStaticIndex}
+        border={priceBoxBorder} />,
       <TripleBox
         key={`fixed-box-${cardIndex}`}
         textBoxes={column}
@@ -603,7 +603,8 @@ export default function BakeryLiquor() {
         backgroundColor={backgroundColor}
         i={cardIndex}
         cardIndex={cardIndex}
-        priceBoxBorder={priceBoxBorder}
+        maxStaticIndex={maxStaticIndex}
+        border={priceBoxBorder}
       />,
       <AmountForPrice
         key={`fixed-box-${cardIndex}`}
@@ -612,7 +613,8 @@ export default function BakeryLiquor() {
         backgroundColor={backgroundColor}
         i={cardIndex}
         cardIndex={cardIndex}
-        priceBoxBorder={priceBoxBorder}
+        maxStaticIndex={maxStaticIndex}
+        border={priceBoxBorder}
       />,
     ];
 
@@ -712,11 +714,11 @@ export default function BakeryLiquor() {
 
   const RenderLiquorCards = () => {
     const cards = [];
-   for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 4; i++) {
       const column = [];
 
-      for (let j = 0; j < 4; j++) {
-        const cardIndex = j + i * 4 + 12;
+      for (let j = 0; j < 2; j++) {
+        const cardIndex = j + i * 2 + 12;
 
         const isEditingThisZoom =
           isEditingZoom &&
@@ -806,16 +808,179 @@ export default function BakeryLiquor() {
       );
     }
     return cards;
-  }
+  };
+
+  const RenderTaqueria = () => {
+    const cards = [];
+
+    for (let i = 0; i < 5; i++) {
+      const column = [];
+
+      for (let j = 0; j < 1; j++) {
+        const cardIndex = j + i * 1 + 20;
+
+        let images = staticColumns[cardIndex].img;
+
+        const textBoxes = [];
+
+        staticColumns.map((card) => {
+          textBoxes.push(card.text);
+        });
+
+        column.push(
+          <div
+            className={styles.taqueriaCard}
+            key={cardIndex}
+            onClick={(event) => handleCardClick(cardIndex, event)}
+          >
+            {images[0] && ( // Check if img[0] exists before rendering
+              <img
+                src={images[0].src ? images[0].src : ""}
+                className={styles.uploadedImage}
+                style={{
+                  transform: `scale(${images[0].zoom / 100}) translate(${
+                    images[0].x
+                  }px, ${images[0].y}px)`,
+                }}
+              />
+            )}
+
+            {images[1] && ( // Check if img[1] exists before rendering
+              <img
+                src={images[1] ? images[1].src : ""}
+                className={styles.uploadedImage}
+                style={{
+                  transform: `scale(${images[1].zoom / 100}) translate(${
+                    images[1].x
+                  }px, ${images[1].y}px)`,
+                }}
+              />
+            )}
+            {staticColumns[cardIndex] &&
+            staticColumns[cardIndex].text.renderPriceBox ? (
+              <div className="priceBox">
+                {renderPriceBox(
+                  staticColumns[cardIndex].text.priceBoxType,
+                  staticColumns,
+                  setStaticColumns,
+                  cardIndex,
+                  staticColumns[cardIndex].text.priceBoxColor,
+                  staticColumns[cardIndex].text.priceBoxBorder
+                )}
+              </div>
+            ) : null}
+
+            <TopTextBox
+              textBoxes={staticColumns}
+              setTextBoxes={setStaticColumns}
+              cardIndex={cardIndex}
+              setPopup={setPopup}
+              setSelectedTextBox={setSelectedTextBox}
+              setType={setType}
+              setSelectedImage={setSelectedImage}
+              index={cardIndex}
+            />
+
+            <TextBoxLeft
+              textBoxes={staticColumns}
+              setTextBoxes={setStaticColumns}
+              cardIndex={cardIndex}
+              setPopup={setPopup}
+              setSelectedTextBox={setSelectedTextBox}
+              setType={setType}
+              setSelectedImage={setSelectedImage}
+              index={cardIndex}
+            />
+          </div>
+        );
+      }
+
+      cards.push(
+        <div key={i} style={{borderRight: "1px solid black" }} className={styles.taqueriaColumn}>
+          {column}
+        </div>
+      );
+    }
+
+    const images = staticColumns[25].img;
+    cards.push(
+      <div style={{borderLeft: "1px solid black" }} className={styles.taqueriaColumn}>
+        <div
+          className={styles.taqueriaCard}
+          key={25}
+          onClick={(event) => handleCardClick(25, event)}
+        >
+          {staticColumns[25].img[0] && ( // Check if img[0] exists before rendering
+            <img
+              src={images[0].src ? images[0].src : ""}
+              className={styles.uploadedImage}
+              style={{
+                transform: `scale(${images[0].zoom / 100}) translate(${
+                  images[0].x
+                }px, ${images[0].y}px)`,
+              }}
+            />
+          )}
+
+          {images[1] && ( // Check if img[1] exists before rendering
+            <img
+              src={images[1] ? images[1].src : ""}
+              className={styles.uploadedImage}
+              style={{
+                transform: `scale(${images[1].zoom / 100}) translate(${
+                  images[1].x
+                }px, ${images[1].y}px)`,
+              }}
+            />
+          )}
+          {staticColumns[25] && staticColumns[25].text.renderPriceBox ? (
+            <div className="priceBox">
+              {renderPriceBox(
+                staticColumns[25].text.priceBoxType,
+                staticColumns,
+                setStaticColumns,
+                25,
+                staticColumns[25].text.priceBoxColor,
+                staticColumns[25].text.priceBoxBorder
+              )}
+            </div>
+          ) : null}
+
+          <TopTextBox
+            textBoxes={staticColumns}
+            setTextBoxes={setStaticColumns}
+            cardIndex={25}
+            setPopup={setPopup}
+            setSelectedTextBox={setSelectedTextBox}
+            setType={setType}
+            setSelectedImage={setSelectedImage}
+            index={25}
+          />
+
+          <TextBoxLeft
+            textBoxes={staticColumns}
+            setTextBoxes={setStaticColumns}
+            cardIndex={25}
+            setPopup={setPopup}
+            setSelectedTextBox={setSelectedTextBox}
+            setType={setType}
+            setSelectedImage={setSelectedImage}
+            index={25}
+          />
+        </div>
+      </div>
+    );
+    return cards;
+  };
 
   const RenderCards = () => {
-    const cards = [<RenderDynamicColumn />];
+    const cards = [];
 
     for (let i = 0; i < 3; i++) {
       const column = [];
 
       for (let j = 0; j < 4; j++) {
-        const cardIndex = j + i * 4;
+        const cardIndex = j + i * 3;
 
         const isEditingThisZoom =
           isEditingZoom &&
@@ -894,9 +1059,6 @@ export default function BakeryLiquor() {
               setSelectedImage={setSelectedImage}
               index={cardIndex}
             />
-            {isEditingThisZoom && (
-              <ZoomSlider cardIndex={selectedImage.cardIndex} />
-            )}
           </div>
         );
       }
@@ -914,9 +1076,15 @@ export default function BakeryLiquor() {
     <div>
       {popup ? (
         <TextPopUp
-          textBox={selectedImage.cardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
+          textBox={
+            selectedImage.cardIndex > maxStaticIndex
+              ? dynamicColumn
+              : staticColumns
+          }
           setTextBox={
-            selectedImage.cardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns
+            selectedImage.cardIndex > maxStaticIndex
+              ? setDynamicColumn
+              : setStaticColumns
           }
           setPopup={setPopup}
           cardIndex={selectedImage}
@@ -925,11 +1093,24 @@ export default function BakeryLiquor() {
         />
       ) : null}
       {isEditingZoom && (
-        <ZoomSlider 
-          cardIndex={selectedImage.cardIndex > maxStaticIndex ? selectedImage.cardIndex - cardsInStatic : selectedImage.cardIndex}
-          selectedColumn={selectedImage.cardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
-          setSelectedColumn={selectedImage.cardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns}
-          setIsEditingZoom={setIsEditingZoom} />
+        <ZoomSlider
+          cardIndex={
+            selectedImage.cardIndex > maxStaticIndex
+              ? selectedImage.cardIndex - cardsInStatic
+              : selectedImage.cardIndex
+          }
+          selectedColumn={
+            selectedImage.cardIndex > maxStaticIndex
+              ? dynamicColumn
+              : staticColumns
+          }
+          setSelectedColumn={
+            selectedImage.cardIndex > maxStaticIndex
+              ? setDynamicColumn
+              : setStaticColumns
+          }
+          setIsEditingZoom={setIsEditingZoom}
+        />
       )}
       {popup2 ? (
         <div className={styles.popUp2} style={{ zIndex: "1" }}>
@@ -956,9 +1137,7 @@ export default function BakeryLiquor() {
         </div>
       ) : null}
 
-      
       <div className={styles.sidebar} style={{ top: "0px" }}>
-        
         <div
           style={{
             position: "relative",
@@ -970,31 +1149,31 @@ export default function BakeryLiquor() {
           }}
         >
           <button
-        style={{
-          width: "165px",
+            style={{
+              width: "165px",
               position: "relative",
               backgroundColor: "gray",
               color: "white",
               marginBottom: "10px",
               zIndex: "1",
-        }}
-        onClick={handleConvertToPDF}
-      >
-        Make PDF
-      </button>
-      <button
-        style={{
-          width: "165px",
+            }}
+            onClick={handleConvertToPDF}
+          >
+            Make PDF
+          </button>
+          <button
+            style={{
+              width: "165px",
               position: "relative",
               backgroundColor: "gray",
               color: "white",
               marginBottom: "10px",
               zIndex: "1",
-        }}
-        onClick={() => navigate("/")}
-      >
-        Back to Home
-      </button>
+            }}
+            onClick={() => navigate("/")}
+          >
+            Back to Home
+          </button>
           <button
             style={{
               width: "165px",
@@ -1061,27 +1240,39 @@ export default function BakeryLiquor() {
         </div>
       </div>
 
-      <div id="magazineContainer" className={styles.containerDivBorder}>
-        <div className={styles.containerDiv} ref={contextMenuRef}>
-          <RenderCards />
-          <div className={styles.overlay}>BAKERY</div>
-          {contextMenu && (
-            <ContextMenu
-              x={contextMenu.x}
-              y={contextMenu.y}
-              items={contextMenu.items}
-              onClose={() => setContextMenu(null)}
-            />
-          )}
+      <div id="magazineContainer" style={{ display: "grid"}} className={styles.containerDivBorder}>
+        <div style={{ display: "flex", justifyContent: "flex-start" }}>
+          <div style={{ width: "80%" }}>
+            <div className={styles.containerDiv} ref={contextMenuRef}>
+              <RenderCards />
+              <div className={styles.overlay}>DELICATESSEN</div>
+              {contextMenu && (
+                <ContextMenu
+                  x={contextMenu.x}
+                  y={contextMenu.y}
+                  items={contextMenu.items}
+                  onClose={() => setContextMenu(null)}
+                />
+              )}
+            </div>
+
+            <div className={styles.secondContainerDiv}>
+              <div className={styles.secondOverlay}>SMOKED FISH</div>
+              <RenderLiquorCards />
+            </div>
+          </div>
+          <div style={{ position: "relative" }}>
+            <div className={styles.thirdContainerDiv}>
+              <RenderDynamicColumn />
+            </div>
+            <div className={styles.thirdOverlay}>DELI SPECIALITIES</div>
+          </div>
         </div>
-        
-        <div className={styles.secondContainerDiv}>
-        <div className={styles.secondOverlay}>LIQUOR & BEVERAGES</div>
-        <RenderLiquorCards /> 
-        
+        <div style={{ position: "relative" }} className={styles.fourthContainerDiv}>
+          <div className={styles.fourthOverlay}>NAPERVILLE TAQUERIA</div>
+          <div className={styles.fifthOverlay}>HABIBI SHAWARMA</div>
+          <RenderTaqueria />
         </div>
-        
-        
       </div>
       {info ? <RenderInfo /> : null}
       {images != null ? (
@@ -1092,7 +1283,9 @@ export default function BakeryLiquor() {
             selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
           }
           setSelectedColumn={
-            selectedCardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns
+            selectedCardIndex > maxStaticIndex
+              ? setDynamicColumn
+              : setStaticColumns
           }
           setImages={setImages}
           imgIndex={imgIndex}

@@ -12,6 +12,7 @@ import International from './routes/International/International.jsx';
 import DairyAndSnacks from './routes/Dairy&Snacks/Dairy&Snacks.jsx';
 import FrozenAndBeverages from './routes/Frozen&Beverages/Frozen&Beverages.jsx';
 import MeatAndSeafood from './routes/Meats&Seafood/Meat&Seafood.jsx';
+import DelicatessenAndMore from './routes/Delicatessen&Fish&Taqueria/Delicatessen&Fish&Taqueria.jsx';
 
 const router = createBrowserRouter([
   {
@@ -41,6 +42,10 @@ const router = createBrowserRouter([
   {
     path:"/Meat&Seafood",
     element: <MeatAndSeafood />
+  },
+  {
+    path:"/Delicatessen&More",
+    element: <DelicatessenAndMore />
   },
 ]);
 

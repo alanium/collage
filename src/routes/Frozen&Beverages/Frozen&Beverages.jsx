@@ -48,6 +48,7 @@ export default function FrozenAndBeverages() {
           priceBoxType: 0,
           priceBoxColor: false,
           renderPriceBox: true,
+          priceBoxBorder: true,
         },
         index,
       }))
@@ -130,6 +131,7 @@ export default function FrozenAndBeverages() {
           priceBoxType: 0,
           priceBoxColor: false,
           renderPriceBox: false,
+          priceBoxBorder: true,
         },
         index: i + cardsInStatic,
       };
@@ -313,6 +315,22 @@ export default function FrozenAndBeverages() {
     }
   };
 
+  const changePriceBoxBorder = (cardIndex) => {
+    const calculatedCardIndex = cardIndex - cardsInStatic;
+
+    if (cardIndex > maxStaticIndex) {
+      const newDynamicColumn = [...dynamicColumn];
+      newDynamicColumn[calculatedCardIndex].text.priceBoxBorder =
+        !newDynamicColumn[calculatedCardIndex].text.priceBoxBorder;
+      setDynamicColumn(newDynamicColumn);
+    } else {
+      const newStaticColumns = [...staticColumns];
+      newStaticColumns[cardIndex].text.priceBoxBorder =
+        !newStaticColumns[cardIndex].text.priceBoxBorder;
+      setStaticColumns(newStaticColumns);
+    }
+  }
+
   const ContextMenu = ({ x, y, items, onClose }) => (
     <div
       style={{
@@ -383,6 +401,10 @@ export default function FrozenAndBeverages() {
         label: "Change PriceBox Color",
         action: () => changePriceBoxColor(cardIndex),
       },
+      {
+        label: "Change PriceBox Border",
+        action: () => changePriceBoxBorder(cardIndex),
+      }
     ];
 
     if (selectedColumn[index].img[1].src == "") {
@@ -566,7 +588,8 @@ export default function FrozenAndBeverages() {
     column,
     setColumn,
     cardIndex,
-    backgroundColor
+    backgroundColor,
+    priceBoxBorder
   ) => {
     const priceBoxes = [
       <FixedBox
@@ -576,7 +599,7 @@ export default function FrozenAndBeverages() {
         backgroundColor={backgroundColor}
         i={cardIndex}
         cardIndex={cardIndex}
-        maxStaticIndex={maxStaticIndex}
+        priceBoxBorder={priceBoxBorder}
       />,
       <TripleBox
         key={`fixed-box-${cardIndex}`}
@@ -585,7 +608,7 @@ export default function FrozenAndBeverages() {
         backgroundColor={backgroundColor}
         i={cardIndex}
         cardIndex={cardIndex}
-        maxStaticIndex={maxStaticIndex}
+        priceBoxBorder={priceBoxBorder}
       />,
       <AmountForPrice
         key={`fixed-box-${cardIndex}`}
@@ -594,7 +617,7 @@ export default function FrozenAndBeverages() {
         backgroundColor={backgroundColor}
         i={cardIndex}
         cardIndex={cardIndex}
-        maxStaticIndex={maxStaticIndex}
+        priceBoxBorder={priceBoxBorder}
       />,
     ];
 
@@ -668,7 +691,8 @@ export default function FrozenAndBeverages() {
                     dynamicColumn,
                     setDynamicColumn,
                     calculatedCardIndex,
-                    dynamicColumn[calculatedCardIndex].text.priceBoxColor
+                    dynamicColumn[calculatedCardIndex].text.priceBoxColor,
+                    dynamicColumn[calculatedCardIndex].text.priceBoxBorder
                   )}
                 </div>
               ) : null}
@@ -749,7 +773,8 @@ export default function FrozenAndBeverages() {
                   staticColumns,
                   setStaticColumns,
                   cardIndex,
-                  staticColumns[cardIndex].text.priceBoxColor
+                  staticColumns[cardIndex].text.priceBoxColor,
+                  staticColumns[cardIndex].text.priceBoxBorder
                 )}
               </div>
             ) : null}
@@ -837,7 +862,8 @@ export default function FrozenAndBeverages() {
                   staticColumns,
                   setStaticColumns,
                   cardIndex,
-                  staticColumns[cardIndex].text.priceBoxColor
+                  staticColumns[cardIndex].text.priceBoxColor,
+                  staticColumns[cardIndex].text.priceBoxBorder
                 )}
               </div>
             ) : null}
@@ -927,7 +953,8 @@ export default function FrozenAndBeverages() {
                   staticColumns,
                   setStaticColumns,
                   cardIndex,
-                  staticColumns[cardIndex].text.priceBoxColor
+                  staticColumns[cardIndex].text.priceBoxColor,
+                  staticColumns[cardIndex].text.priceBoxBorder
                 )}
               </div>
             ) : null}

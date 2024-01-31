@@ -48,6 +48,7 @@ export default function MeatAndSeafood() {
           priceBoxType: 0,
           priceBoxColor: false,
           renderPriceBox: true,
+          priceBoxBorder: true,
         },
         index,
       }))
@@ -130,6 +131,7 @@ export default function MeatAndSeafood() {
           priceBoxType: 0,
           priceBoxColor: false,
           renderPriceBox: false,
+          priceBoxBorder: true,
         },
         index: i + cardsInStatic,
       };

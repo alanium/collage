@@ -48,6 +48,7 @@ export default function DairyAndSnacks() {
           priceBoxType: 0,
           priceBoxColor: false,
           renderPriceBox: true,
+          priceBoxBorder: true,
         },
         index,
       }))
@@ -130,6 +131,7 @@ export default function DairyAndSnacks() {
           priceBoxType: 0,
           priceBoxColor: false,
           renderPriceBox: false,
+          priceBoxBorder: true,
         },
         index: i + cardsInStatic,
       };
@@ -312,6 +314,23 @@ export default function DairyAndSnacks() {
       setStaticColumns(newStaticColumns);
     }
   };
+
+
+  const changePriceBoxBorder = (cardIndex) => {
+    const calculatedCardIndex = cardIndex - cardsInStatic;
+
+    if (cardIndex > maxStaticIndex) {
+      const newDynamicColumn = [...dynamicColumn];
+      newDynamicColumn[calculatedCardIndex].text.priceBoxBorder =
+        !newDynamicColumn[calculatedCardIndex].text.priceBoxBorder;
+      setDynamicColumn(newDynamicColumn);
+    } else {
+      const newStaticColumns = [...staticColumns];
+      newStaticColumns[cardIndex].text.priceBoxBorder =
+        !newStaticColumns[cardIndex].text.priceBoxBorder;
+      setStaticColumns(newStaticColumns);
+    }
+  }
 
   const ContextMenu = ({ x, y, items, onClose }) => (
     <div
@@ -663,7 +682,8 @@ export default function DairyAndSnacks() {
                     dynamicColumn,
                     setDynamicColumn,
                     calculatedCardIndex,
-                    dynamicColumn[calculatedCardIndex].text.priceBoxColor
+                    dynamicColumn[calculatedCardIndex].text.priceBoxColor,
+                    dynamicColumn[calculatedCardIndex].text.priceBoxBorder
                   )}
                 </div>
               ) : null}
@@ -744,7 +764,8 @@ export default function DairyAndSnacks() {
                   staticColumns,
                   setStaticColumns,
                   cardIndex,
-                  staticColumns[cardIndex].text.priceBoxColor
+                  staticColumns[cardIndex].text.priceBoxColor,
+                  dynamicColumn[calculatedCardIndex].text.priceBoxBorder
                 )}
               </div>
             ) : null}
@@ -842,7 +863,8 @@ export default function DairyAndSnacks() {
                   staticColumns,
                   setStaticColumns,
                   cardIndex,
-                  staticColumns[cardIndex].text.priceBoxColor
+                  staticColumns[cardIndex].text.priceBoxColor,
+                  dynamicColumn[calculatedCardIndex].text.priceBoxBorder
                 )}
               </div>
             ) : null}

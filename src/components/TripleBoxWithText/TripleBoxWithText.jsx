@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from "./TripleBoxWithText.module.css";  
 
-const TripleBox = ({ textBoxes, setTextBoxes , i, cardIndex, backgroundColor, maxStaticIndex }) => {
+const TripleBox = ({ textBoxes, setTextBoxes , i, cardIndex, backgroundColor, maxStaticIndex, priceBoxBorder }) => {
   const [topBoxFontSize, setTopBoxFontSize] = useState(50);
   const [bottomBoxFontSize, setBottomBoxFontSize] = useState(10);
   const [leftBoxFontSize, setLeftBoxFontSize] = useState(60);
@@ -96,6 +96,9 @@ const TripleBox = ({ textBoxes, setTextBoxes , i, cardIndex, backgroundColor, ma
     return backgroundColor ? 'white' : 'red';
   };
 
+  const setBorder = () => {
+    return priceBoxBorder ? '1px solid black' : '0px solid black'
+  }
 
   const handleMouseEnter = () => {
     setIsEditing(true);
@@ -111,6 +114,8 @@ const TripleBox = ({ textBoxes, setTextBoxes , i, cardIndex, backgroundColor, ma
       id={`triple-box-${i}`}
       className={`${styles.containerBox} ${isEditing ? styles.editing : ''}`}
       style={{
+  
+        border: setBorder(),
         display: textBoxes[auxIndex].text.bottom != null ? 'flex' : 'none',
         backgroundColor: backgroundColor ? 'red' : 'white', // Use setBackgroundColor directly here
         color: setTextColor(), // Use setTextColor directly here
