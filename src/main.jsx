@@ -11,6 +11,7 @@ import BakeryLiquor from './routes/Bakery & Liquor/BakeryAndBeverages/BakeryAndB
 import International from './routes/International/International.jsx';
 import DairyAndSnacks from './routes/Dairy&Snacks/Dairy&Snacks.jsx';
 import FrozenAndBeverages from './routes/Frozen&Beverages/Frozen&Beverages.jsx';
+import MeatAndSeafood from './routes/Meats&Seafood/Meat&Seafood.jsx';
 
 const router = createBrowserRouter([
   {
@@ -36,7 +37,11 @@ const router = createBrowserRouter([
   {
     path:"/Frozen&Beverages",
     element: <FrozenAndBeverages />
-  }
+  },
+  {
+    path:"/Meat&Seafood",
+    element: <MeatAndSeafood />
+  },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(

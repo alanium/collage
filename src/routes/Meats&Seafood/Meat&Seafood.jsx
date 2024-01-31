@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import styles from "./International.module.css";
+import React, { useEffect, useRef, useState } from "react";
+import styles from "./Meat&Seafood.module.css";
 import html2pdf from "html2pdf.js"; // Importa la biblioteca html2pdf
 import FixedBox from "../../components/BoxWithText/BoxWithText";
 import TripleBox from "../../components/TripleBoxWithText/TripleBoxWithText";
@@ -29,9 +29,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-function International() {
+export default function MeatAndSeafood() {
+  const cardsInStatic = 18;
+  const maxStaticIndex = cardsInStatic - 1;
+
   const [staticColumns, setStaticColumns] = useState(
-    Array(21)
+    Array(cardsInStatic)
       .fill()
       .map((_, index) => ({
         img: [
@@ -54,28 +57,19 @@ function International() {
   const [contextMenu, setContextMenu] = useState(null);
   const [isEditingZoom, setIsEditingZoom] = useState(false);
   const [selectedImage, setSelectedImage] = useState({});
-  const [selectedTextBox, setSelectedTextBox] = useState({});
-
   const [selectedCardIndex, setSelectedCardIndex] = useState({});
-
   const [info, setInfo] = useState(false);
   const [popup, setPopup] = useState(false);
   const [type, setType] = useState("");
-
   const [popup2, setPopup2] = useState(false);
-
   const [templates, setTemplates] = useState(null);
-
   const [images, setImages] = useState(null);
-
   const [imgIndex, setImgIndex] = useState(null);
+  const [selectedTextBox, setSelectedTextBox] = useState({});
 
   const storage = getStorage();
-
   const imagesRef = ref(storage, "images/");
-
   const templatesRef = ref(storage, "templates/");
-
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
 
@@ -88,9 +82,8 @@ function International() {
       containerClone.id = "magazineClone";
 
       // Apply the specified styles to the clone
-      containerClone.style.display = "flex";
-      containerClone.style.alignItems = "center";
-      containerClone.style.justifyContent = "center";
+      containerClone.style.display = "grid";
+
       containerClone.style.position = "relative";
       containerClone.style.zIndex = "0";
       containerClone.style.width = "21cm";
@@ -103,7 +96,7 @@ function International() {
       document.body.appendChild(containerClone);
 
       const pdfOptions = {
-        filename: "grocery_magazine.pdf",
+        filename: "liquor_magazine.pdf",
         image: { type: "png", quality: 1 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
@@ -116,6 +109,7 @@ function International() {
       containerClone.parentNode.removeChild(containerClone);
     }
   };
+
   const handleDynamicColumns = (event) => {
     const cardAmount = prompt(
       "Enter the amount of cards you want on the first column: "
@@ -137,69 +131,11 @@ function International() {
           priceBoxColor: false,
           renderPriceBox: false,
         },
-        index: i + 21,
+        index: i + cardsInStatic,
       };
       cards.push(card);
     }
     setDynamicColumn(cards);
-  };
-
-  const handleImageUpload = (event, cardIndex, img) => {
-    // Added 'cardIndex' parameter
-    event.preventDefault();
-    if (cardIndex > 20) {
-      const dynamicColumnCopy = [...dynamicColumn];
-      dynamicColumnCopy.map((card) => {
-        if (card.index === cardIndex) {
-          // Changed 'event.target.key' to 'cardIndex'
-          const input = document.createElement("input");
-          input.type = "file";
-          input.accept = "image/*";
-          input.onchange = (event) => {
-            const file = event.target.files[0];
-
-            if (file) {
-              const reader = new FileReader();
-              reader.onload = (e) => {
-                const result = e.target.result;
-                const newDynamicColumn = [...dynamicColumn];
-                newDynamicColumn[cardIndex - 21].img[img].src = result;
-                setDynamicColumn(newDynamicColumn);
-              };
-
-              reader.readAsDataURL(file);
-            }
-          };
-          input.click();
-        }
-      });
-    } else {
-      const staticColumnsCopy = [...staticColumns];
-      staticColumnsCopy.map((card) => {
-        if (card.index === cardIndex) {
-          // Changed 'event.target.key' to 'cardIndex'
-          const input = document.createElement("input");
-          input.type = "file";
-          input.accept = "image/*";
-          input.onchange = (event) => {
-            const file = event.target.files[0];
-
-            if (file) {
-              const reader = new FileReader();
-              reader.onload = (e) => {
-                const result = e.target.result;
-                const newStaticColumns = [...staticColumns];
-                newStaticColumns[cardIndex].img[img].src = result;
-                setStaticColumns(newStaticColumns);
-              };
-
-              reader.readAsDataURL(file);
-            }
-          };
-          input.click();
-        }
-      });
-    }
   };
 
   useEffect(() => {
@@ -273,7 +209,7 @@ function International() {
       "Are you sure you want to delete the image?"
     );
 
-    if (cardIndex > 20) {
+    if (cardIndex > 11) {
       if (confirmDelete) {
         setDynamicColumn((prevDynamicColumn) => {
           const newDynamicColumn = [...prevDynamicColumn];
@@ -323,10 +259,12 @@ function International() {
   };
 
   const showHidePriceBox = (cardIndex) => {
-    if (cardIndex > 20) {
+    const calculatedCardIndex = cardIndex - cardsInStatic;
+
+    if (cardIndex > maxStaticIndex) {
       const newDynamicColumn = [...dynamicColumn];
-      newDynamicColumn[cardIndex - 21].text.renderPriceBox =
-        !newDynamicColumn[cardIndex - 21].text.renderPriceBox;
+      newDynamicColumn[calculatedCardIndex].text.renderPriceBox =
+        !newDynamicColumn[calculatedCardIndex].text.renderPriceBox;
       setDynamicColumn(newDynamicColumn);
     } else {
       const newStaticColumns = [...staticColumns];
@@ -338,12 +276,14 @@ function International() {
 
   const switchBoxType = (cardIndex) => {
     console.log("switchBoxType");
-    if (cardIndex > 20) {
+
+    const calculatedCardIndex = cardIndex - cardsInStatic;
+    if (cardIndex > maxStaticIndex) {
       const newDynamicColumn = [...dynamicColumn];
-      if (newDynamicColumn[cardIndex - 21].text.priceBoxType < 2) {
-        newDynamicColumn[cardIndex - 21].text.priceBoxType++;
+      if (newDynamicColumn[calculatedCardIndex].text.priceBoxType < 2) {
+        newDynamicColumn[calculatedCardIndex].text.priceBoxType++;
       } else {
-        newDynamicColumn[cardIndex - 21].text.priceBoxType = 0; // Reset to 0 if it's already 3
+        newDynamicColumn[calculatedCardIndex].text.priceBoxType = 0; // Reset to 0 if it's already 3
       }
       setDynamicColumn(newDynamicColumn);
     } else {
@@ -358,10 +298,12 @@ function International() {
   };
 
   const changePriceBoxColor = (cardIndex) => {
-    if (cardIndex > 20) {
+    const calculatedCardIndex = cardIndex - cardsInStatic;
+
+    if (cardIndex > maxStaticIndex) {
       const newDynamicColumn = [...dynamicColumn];
-      newDynamicColumn[cardIndex - 21].text.priceBoxColor =
-        !newDynamicColumn[cardIndex - 21].text.priceBoxColor;
+      newDynamicColumn[calculatedCardIndex].text.priceBoxColor =
+        !newDynamicColumn[calculatedCardIndex].text.priceBoxColor;
       setDynamicColumn(newDynamicColumn);
     } else {
       const newStaticColumns = [...staticColumns];
@@ -415,9 +357,11 @@ function International() {
   const handleContextMenu = (event, cardIndex, column, image) => {
     event.preventDefault();
 
-    const selectedColumn = cardIndex > 20 ? dynamicColumn : staticColumns;
+    const selectedColumn =
+      cardIndex > maxStaticIndex ? dynamicColumn : staticColumns;
 
-    const index = cardIndex > 20 ? cardIndex - 21 : cardIndex;
+    const index =
+      cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
 
     const contextMenuItems = [
       {
@@ -485,15 +429,17 @@ function International() {
 
   const handleCardClick = (cardIndex, event) => {
     // Check if the click event target is not the card element
-
     setImgIndex(0);
 
-    const auxIndex = cardIndex > 20 ? cardIndex - 21 : cardIndex;
+    const auxIndex =
+      cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
 
     if (!event.target.classList.contains(styles.card)) {
       return;
     }
-    const image = (cardIndex > 20 ? dynamicColumn : staticColumns)[auxIndex];
+    const image = (cardIndex > maxStaticIndex ? dynamicColumn : staticColumns)[
+      auxIndex
+    ];
 
     if (image.img[0].src === "" && image.img[1].src === "") {
       setPopup2(true);
@@ -630,6 +576,7 @@ function International() {
         backgroundColor={backgroundColor}
         i={cardIndex}
         cardIndex={cardIndex}
+        maxStaticIndex={maxStaticIndex}
       />,
       <TripleBox
         key={`fixed-box-${cardIndex}`}
@@ -638,6 +585,7 @@ function International() {
         backgroundColor={backgroundColor}
         i={cardIndex}
         cardIndex={cardIndex}
+        maxStaticIndex={maxStaticIndex}
       />,
       <AmountForPrice
         key={`fixed-box-${cardIndex}`}
@@ -646,6 +594,7 @@ function International() {
         backgroundColor={backgroundColor}
         i={cardIndex}
         cardIndex={cardIndex}
+        maxStaticIndex={maxStaticIndex}
       />,
     ];
 
@@ -671,6 +620,8 @@ function International() {
       <div className={styles.firstCardColumn}>
         {dynamicColumn.map((card) => {
           const cardIndex = card.index;
+
+          const calculatedCardIndex = cardIndex - cardsInStatic;
           const isEditingThisZoom =
             isEditingZoom &&
             selectedImage &&
@@ -709,15 +660,15 @@ function International() {
                   }}
                 />
               )}
-              {dynamicColumn[cardIndex - 21] &&
-              dynamicColumn[cardIndex - 21].text.renderPriceBox ? (
+              {dynamicColumn[calculatedCardIndex] &&
+              dynamicColumn[calculatedCardIndex].text.renderPriceBox ? (
                 <div className="priceBox">
                   {renderPriceBox(
-                    dynamicColumn[cardIndex - 21].text.priceBoxType,
+                    dynamicColumn[calculatedCardIndex].text.priceBoxType,
                     dynamicColumn,
                     setDynamicColumn,
-                    cardIndex - 21,
-                    dynamicColumn[cardIndex - 21].text.priceBoxColor
+                    calculatedCardIndex,
+                    dynamicColumn[calculatedCardIndex].text.priceBoxColor
                   )}
                 </div>
               ) : null}
@@ -729,8 +680,8 @@ function International() {
                 setSelectedTextBox={setSelectedTextBox}
                 setType={setType}
                 setSelectedImage={setSelectedImage}
-                index={cardIndex - 21}
-                maxCardPosition={20}
+                index={cardIndex - cardsInStatic}
+                maxCardPosition={maxStaticIndex}
               />
             </div>
           );
@@ -740,14 +691,13 @@ function International() {
     );
   };
 
-  const RenderCards = () => {
+  const RenderLiquorCards = () => {
     const cards = [];
-
     for (let i = 0; i < 3; i++) {
       const column = [];
 
-      for (let j = 0; j < 7; j++) {
-        const cardIndex = j + i * 7;
+      for (let j = 0; j < 3; j++) {
+        const cardIndex = j + i * 3 + 9;
 
         const isEditingThisZoom =
           isEditingZoom &&
@@ -835,7 +785,104 @@ function International() {
         </div>
       );
     }
-    cards.push(<RenderDynamicColumn />)
+    return cards;
+  };
+
+  const RenderCards = () => {
+    const cards = [];
+
+    for (let i = 0; i < 3; i++) {
+      const column = [];
+
+      for (let j = 0; j < 3; j++) {
+        const cardIndex = j + i * 3;
+
+        const isEditingThisZoom =
+          isEditingZoom &&
+          selectedImage &&
+          selectedImage.cardIndex === cardIndex;
+
+        let images = staticColumns[cardIndex].img;
+
+        const textBoxes = [];
+
+        staticColumns.map((card) => {
+          textBoxes.push(card.text);
+        });
+
+        column.push(
+          <div
+            className={styles.card}
+            key={cardIndex}
+            onClick={(event) => handleCardClick(cardIndex, event)}
+          >
+            {images[0] && ( // Check if img[0] exists before rendering
+              <img
+                src={images[0].src ? images[0].src : ""}
+                className={styles.uploadedImage}
+                style={{
+                  transform: `scale(${images[0].zoom / 100}) translate(${
+                    images[0].x
+                  }px, ${images[0].y}px)`,
+                }}
+              />
+            )}
+
+            {images[1] && ( // Check if img[1] exists before rendering
+              <img
+                src={images[1] ? images[1].src : ""}
+                className={styles.uploadedImage}
+                style={{
+                  transform: `scale(${images[1].zoom / 100}) translate(${
+                    images[1].x
+                  }px, ${images[1].y}px)`,
+                }}
+              />
+            )}
+            {staticColumns[cardIndex] &&
+            staticColumns[cardIndex].text.renderPriceBox ? (
+              <div className="priceBox">
+                {renderPriceBox(
+                  staticColumns[cardIndex].text.priceBoxType,
+                  staticColumns,
+                  setStaticColumns,
+                  cardIndex,
+                  staticColumns[cardIndex].text.priceBoxColor
+                )}
+              </div>
+            ) : null}
+
+            <TopTextBox
+              textBoxes={staticColumns}
+              setTextBoxes={setStaticColumns}
+              cardIndex={cardIndex}
+              setPopup={setPopup}
+              setSelectedTextBox={setSelectedTextBox}
+              setType={setType}
+              setSelectedImage={setSelectedImage}
+              index={cardIndex}
+            />
+
+            <TextBoxLeft
+              textBoxes={staticColumns}
+              setTextBoxes={setStaticColumns}
+              cardIndex={cardIndex}
+              setPopup={setPopup}
+              setSelectedTextBox={setSelectedTextBox}
+              setType={setType}
+              setSelectedImage={setSelectedImage}
+              index={cardIndex}
+            />
+          </div>
+        );
+      }
+
+      cards.push(
+        <div key={i + 1} className={styles.cardColumn}>
+          {column}
+        </div>
+      );
+    }
     return cards;
   };
 
@@ -843,22 +890,41 @@ function International() {
     <div>
       {popup ? (
         <TextPopUp
-          textBox={selectedImage.cardIndex > 20 ? dynamicColumn : staticColumns}
+          textBox={
+            selectedImage.cardIndex > maxStaticIndex
+              ? dynamicColumn
+              : staticColumns
+          }
           setTextBox={
-            selectedImage.cardIndex > 20 ? setDynamicColumn : setStaticColumns
+            selectedImage.cardIndex > maxStaticIndex
+              ? setDynamicColumn
+              : setStaticColumns
           }
           setPopup={setPopup}
           cardIndex={selectedImage}
+          maxCardPosition={maxStaticIndex}
           type={type}
-          maxCardPosition={20}
         />
       ) : null}
       {isEditingZoom && (
-        <ZoomSlider 
-          cardIndex={selectedImage.cardIndex > 20 ? selectedImage.cardIndex - 21 : selectedImage.cardIndex}
-          selectedColumn={selectedImage.cardIndex > 20 ? dynamicColumn : staticColumns}
-          setSelectedColumn={selectedImage.cardIndex > 20 ? setDynamicColumn : setStaticColumns}
-          setIsEditingZoom={setIsEditingZoom} />
+        <ZoomSlider
+          cardIndex={
+            selectedImage.cardIndex > maxStaticIndex
+              ? selectedImage.cardIndex - cardsInStatic
+              : selectedImage.cardIndex
+          }
+          selectedColumn={
+            selectedImage.cardIndex > maxStaticIndex
+              ? dynamicColumn
+              : staticColumns
+          }
+          setSelectedColumn={
+            selectedImage.cardIndex > maxStaticIndex
+              ? setDynamicColumn
+              : setStaticColumns
+          }
+          setIsEditingZoom={setIsEditingZoom}
+        />
       )}
       {popup2 ? (
         <div className={styles.popUp2} style={{ zIndex: "1" }}>
@@ -885,43 +951,43 @@ function International() {
         </div>
       ) : null}
 
-      <button
-        style={{
-          width: "165px",
-          position: "fixed",
-          top: "20px",
-          left: "15px",
-          backgroundColor: "gray",
-          color: "white",
-        }}
-        onClick={handleConvertToPDF}
-      >
-        Make PDF
-      </button>
-      <button
-        style={{
-          width: "165px",
-          position: "fixed",
-          top: "70px",
-          left: "15px",
-          backgroundColor: "gray",
-          color: "white",
-        }}
-        onClick={() => navigate("/")}
-      >
-        Back to Home
-      </button>
-      <div className={styles.sidebar} style={{ top: "120px" }}>
+      <div className={styles.sidebar} style={{ top: "0px" }}>
         <div
           style={{
             position: "relative",
-            left: "12px",
+            left: "px",
             display: "flex",
             flexDirection: "column",
             alignItems: "flex-start",
             padding: "3px",
           }}
         >
+          <button
+            style={{
+              width: "165px",
+              position: "relative",
+              backgroundColor: "gray",
+              color: "white",
+              marginBottom: "10px",
+              zIndex: "1",
+            }}
+            onClick={handleConvertToPDF}
+          >
+            Make PDF
+          </button>
+          <button
+            style={{
+              width: "165px",
+              position: "relative",
+              backgroundColor: "gray",
+              color: "white",
+              marginBottom: "10px",
+              zIndex: "1",
+            }}
+            onClick={() => navigate("/")}
+          >
+            Back to Home
+          </button>
           <button
             style={{
               width: "165px",
@@ -988,19 +1054,31 @@ function International() {
         </div>
       </div>
 
-      <div id="magazineContainer" className={styles.containerDivBorder}>
-        <div className={styles.containerDiv} ref={contextMenuRef}>
-          <RenderCards />
+      <div id="magazineContainer" className={styles.containerDivBorder} style={{ display: "flex", justifyContent: "flex-start" }}>
+        <div style={{width: "80%"}}>
+            <div className={styles.containerDiv} ref={contextMenuRef}>
+            <RenderCards />
+            <div className={styles.overlay}>MEAT DEPARTMENT</div>
+            {contextMenu && (
+                <ContextMenu
+                x={contextMenu.x}
+                y={contextMenu.y}
+                items={contextMenu.items}
+                onClose={() => setContextMenu(null)}
+                />
+            )}
+            </div>
+            
+            <div className={styles.secondContainerDiv}>
+            <div className={styles.secondOverlay}>CERTIFIED HALAL MEAT</div>
+            <RenderLiquorCards />
+            </div>
+        </div>
+        <div style={{position: "relative"}}>
+        <div className={styles.thirdContainerDiv}><RenderDynamicColumn /></div>
+            <div className={styles.thirdOverlay}>SEAFOOD</div>
+            
 
-          {contextMenu && (
-            <ContextMenu
-              x={contextMenu.x}
-              y={contextMenu.y}
-              items={contextMenu.items}
-              onClose={() => setContextMenu(null)}
-            />
-          )}
-          <div className={styles.overlay}>INTERNATIONAL</div>
         </div>
       </div>
       {info ? <RenderInfo /> : null}
@@ -1009,14 +1087,16 @@ function International() {
           images={images}
           cardIndex={selectedCardIndex}
           selectedColumn={
-            selectedCardIndex > 20 ? dynamicColumn : staticColumns
+            selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
           }
           setSelectedColumn={
-            selectedCardIndex > 20 ? setDynamicColumn : setStaticColumns
+            selectedCardIndex > maxStaticIndex
+              ? setDynamicColumn
+              : setStaticColumns
           }
           setImages={setImages}
           imgIndex={imgIndex}
-          maxCardPosition={20}
+          maxCardPosition={maxStaticIndex}
         />
       ) : null}
       {templates != null ? (
@@ -1030,5 +1110,3 @@ function International() {
     </div>
   );
 }
-
-export default International;
