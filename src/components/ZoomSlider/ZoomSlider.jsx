@@ -1,39 +1,38 @@
+import React from "react";
+import styles from "./ZoomSlider.module.css"
 
 
+const ZoomSlider = ({ cardIndex,  selectedColumn, setSelectedColumn, setIsEditingZoom }) => {
 
+  const handleZoomChange = (newZoom, index) => {
+      const newUploadedImages = [...selectedColumn];
+      newUploadedImages[cardIndex].img[index].zoom = newZoom;
+      setSelectedColumn(newUploadedImages);
+  };
 
-const ZoomSlider = ({ columnIndex, cardIndex, index, uploadedImages }) => {
-    const calculatedCardIndex = columnIndex * numCardsPerColumn + cardIndex;
+  const handlePositionChange = (changeAmount, index, axis) => {
+      const newUploadedImages = [...selectedColumn];
+      newUploadedImages[cardIndex].img[index][axis] += changeAmount;
+      setSelectedColumn(newUploadedImages);
+  };
 
-    const handleZoomChange = (newZoom) => {
-      const newZoomLevels = [...zoomLevels];
-      newZoomLevels[columnIndex][cardIndex][index] = newZoom;
-      setZoomLevels(newZoomLevels);
-    };
+  const handleConfirmClick = () => {
+    setIsEditingZoom(false);
+  };
 
-    const handlePositionChange = (changeAmount) => {
-      const newImagePositions = [...imagePositions];
-      newImagePositions[columnIndex][cardIndex][index] += changeAmount;
-      setImagePositions(newImagePositions);
-    };
-
-    const handlePositionChangeY = (changeAmount) => {
-      const newImagePositionsY = [...imagePositionsY];
-      newImagePositionsY[columnIndex][cardIndex][index] += changeAmount;
-      setImagePositionsY(newImagePositionsY);
-    };
-
-    const handleConfirmClick = () => {
-      setIsEditingZoom(false);
-    };
-
-    return (
-      <div className={styles.sidebar}>
+  return (
+    <div className={styles.sidebar}>
+      {selectedColumn[cardIndex].img[0].src != "" ? (
         <div className={styles.zoomSliderContainer}>
+          <label>Image 1</label>
           <div className={styles.zoomControlsGrid}>
             <button
               onClick={() =>
-                handleZoomChange(zoomLevels[columnIndex][cardIndex][index] - 5)
+                handleZoomChange(
+                  selectedColumn[cardIndex]
+                    .img[0].zoom - 5,
+                  0
+                )
               }
               className={styles.bttnGrid}
             >
@@ -41,7 +40,11 @@ const ZoomSlider = ({ columnIndex, cardIndex, index, uploadedImages }) => {
             </button>
             <button
               onClick={() =>
-                handleZoomChange(zoomLevels[columnIndex][cardIndex][index] + 5)
+                handleZoomChange(
+                  selectedColumn[cardIndex]
+                    .img[0].zoom + 5,
+                  0
+                )
               }
               className={styles.bttnGrid}
             >
@@ -49,33 +52,94 @@ const ZoomSlider = ({ columnIndex, cardIndex, index, uploadedImages }) => {
             </button>
             <button
               className={styles.bttnGrid}
-              onClick={() => handlePositionChangeY(-5)}
+              onClick={() => handlePositionChange(-5, 0, "y")}
             >
               up
             </button>
             <button
               className={styles.bttnGrid}
-              onClick={() => handlePositionChangeY(5)}
+              onClick={() => handlePositionChange(5, 0, "y")}
             >
               down
             </button>
             <button
               className={styles.bttnGrid}
-              onClick={() => handlePositionChange(-5)}
+              onClick={() => handlePositionChange(-5, 0, "x")}
             >
               left
             </button>
             <button
               className={styles.bttnGrid}
-              onClick={() => handlePositionChange(5)}
+              onClick={() => handlePositionChange(5, 0, "x")}
             >
               right
             </button>
           </div>
-          <button className={styles.confirmButton} onClick={handleConfirmClick}>
-            OK
-          </button>
         </div>
+      ) : null}
+
+      {selectedColumn[cardIndex].img[1].src != "" ? (
+        <div className={styles.zoomSliderContainer}>
+          <label>Image 2</label>
+          <div className={styles.zoomControlsGrid}>
+            <button
+              onClick={() =>
+                handleZoomChange(
+                  selectedColumn[cardIndex]
+                    .img[1].zoom - 5,
+                  1
+                )
+              }
+              className={styles.bttnGrid}
+            >
+              -
+            </button>
+            <button
+              onClick={() =>
+                handleZoomChange(
+                  selectedColumn[cardIndex]
+                    .img[1].zoom + 5,
+                  1
+                )
+              }
+              className={styles.bttnGrid}
+            >
+              +
+            </button>
+            <button
+              className={styles.bttnGrid}
+              onClick={() => handlePositionChange(-5, 1, "y", 0)}
+            >
+              up
+            </button>
+            <button
+              className={styles.bttnGrid}
+              onClick={() => handlePositionChange(5, 1, "y")}
+            >
+              down
+            </button>
+            <button
+              className={styles.bttnGrid}
+              onClick={() => handlePositionChange(-5, 1, "x")}
+            >
+              left
+            </button>
+            <button
+              className={styles.bttnGrid}
+              onClick={() => handlePositionChange(5, 1, "x")}
+            >
+              right
+            </button>
+          </div>
+        </div>
+      ) : null}
+      <div className={styles.zoomSliderContainer}>
+        <button className={styles.confirmButton} onClick={handleConfirmClick}>
+          OK
+        </button>
       </div>
-    );
+    </div>
+  );
   };
+
+  export default ZoomSlider;
