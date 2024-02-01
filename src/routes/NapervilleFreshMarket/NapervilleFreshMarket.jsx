@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import styles from "./Dairy&Snacks.module.css";
+import React, { useState, useEffect, useRef } from "react";
+import styles from "./NapervilleFreshMarket.module.css";
 import html2pdf from "html2pdf.js"; // Importa la biblioteca html2pdf
 import FixedBox from "../../components/BoxWithText/BoxWithText";
 import TripleBox from "../../components/TripleBoxWithText/TripleBoxWithText";
@@ -16,21 +16,8 @@ import ImageFromCloud from "../../components/ImageFromCloud/ImageFromCloud";
 import TemplatesFromCloud from "../../components/TemplatesFromCloud/TemplatesFromCloud";
 import ZoomSlider from "../../components/ZoomSlider/ZoomSlider";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
-  authDomain: "napervillecollageapp.firebaseapp.com",
-  projectId: "napervillecollageapp",
-  storageBucket: "napervillecollageapp.appspot.com",
-  messagingSenderId: "658613882469",
-  appId: "1:658613882469:web:23da7f1eb31c54a021808c",
-  measurementId: "G-DNB21PCJ7T",
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-export default function DairyAndSnacks() {
-  const cardsInStatic = 25;
+function NapervilleFreshMarket() {
+  const cardsInStatic = 30;
   const maxStaticIndex = cardsInStatic - 1;
 
   const [staticColumns, setStaticColumns] = useState(
@@ -58,6 +45,7 @@ export default function DairyAndSnacks() {
   const [contextMenu, setContextMenu] = useState(null);
   const [isEditingZoom, setIsEditingZoom] = useState(false);
   const [selectedImage, setSelectedImage] = useState({});
+  const [selectedTextBox, setSelectedTextBox] = useState({});
   const [selectedCardIndex, setSelectedCardIndex] = useState({});
   const [info, setInfo] = useState(false);
   const [popup, setPopup] = useState(false);
@@ -66,7 +54,6 @@ export default function DairyAndSnacks() {
   const [templates, setTemplates] = useState(null);
   const [images, setImages] = useState(null);
   const [imgIndex, setImgIndex] = useState(null);
-  const [selectedTextBox, setSelectedTextBox] = useState({});
 
   const storage = getStorage();
   const imagesRef = ref(storage, "images/");
@@ -83,11 +70,12 @@ export default function DairyAndSnacks() {
       containerClone.id = "magazineClone";
 
       // Apply the specified styles to the clone
-      containerClone.style.display = "grid";
-      
+      containerClone.style.display = "flex";
+      containerClone.style.alignItems = "center";
+      containerClone.style.justifyContent = "center";
       containerClone.style.position = "relative";
       containerClone.style.zIndex = "0";
-      containerClone.style.width = "21cm";
+      containerClone.style.width = "cardsInStaticcm";
       containerClone.style.height = "29.6cm";
       containerClone.style.backgroundColor = "white";
       containerClone.style.top = "0";
@@ -97,7 +85,7 @@ export default function DairyAndSnacks() {
       document.body.appendChild(containerClone);
 
       const pdfOptions = {
-        filename: "liquor_magazine.pdf",
+        filename: "grocery_magazine.pdf",
         image: { type: "png", quality: 1 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
@@ -110,7 +98,6 @@ export default function DairyAndSnacks() {
       containerClone.parentNode.removeChild(containerClone);
     }
   };
-
   const handleDynamicColumns = (event) => {
     const cardAmount = prompt(
       "Enter the amount of cards you want on the first column: "
@@ -138,6 +125,65 @@ export default function DairyAndSnacks() {
       cards.push(card);
     }
     setDynamicColumn(cards);
+  };
+
+  const handleImageUpload = (event, cardIndex, img) => {
+    // Added 'cardIndex' parameter
+    event.preventDefault();
+    if (cardIndex > maxStaticIndex) {
+      const dynamicColumnCopy = [...dynamicColumn];
+      dynamicColumnCopy.map((card) => {
+        if (card.index === cardIndex) {
+          // Changed 'event.target.key' to 'cardIndex'
+          const input = document.createElement("input");
+          input.type = "file";
+          input.accept = "image/*";
+          input.onchange = (event) => {
+            const file = event.target.files[0];
+
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                const result = e.target.result;
+                const newDynamicColumn = [...dynamicColumn];
+                newDynamicColumn[cardIndex - cardsInStatic].img[img].src =
+                  result;
+                setDynamicColumn(newDynamicColumn);
+              };
+
+              reader.readAsDataURL(file);
+            }
+          };
+          input.click();
+        }
+      });
+    } else {
+      const staticColumnsCopy = [...staticColumns];
+      staticColumnsCopy.map((card) => {
+        if (card.index === cardIndex) {
+          // Changed 'event.target.key' to 'cardIndex'
+          const input = document.createElement("input");
+          input.type = "file";
+          input.accept = "image/*";
+          input.onchange = (event) => {
+            const file = event.target.files[0];
+
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                const result = e.target.result;
+                const newStaticColumns = [...staticColumns];
+                newStaticColumns[cardIndex].img[img].src = result;
+                setStaticColumns(newStaticColumns);
+              };
+
+              reader.readAsDataURL(file);
+            }
+          };
+          input.click();
+        }
+      });
+    }
   };
 
   useEffect(() => {
@@ -211,7 +257,7 @@ export default function DairyAndSnacks() {
       "Are you sure you want to delete the image?"
     );
 
-    if (cardIndex > 11) {
+    if (cardIndex > maxStaticIndex) {
       if (confirmDelete) {
         setDynamicColumn((prevDynamicColumn) => {
           const newDynamicColumn = [...prevDynamicColumn];
@@ -261,12 +307,10 @@ export default function DairyAndSnacks() {
   };
 
   const showHidePriceBox = (cardIndex) => {
-    const calculatedCardIndex = cardIndex - cardsInStatic;
-
     if (cardIndex > maxStaticIndex) {
       const newDynamicColumn = [...dynamicColumn];
-      newDynamicColumn[calculatedCardIndex].text.renderPriceBox =
-        !newDynamicColumn[calculatedCardIndex].text.renderPriceBox;
+      newDynamicColumn[cardIndex - cardsInStatic].text.renderPriceBox =
+        !newDynamicColumn[cardIndex - cardsInStatic].text.renderPriceBox;
       setDynamicColumn(newDynamicColumn);
     } else {
       const newStaticColumns = [...staticColumns];
@@ -278,14 +322,12 @@ export default function DairyAndSnacks() {
 
   const switchBoxType = (cardIndex) => {
     console.log("switchBoxType");
-
-    const calculatedCardIndex = cardIndex - cardsInStatic;
     if (cardIndex > maxStaticIndex) {
       const newDynamicColumn = [...dynamicColumn];
-      if (newDynamicColumn[calculatedCardIndex].text.priceBoxType < 2) {
-        newDynamicColumn[calculatedCardIndex].text.priceBoxType++;
+      if (newDynamicColumn[cardIndex - cardsInStatic].text.priceBoxType < 2) {
+        newDynamicColumn[cardIndex - cardsInStatic].text.priceBoxType++;
       } else {
-        newDynamicColumn[calculatedCardIndex].text.priceBoxType = 0; // Reset to 0 if it's already 3
+        newDynamicColumn[cardIndex - cardsInStatic].text.priceBoxType = 0; // Reset to 0 if it's already 3
       }
       setDynamicColumn(newDynamicColumn);
     } else {
@@ -300,12 +342,10 @@ export default function DairyAndSnacks() {
   };
 
   const changePriceBoxColor = (cardIndex) => {
-    const calculatedCardIndex = cardIndex - cardsInStatic;
-
     if (cardIndex > maxStaticIndex) {
       const newDynamicColumn = [...dynamicColumn];
-      newDynamicColumn[calculatedCardIndex].text.priceBoxColor =
-        !newDynamicColumn[calculatedCardIndex].text.priceBoxColor;
+      newDynamicColumn[cardIndex - cardsInStatic].text.priceBoxColor =
+        !newDynamicColumn[cardIndex - cardsInStatic].text.priceBoxColor;
       setDynamicColumn(newDynamicColumn);
     } else {
       const newStaticColumns = [...staticColumns];
@@ -315,14 +355,11 @@ export default function DairyAndSnacks() {
     }
   };
 
-
   const changePriceBoxBorder = (cardIndex) => {
-    const calculatedCardIndex = cardIndex - cardsInStatic;
-
     if (cardIndex > maxStaticIndex) {
       const newDynamicColumn = [...dynamicColumn];
-      newDynamicColumn[calculatedCardIndex].text.priceBoxBorder =
-        !newDynamicColumn[calculatedCardIndex].text.priceBoxBorder;
+      newDynamicColumn[cardIndex - cardsInStatic].text.priceBoxBorder =
+        !newDynamicColumn[cardIndex - cardsInStatic].text.priceBoxBorder;
       setDynamicColumn(newDynamicColumn);
     } else {
       const newStaticColumns = [...staticColumns];
@@ -330,7 +367,7 @@ export default function DairyAndSnacks() {
         !newStaticColumns[cardIndex].text.priceBoxBorder;
       setStaticColumns(newStaticColumns);
     }
-  }
+  };
 
   const ContextMenu = ({ x, y, items, onClose }) => (
     <div
@@ -376,9 +413,11 @@ export default function DairyAndSnacks() {
   const handleContextMenu = (event, cardIndex, column, image) => {
     event.preventDefault();
 
-    const selectedColumn = cardIndex > maxStaticIndex ? dynamicColumn : staticColumns;
+    const selectedColumn =
+      cardIndex > maxStaticIndex ? dynamicColumn : staticColumns;
 
-    const index = cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
+    const index =
+      cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
 
     const contextMenuItems = [
       {
@@ -403,7 +442,7 @@ export default function DairyAndSnacks() {
       {
         label: "Change PriceBox Border",
         action: () => changePriceBoxBorder(cardIndex),
-      }
+      },
     ];
 
     if (selectedColumn[index].img[1].src == "") {
@@ -450,14 +489,18 @@ export default function DairyAndSnacks() {
 
   const handleCardClick = (cardIndex, event) => {
     // Check if the click event target is not the card element
+
     setImgIndex(0);
 
-    const auxIndex = cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
+    const auxIndex =
+      cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
 
     if (!event.target.classList.contains(styles.card)) {
       return;
     }
-    const image = (cardIndex > maxStaticIndex ? dynamicColumn : staticColumns)[auxIndex];
+    const image = (cardIndex > maxStaticIndex ? dynamicColumn : staticColumns)[
+      auxIndex
+    ];
 
     if (image.img[0].src === "" && image.img[1].src === "") {
       setPopup2(true);
@@ -620,6 +663,18 @@ export default function DairyAndSnacks() {
     return priceBoxes[number];
   };
 
+  const RenderTopCards = () => {
+    return (
+      <div style={{ position: "relative", width: "98%"}} className={styles.topContainerDiv}>
+        <img
+          style={{ width: "50%" }}
+          src="https://firebasestorage.googleapis.com/v0/b/fb-storage-49d33.appspot.com/o/images%2Flogos%2F0130__0205__digital-scaled.jpg?alt=media&token=9ab3aaa2-17bd-4585-a025-e6160a438735"
+        />
+        <RenderDynamicColumn />
+      </div>
+    );
+  };
+
   const RenderDynamicColumn = () => {
     let cards = [];
 
@@ -636,11 +691,9 @@ export default function DairyAndSnacks() {
         </label>
       </div>
     ) : (
-      <div className={styles.firstCardColumn}>
+      <div className={styles.topCardColumn}>
         {dynamicColumn.map((card) => {
           const cardIndex = card.index;
-
-          const calculatedCardIndex = cardIndex - cardsInStatic;
           const isEditingThisZoom =
             isEditingZoom &&
             selectedImage &&
@@ -652,7 +705,7 @@ export default function DairyAndSnacks() {
           cards.push(
             <div
               className={styles.card}
-              style={{}}
+              style={{border: "none"}}
               key={cardIndex}
               onClick={(event) => handleCardClick(cardIndex, event)}
             >
@@ -679,16 +732,16 @@ export default function DairyAndSnacks() {
                   }}
                 />
               )}
-              {dynamicColumn[calculatedCardIndex] &&
-              dynamicColumn[calculatedCardIndex].text.renderPriceBox ? (
+              {dynamicColumn[cardIndex - cardsInStatic] &&
+              dynamicColumn[cardIndex - cardsInStatic].text.renderPriceBox ? (
                 <div className="priceBox">
                   {renderPriceBox(
-                    dynamicColumn[calculatedCardIndex].text.priceBoxType,
+                    dynamicColumn[cardIndex - cardsInStatic].text.priceBoxType,
                     dynamicColumn,
                     setDynamicColumn,
-                    calculatedCardIndex,
-                    dynamicColumn[calculatedCardIndex].text.priceBoxColor,
-                    dynamicColumn[calculatedCardIndex].text.priceBoxBorder
+                    cardIndex - cardsInStatic,
+                    dynamicColumn[cardIndex - cardsInStatic].text.priceBoxColor,
+                    dynamicColumn[cardIndex - cardsInStatic].text.priceBoxBorder
                   )}
                 </div>
               ) : null}
@@ -711,13 +764,14 @@ export default function DairyAndSnacks() {
     );
   };
 
-  const RenderLiquorCards = () => {
+  const RenderCardsSecondColumn = () => {
     const cards = [];
-   for (let i = 0; i < 5; i++) {
+
+    for (let i = 0; i < 2; i++) {
       const column = [];
 
-      for (let j = 0; j < 2; j++) {
-        const cardIndex = j + i * 2 + 15;
+      for (let j = 0; j < 6; j++) {
+        const cardIndex = j + i * 6 + 18;
 
         const isEditingThisZoom =
           isEditingZoom &&
@@ -801,22 +855,22 @@ export default function DairyAndSnacks() {
       }
 
       cards.push(
-        <div key={i} className={styles.cardColumn}>
+        <div key={i + 1} className={styles.cardSecondColumn}>
           {column}
         </div>
       );
     }
     return cards;
-  }
+  };
 
   const RenderCards = () => {
-    const cards = [<RenderDynamicColumn />];
+    const cards = [];
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 2; i++) {
       const column = [];
 
-      for (let j = 0; j < 4; j++) {
-        const cardIndex = j + i * 4;
+      for (let j = 0; j < 8; j++) {
+        const cardIndex = j + i * 8;
 
         const isEditingThisZoom =
           isEditingZoom &&
@@ -912,22 +966,42 @@ export default function DairyAndSnacks() {
     <div>
       {popup ? (
         <TextPopUp
-          textBox={selectedImage.cardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
+          textBox={
+            selectedImage.cardIndex > maxStaticIndex
+              ? dynamicColumn
+              : staticColumns
+          }
           setTextBox={
-            selectedImage.cardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns
+            selectedImage.cardIndex > maxStaticIndex
+              ? setDynamicColumn
+              : setStaticColumns
           }
           setPopup={setPopup}
           cardIndex={selectedImage}
-          maxCardPosition={maxStaticIndex}
           type={type}
+          maxCardPosition={maxStaticIndex}
         />
       ) : null}
+
       {isEditingZoom && (
-        <ZoomSlider 
-          cardIndex={selectedImage.cardIndex > maxStaticIndex ? selectedImage.cardIndex - cardsInStatic : selectedImage.cardIndex}
-          selectedColumn={selectedImage.cardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
-          setSelectedColumn={selectedImage.cardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns}
-          setIsEditingZoom={setIsEditingZoom} />
+        <ZoomSlider
+          cardIndex={
+            selectedImage.cardIndex > maxStaticIndex
+              ? selectedImage.cardIndex - cardsInStatic
+              : selectedImage.cardIndex
+          }
+          selectedColumn={
+            selectedImage.cardIndex > maxStaticIndex
+              ? dynamicColumn
+              : staticColumns
+          }
+          setSelectedColumn={
+            selectedImage.cardIndex > maxStaticIndex
+              ? setDynamicColumn
+              : setStaticColumns
+          }
+          setIsEditingZoom={setIsEditingZoom}
+        />
       )}
       {popup2 ? (
         <div className={styles.popUp2} style={{ zIndex: "1" }}>
@@ -954,27 +1028,14 @@ export default function DairyAndSnacks() {
         </div>
       ) : null}
 
-      
-      <div className={styles.sidebar} style={{ top: "0px" }}>
-        
-        <div
-          style={{
-            position: "relative",
-            left: "px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-start",
-            padding: "3px",
-          }}
-        >
-          <button
+      <button
         style={{
           width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-              zIndex: "1",
+          position: "fixed",
+          top: "maxStaticIndexpx",
+          left: "15px",
+          backgroundColor: "gray",
+          color: "white",
         }}
         onClick={handleConvertToPDF}
       >
@@ -983,16 +1044,27 @@ export default function DairyAndSnacks() {
       <button
         style={{
           width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-              zIndex: "1",
+          position: "fixed",
+          top: "70px",
+          left: "15px",
+          backgroundColor: "gray",
+          color: "white",
         }}
         onClick={() => navigate("/")}
       >
         Back to Home
       </button>
+      <div className={styles.sidebar} style={{ top: "1maxStaticIndexpx" }}>
+        <div
+          style={{
+            position: "relative",
+            left: "12px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            padding: "3px",
+          }}
+        >
           <button
             style={{
               width: "165px",
@@ -1059,27 +1131,29 @@ export default function DairyAndSnacks() {
         </div>
       </div>
 
-      <div id="magazineContainer" className={styles.containerDivBorder}>
-        <div className={styles.containerDiv} ref={contextMenuRef}>
-          <RenderCards />
-          <div className={styles.overlay}>DAIRY</div>
-          {contextMenu && (
-            <ContextMenu
-              x={contextMenu.x}
-              y={contextMenu.y}
-              items={contextMenu.items}
-              onClose={() => setContextMenu(null)}
-            />
-          )}
+      <div id="magazineContainer" style={{justifyContent: "center"}}>
+        <div style={{ display: "grid" }} className={styles.containerDivBorder}>
+          <RenderTopCards />
+          <img
+            style={{ width: "100%", position: "absolute", top: "150px" }}
+            src="https://firebasestorage.googleapis.com/v0/b/fb-storage-49d33.appspot.com/o/images%2Flogos%2Fnaperville%20banner.jpg?alt=media&token=a4205b6a-09bf-4c63-bcd4-7cc8218370aa"
+          />
+          <div style={{ position: "relative" }}>
+            <div className={styles.containerDiv} style={{ width: "98%", height: "200%", position: "absolute", top: "-420px" }} ref={contextMenuRef}>
+              <RenderCards />
+              <RenderCardsSecondColumn />
+              {contextMenu && (
+                <ContextMenu
+                  x={contextMenu.x}
+                  y={contextMenu.y}
+                  items={contextMenu.items}
+                  onClose={() => setContextMenu(null)}
+                />
+              )}
+              
+            </div>
+          </div>
         </div>
-        
-        <div className={styles.secondContainerDiv}>
-        <div className={styles.secondOverlay}>SNACKS</div>
-        <RenderLiquorCards /> 
-        
-        </div>
-        
-        
       </div>
       {info ? <RenderInfo /> : null}
       {images != null ? (
@@ -1090,7 +1164,9 @@ export default function DairyAndSnacks() {
             selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
           }
           setSelectedColumn={
-            selectedCardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns
+            selectedCardIndex > maxStaticIndex
+              ? setDynamicColumn
+              : setStaticColumns
           }
           setImages={setImages}
           imgIndex={imgIndex}
@@ -1108,3 +1184,5 @@ export default function DairyAndSnacks() {
     </div>
   );
 }
+
+export default NapervilleFreshMarket;
