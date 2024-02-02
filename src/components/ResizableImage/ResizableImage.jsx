@@ -99,6 +99,7 @@ const ResizableImage = ({
   };
 
   return (
+    <div className={styles.background}>
     <div className={styles.popupContainer}>
       <div
       className={styles.sidebar}
@@ -115,7 +116,6 @@ const ResizableImage = ({
                 <div>
                   <div
                     className={styles.zoomControlsGrid}
-                    
                   >
                     <button
                       onClick={() => handleZoomChange(-5, index)}
@@ -153,6 +153,7 @@ const ResizableImage = ({
       <button className={styles.confirmButton} onClick={handleConfirmClick}>
         OK
       </button>
+    </div>
     </div>
     </div>
     

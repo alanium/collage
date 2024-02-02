@@ -300,7 +300,6 @@
     left: 0px;
     display: flex;
     flex-direction: column;
-    background-color: white;
   }
 
   .overlayCard:hover,
