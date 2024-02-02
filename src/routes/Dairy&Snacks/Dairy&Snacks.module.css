@@ -70,7 +70,7 @@
   }
   
   .containerDiv {
-    width: 95%; /* Increased by 3% */
+    width: 98%; /* Increased by 3% */
     height: 95%;; /* Adjust to your desired height */
     display: flex;
     flex-direction: row;
@@ -83,8 +83,9 @@
   }
 
   .secondContainerDiv {
-    width: 95%; /* Increased by 3% */
-    height: 70%;; /* Adjust to your desired height */
+    top: 186px;
+    width: 98%; /* Increased by 3% */
+    height: 60%;; /* Adjust to your desired height */
     display: flex;
     flex-direction: row;
     margin: 5px;

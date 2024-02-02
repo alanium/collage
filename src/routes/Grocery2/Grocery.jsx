@@ -15,6 +15,7 @@ import { getStorage, ref, listAll, uploadBytes } from "firebase/storage";
 import ImageFromCloud from "../../components/ImageFromCloud/ImageFromCloud";
 import TemplatesFromCloud from "../../components/TemplatesFromCloud/TemplatesFromCloud";
 import ZoomSlider from "../../components/ZoomSlider/ZoomSlider";
+import ResizableImage from "../../components/ResizableImage/ResizableImage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
@@ -875,7 +876,7 @@ function Grocery() {
       ) : null}
       
       {isEditingZoom && (
-        <ZoomSlider 
+        <ResizableImage 
           cardIndex={selectedImage.cardIndex > 20 ? selectedImage.cardIndex - 21 : selectedImage.cardIndex}
           selectedColumn={selectedImage.cardIndex > 20 ? dynamicColumn : staticColumns}
           setSelectedColumn={selectedImage.cardIndex > 20 ? setDynamicColumn : setStaticColumns}

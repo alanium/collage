@@ -44,7 +44,7 @@ export default function TopTextBox({ textBoxes, setTextBoxes, cardIndex, setPopu
         setFontSize(newFontSize);
       }
     }
-  }, [textBoxes[cardIndex].text.top, cardIndex, fontSize]);
+  }, [textBoxes[cardIndex].text.top, fontSize]);
 
   // Function to calculate the width of a text string
   const getTextWidth = (text, fontSize) => {

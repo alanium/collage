@@ -1150,7 +1150,7 @@ export default function FrozenAndBeverages() {
       </div>
 
       <div id="magazineContainer" className={styles.containerDivBorder}>
-        <div className={styles.containerDiv} ref={contextMenuRef}>
+        <div className={styles.containerDiv} style={{height: "129%"}} ref={contextMenuRef}>
           <RenderCards />
           <div className={styles.overlay}>FROZEN</div>
           {contextMenu && (

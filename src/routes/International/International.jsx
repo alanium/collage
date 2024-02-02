@@ -701,6 +701,10 @@ function International() {
             selectedImage.cardIndex !== undefined &&
             selectedImage.cardIndex === cardIndex;
 
+            if (cardIndex - 21 <= 0) {
+              console.log(cardIndex)
+            }
+
           let images = { ...card };
 
           cards.push(
@@ -742,7 +746,7 @@ function International() {
                     setDynamicColumn,
                     cardIndex - 21,
                     dynamicColumn[cardIndex - 21].text.priceBoxColor,
-                    staticColumns[cardIndex].text.priceBoxBorder
+                    staticColumns[cardIndex - 21].text.priceBoxBorder
                   )}
                 </div>
               ) : null}

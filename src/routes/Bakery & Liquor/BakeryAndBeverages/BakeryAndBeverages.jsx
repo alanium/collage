@@ -315,6 +315,64 @@ export default function BakeryLiquor() {
     }
   };
 
+  const handleImageUpload = (event, cardIndex, img) => {
+    // Added 'cardIndex' parameter
+    event.preventDefault();
+    if (cardIndex > maxStaticIndex) {
+      const dynamicColumnCopy = [...dynamicColumn];
+      dynamicColumnCopy.map((card) => {
+        if (card.index === cardIndex) {
+          // Changed 'event.target.key' to 'cardIndex'
+          const input = document.createElement("input");
+          input.type = "file";
+          input.accept = "image/*";
+          input.onchange = (event) => {
+            const file = event.target.files[0];
+
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                const result = e.target.result;
+                const newDynamicColumn = [...dynamicColumn];
+                newDynamicColumn[cardIndex - cardsInStatic].img[img].src = result;
+                setDynamicColumn(newDynamicColumn);
+              };
+
+              reader.readAsDataURL(file);
+            }
+          };
+          input.click();
+        }
+      });
+    } else {
+      const staticColumnsCopy = [...staticColumns];
+      staticColumnsCopy.map((card) => {
+        if (card.index === cardIndex) {
+          // Changed 'event.target.key' to 'cardIndex'
+          const input = document.createElement("input");
+          input.type = "file";
+          input.accept = "image/*";
+          input.onchange = (event) => {
+            const file = event.target.files[0];
+
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                const result = e.target.result;
+                const newStaticColumns = [...staticColumns];
+                newStaticColumns[cardIndex].img[img].src = result;
+                setStaticColumns(newStaticColumns);
+              };
+
+              reader.readAsDataURL(file);
+            }
+          };
+          input.click();
+        }
+      });
+    }
+  };
+
   const changePriceBoxBorder = (cardIndex) => {
     const calculatedCardIndex = cardIndex - cardsInStatic;
 
