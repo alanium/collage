@@ -801,7 +801,7 @@ function Grocery() {
                 style={{
                   transform: `scale(${images[0].zoom / 100}) translate(${
                     images[0].x
-                  }%, ${images[0].y}%)`,
+                  }px, ${images[0].y}px)`,
                 }}
               />
             )}

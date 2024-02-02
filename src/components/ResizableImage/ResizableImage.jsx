@@ -90,6 +90,8 @@ const ResizableImage = ({
       const propertyValue = computedStyles.getPropertyValue(propertyName);
       stylesToCopy[propertyName] = propertyValue;
     }
+
+    console.log(stylesToCopy.width, stylesToCopy.height)
     setContainerResolution({
       width: Number(stylesToCopy.width.replace("px", "")),
       height: Number(stylesToCopy.height.replace("px", "")),
@@ -97,7 +99,8 @@ const ResizableImage = ({
   };
 
   return (
-    <div
+    <div className={styles.popupContainer}>
+      <div
       className={styles.sidebar}
       style={{
         height: `${containerResolution.height}px`,
@@ -112,7 +115,7 @@ const ResizableImage = ({
                 <div>
                   <div
                     className={styles.zoomControlsGrid}
-                    style={{ backgroundColor: "white" }}
+                    
                   >
                     <button
                       onClick={() => handleZoomChange(-5, index)}
@@ -151,6 +154,8 @@ const ResizableImage = ({
         OK
       </button>
     </div>
+    </div>
+    
   );
 };
 
