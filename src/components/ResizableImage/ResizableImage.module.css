@@ -1,91 +1,97 @@
+.uploadedImage {
+  position: absolute;
+  max-width: 100%;
+  max-height: 100%;
+  z-index: -1;
+}
 
-  
-  .uploadedImage {
-    position: absolute;
-    max-width: 100%;
-    max-height: 100%;
-    z-index: -1;
-  }
-  
-  .zoomSliderContainer {
-    position: relative;
-    left: 12px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 3px;
-  }
-  
-  .zoomControlsGrid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 5px;
-  }
-  
-  .bttnGrid {
-    width: 80px;
-    background-color: gray;
-    color: white;
-  }
-  
-  .zoomSlider {
-    margin-bottom: 2px;
-  }
-  
-  .confirmButton {
-    background-color: #4caf50;
-    color: white;
-    border: none;
-    padding: 2px 4px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 20px;
-    padding: 5px;
-    width: 165px;
-    cursor: pointer;
-    margin-top: 10px;
-  }
-  
-  
-  .actionButton {
-    width: 100%;
-    margin-bottom: 10px;
-    padding: 10px;
-    background-color: #000000;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .closeButton {
-    width: 100%;
-    padding: 10px;
-    background-color: #797979;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .sidebar {
-    position: absolute;
+.zoomSliderContainer {
+  position: relative;
+  left: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 3px;
+}
+
+.zoomControlsGrid {
+  position: relative; /* Ensure relative positioning to use left property */
+  left: -120%; /* Adjust this value as needed */
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 5px;
+}
+
+.bttnGrid {
+  width: 80px;
+  background-color: gray;
+  color: white;
+}
+
+.zoomSlider {
+  margin-bottom: 2px;
+}
+
+.draggableImage {
+  z-index: 0;
+  top: 0%;
+  left: 0%;
+  max-width: 100%;
+  max-height: 100%;
+  position: absolute;
+  margin: 2px;
+  padding: 3px;
+}
+
+.confirmButton {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 2px 4px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 20px;
+  padding: 5px;
+  width: 165px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.actionButton {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px;
+  background-color: #000000;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.closeButton {
+  width: 100%;
+  padding: 10px;
+  background-color: #797979;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.sidebar {
+  position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 500px;
-  height: 400px;
   border: 1px solid black;
   display: flex;
   flex-direction: column;
   background-color: white;
   z-index: 2;
-  }
-  
-  
-  .positionSliderY {
-    margin-top: 3px;
-  }
-  
+}
+
+.positionSliderY {
+  margin-top: 3px;
+}

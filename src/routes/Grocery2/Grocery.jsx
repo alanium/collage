@@ -699,6 +699,7 @@ function Grocery() {
 
           cards.push(
             <div
+              name={`card-${cardIndex}`}
               className={styles.card}
               style={{}}
               key={cardIndex}
@@ -706,6 +707,7 @@ function Grocery() {
             >
               {images.img[0] && ( // Check if img[0] exists before rendering
                 <img
+                  name={`image-${cardIndex}-0`}
                   src={images.img[0].src ? images.img[0].src : ""}
                   className={styles.uploadedImage}
                   style={{
@@ -718,6 +720,7 @@ function Grocery() {
 
               {images.img[1] && ( // Check if img[1] exists before rendering
                 <img
+                  name={`image-${cardIndex}-1`}
                   src={images.img[1] ? images.img[1].src : ""}
                   className={styles.uploadedImage}
                   style={{
@@ -785,24 +788,27 @@ function Grocery() {
 
         column.push(
           <div
+            name={`card-${cardIndex}`}
             className={styles.card}
             key={cardIndex}
             onClick={(event) => handleCardClick(cardIndex, event)}
           >
             {images[0] && ( // Check if img[0] exists before rendering
               <img
+                name={`image-${cardIndex}-0`}
                 src={images[0].src ? images[0].src : ""}
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[0].zoom / 100}) translate(${
                     images[0].x
-                  }px, ${images[0].y}px)`,
+                  }%, ${images[0].y}%)`,
                 }}
               />
             )}
 
             {images[1] && ( // Check if img[1] exists before rendering
               <img
+                name={`image-${cardIndex}-1`}
                 src={images[1] ? images[1].src : ""}
                 className={styles.uploadedImage}
                 style={{

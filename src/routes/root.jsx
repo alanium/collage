@@ -35,7 +35,7 @@ export default function Root() {
         <>
             <div>
             
-                <h1>Collage App</h1>
+                <h1>Ad Magazine Editor</h1>
             </div>
             <div>
                 <h2>Choose the page you want to edit</h2>
