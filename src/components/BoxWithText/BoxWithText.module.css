@@ -38,5 +38,5 @@
   }
   
   .box.editing {
-    border: 1px dashed blue; /* Change the border style when editing */
+    outline: 1px dashed blue; /* Change the border style when editing */
   }

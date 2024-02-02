@@ -74,7 +74,7 @@ function NapervilleFreshMarket() {
       containerClone.style.alignItems = "center";
       containerClone.style.justifyContent = "center";
       containerClone.style.position = "relative";
-      containerClone.style.zIndex = "0";
+      containerClone.style.zIndex = "1";
       containerClone.style.width = "cardsInStaticcm";
       containerClone.style.height = "29.6cm";
       containerClone.style.backgroundColor = "white";
@@ -665,7 +665,7 @@ function NapervilleFreshMarket() {
 
   const RenderTopCards = () => {
     return (
-      <div style={{ position: "relative", width: "98%"}} className={styles.topContainerDiv}>
+      <div style={{ position: "relative", zIndex:"1", width: "98%"}} className={styles.topContainerDiv}>
         <img
           style={{ width: "50%" }}
           src="https://firebasestorage.googleapis.com/v0/b/fb-storage-49d33.appspot.com/o/images%2Flogos%2F0130__0205__digital-scaled.jpg?alt=media&token=9ab3aaa2-17bd-4585-a025-e6160a438735"
@@ -1028,33 +1028,9 @@ function NapervilleFreshMarket() {
         </div>
       ) : null}
 
-      <button
-        style={{
-          width: "165px",
-          position: "fixed",
-          top: "maxStaticIndexpx",
-          left: "15px",
-          backgroundColor: "gray",
-          color: "white",
-        }}
-        onClick={handleConvertToPDF}
-      >
-        Make PDF
-      </button>
-      <button
-        style={{
-          width: "165px",
-          position: "fixed",
-          top: "70px",
-          left: "15px",
-          backgroundColor: "gray",
-          color: "white",
-        }}
-        onClick={() => navigate("/")}
-      >
-        Back to Home
-      </button>
+      
       <div className={styles.sidebar} style={{ top: "1maxStaticIndexpx" }}>
+      
         <div
           style={{
             position: "relative",
@@ -1065,6 +1041,32 @@ function NapervilleFreshMarket() {
             padding: "3px",
           }}
         >
+          <button
+        style={{
+          width: "165px",
+          position: "relative",
+              backgroundColor: "gray",
+              color: "white",
+              marginBottom: "10px",
+              zIndex: "1",
+        }}
+        onClick={handleConvertToPDF}
+      >
+        Make PDF
+      </button>
+      <button
+        style={{
+          width: "165px",
+          position: "relative",
+              backgroundColor: "gray",
+              color: "white",
+              marginBottom: "10px",
+              zIndex: "1",
+        }}
+        onClick={() => navigate("/")}
+      >
+        Back to Home
+      </button>
           <button
             style={{
               width: "165px",
@@ -1135,11 +1137,11 @@ function NapervilleFreshMarket() {
         <div style={{ display: "grid" }} className={styles.containerDivBorder}>
           <RenderTopCards />
           <img
-            style={{ width: "100%", position: "absolute", top: "150px" }}
+            style={{ zIndex:"1", width: "100%", position: "absolute", top: "150px" }}
             src="https://firebasestorage.googleapis.com/v0/b/fb-storage-49d33.appspot.com/o/images%2Flogos%2Fnaperville%20banner.jpg?alt=media&token=a4205b6a-09bf-4c63-bcd4-7cc8218370aa"
           />
           <div style={{ position: "relative" }}>
-            <div className={styles.containerDiv} style={{ width: "98%", height: "200%", position: "absolute", top: "-420px" }} ref={contextMenuRef}>
+            <div className={styles.containerDiv} style={{ width: "98%", height: "164%", position: "absolute", top: "-420px" }} ref={contextMenuRef}>
               <RenderCards />
               <RenderCardsSecondColumn />
               {contextMenu && (

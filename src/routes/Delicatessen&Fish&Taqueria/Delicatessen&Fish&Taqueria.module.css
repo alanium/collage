@@ -70,8 +70,8 @@
   }
   
   .containerDiv {
-    width: 95%;
-    height: 80%;
+    width: 98%;
+    height: 90%;
     display: flex;
     flex-direction: row;
     margin: 5px;
@@ -100,8 +100,8 @@
   }
 
   .secondContainerDiv {
-    width: 95%;
-    height: 47.5%;;
+    width: 98%;
+    height: 38%;;
     display: flex;
     flex-direction: row;
     margin: 5px;
@@ -130,7 +130,7 @@
   }
   .thirdContainerDiv {
     width: 186px; /* Increased by 3% */
-    height: 129%;; /* Adjust to your desired height */
+    height: 130%;; /* Adjust to your desired height */
     display: flex;
     flex-direction: row;
     margin: 5px;
@@ -160,7 +160,7 @@
 
   .fourthContainerDiv {
     bottom:-200px;
-    width: 100%; /* Increased by 3% */
+    width: 98.7%; /* Increased by 3% */
     height: 28.5%; /* Adjust to your desired height */
     display: flex;
     flex-direction: row;

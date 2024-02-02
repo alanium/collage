@@ -83,8 +83,8 @@ export default function MeatAndSeafood() {
       containerClone.id = "magazineClone";
 
       // Apply the specified styles to the clone
-      containerClone.style.display = "grid";
-
+      containerClone.style.display = "flex";
+      containerClone.style.justifyContent = "flex-start"; 
       containerClone.style.position = "relative";
       containerClone.style.zIndex = "0";
       containerClone.style.width = "21cm";
@@ -159,7 +159,8 @@ export default function MeatAndSeafood() {
               reader.onload = (e) => {
                 const result = e.target.result;
                 const newDynamicColumn = [...dynamicColumn];
-                newDynamicColumn[cardIndex - cardsInStatic].img[img].src = result;
+                newDynamicColumn[cardIndex - cardsInStatic].img[img].src =
+                  result;
                 setDynamicColumn(newDynamicColumn);
               };
 
@@ -373,6 +374,22 @@ export default function MeatAndSeafood() {
     }
   };
 
+  const changePriceBoxBorder = (cardIndex) => {
+    const calculatedCardIndex = cardIndex - cardsInStatic;
+
+    if (cardIndex > maxStaticIndex) {
+      const newDynamicColumn = [...dynamicColumn];
+      newDynamicColumn[calculatedCardIndex].text.priceBoxBorder =
+        !newDynamicColumn[calculatedCardIndex].text.priceBoxBorder;
+      setDynamicColumn(newDynamicColumn);
+    } else {
+      const newStaticColumns = [...staticColumns];
+      newStaticColumns[cardIndex].text.priceBoxBorder =
+        !newStaticColumns[cardIndex].text.priceBoxBorder;
+      setStaticColumns(newStaticColumns);
+    }
+  }
+
   const ContextMenu = ({ x, y, items, onClose }) => (
     <div
       style={{
@@ -442,6 +459,10 @@ export default function MeatAndSeafood() {
       {
         label: "Change PriceBox Color",
         action: () => changePriceBoxColor(cardIndex),
+      },
+      {
+        label: "Change PriceBox Border",
+        action: () => changePriceBoxBorder(cardIndex),
       },
     ];
 
@@ -626,7 +647,8 @@ export default function MeatAndSeafood() {
     column,
     setColumn,
     cardIndex,
-    backgroundColor
+    backgroundColor,
+    priceBoxBorder
   ) => {
     const priceBoxes = [
       <FixedBox
@@ -637,6 +659,7 @@ export default function MeatAndSeafood() {
         i={cardIndex}
         cardIndex={cardIndex}
         maxStaticIndex={maxStaticIndex}
+        priceBoxBorder={priceBoxBorder}
       />,
       <TripleBox
         key={`fixed-box-${cardIndex}`}
@@ -646,6 +669,7 @@ export default function MeatAndSeafood() {
         i={cardIndex}
         cardIndex={cardIndex}
         maxStaticIndex={maxStaticIndex}
+        priceBoxBorder={priceBoxBorder}
       />,
       <AmountForPrice
         key={`fixed-box-${cardIndex}`}
@@ -655,6 +679,7 @@ export default function MeatAndSeafood() {
         i={cardIndex}
         cardIndex={cardIndex}
         maxStaticIndex={maxStaticIndex}
+        priceBoxBorder={priceBoxBorder}
       />,
     ];
 
@@ -728,7 +753,8 @@ export default function MeatAndSeafood() {
                     dynamicColumn,
                     setDynamicColumn,
                     calculatedCardIndex,
-                    dynamicColumn[calculatedCardIndex].text.priceBoxColor
+                    dynamicColumn[calculatedCardIndex].text.priceBoxColor,
+                    dynamicColumn[calculatedCardIndex].text.priceBoxBorder
                   )}
                 </div>
               ) : null}
@@ -809,7 +835,8 @@ export default function MeatAndSeafood() {
                   staticColumns,
                   setStaticColumns,
                   cardIndex,
-                  staticColumns[cardIndex].text.priceBoxColor
+                  staticColumns[cardIndex].text.priceBoxColor,
+                  staticColumns[cardIndex].text.priceBoxBorder
                 )}
               </div>
             ) : null}
@@ -907,7 +934,8 @@ export default function MeatAndSeafood() {
                   staticColumns,
                   setStaticColumns,
                   cardIndex,
-                  staticColumns[cardIndex].text.priceBoxColor
+                  staticColumns[cardIndex].text.priceBoxColor,
+                  staticColumns[cardIndex].text.priceBoxBorder
                 )}
               </div>
             ) : null}
@@ -1114,31 +1142,35 @@ export default function MeatAndSeafood() {
         </div>
       </div>
 
-      <div id="magazineContainer" className={styles.containerDivBorder} style={{ display: "flex", justifyContent: "flex-start" }}>
-        <div style={{width: "80%"}}>
-            <div className={styles.containerDiv} ref={contextMenuRef}>
+      <div
+        id="magazineContainer"
+        className={styles.containerDivBorder}
+        style={{ display: "flex", justifyContent: "flex-start" }}
+      >
+        <div style={{ width: "80%" }}>
+          <div className={styles.containerDiv} ref={contextMenuRef}>
             <RenderCards />
             <div className={styles.overlay}>MEAT DEPARTMENT</div>
             {contextMenu && (
-                <ContextMenu
+              <ContextMenu
                 x={contextMenu.x}
                 y={contextMenu.y}
                 items={contextMenu.items}
                 onClose={() => setContextMenu(null)}
-                />
+              />
             )}
-            </div>
-            
-            <div className={styles.secondContainerDiv}>
+          </div>
+
+          <div className={styles.secondContainerDiv}>
             <div className={styles.secondOverlay}>CERTIFIED HALAL MEAT</div>
             <RenderLiquorCards />
-            </div>
+          </div>
         </div>
-        <div style={{position: "relative"}}>
-        <div className={styles.thirdContainerDiv}><RenderDynamicColumn /></div>
-            <div className={styles.thirdOverlay}>SEAFOOD</div>
-            
-
+        <div style={{ position: "relative" }}>
+          <div className={styles.thirdContainerDiv}>
+            <RenderDynamicColumn />
+          </div>
+          <div className={styles.thirdOverlay}>SEAFOOD</div>
         </div>
       </div>
       {info ? <RenderInfo /> : null}

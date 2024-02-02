@@ -595,7 +595,7 @@ export default function DelicatessenAndMore() {
         i={cardIndex}
         cardIndex={cardIndex}
         maxStaticIndex={maxStaticIndex}
-        border={priceBoxBorder} />,
+        priceBoxBorder={priceBoxBorder} />,
       <TripleBox
         key={`fixed-box-${cardIndex}`}
         textBoxes={column}
@@ -604,7 +604,7 @@ export default function DelicatessenAndMore() {
         i={cardIndex}
         cardIndex={cardIndex}
         maxStaticIndex={maxStaticIndex}
-        border={priceBoxBorder}
+        priceBoxBorder={priceBoxBorder}
       />,
       <AmountForPrice
         key={`fixed-box-${cardIndex}`}
@@ -614,7 +614,7 @@ export default function DelicatessenAndMore() {
         i={cardIndex}
         cardIndex={cardIndex}
         maxStaticIndex={maxStaticIndex}
-        border={priceBoxBorder}
+        priceBoxBorder={priceBoxBorder}
       />,
     ];
 
@@ -718,7 +718,7 @@ export default function DelicatessenAndMore() {
       const column = [];
 
       for (let j = 0; j < 2; j++) {
-        const cardIndex = j + i * 2 + 12;
+        const cardIndex = j + (i * 2) + 12;
 
         const isEditingThisZoom =
           isEditingZoom &&
@@ -817,7 +817,7 @@ export default function DelicatessenAndMore() {
       const column = [];
 
       for (let j = 0; j < 1; j++) {
-        const cardIndex = j + i * 1 + 20;
+        const cardIndex = j + (i * 1) + 20;
 
         let images = staticColumns[cardIndex].img;
 
@@ -1241,7 +1241,7 @@ export default function DelicatessenAndMore() {
       </div>
 
       <div id="magazineContainer" style={{ display: "grid"}} className={styles.containerDivBorder}>
-        <div style={{ display: "flex", justifyContent: "flex-start" }}>
+        <div style={{ display: "flex", justifyContent: "flex-start", height: "129%" }}>
           <div style={{ width: "80%" }}>
             <div className={styles.containerDiv} ref={contextMenuRef}>
               <RenderCards />
@@ -1268,7 +1268,7 @@ export default function DelicatessenAndMore() {
             <div className={styles.thirdOverlay}>DELI SPECIALITIES</div>
           </div>
         </div>
-        <div style={{ position: "relative" }} className={styles.fourthContainerDiv}>
+        <div style={{ position: "relative", top: "390px" }} className={styles.fourthContainerDiv}>
           <div className={styles.fourthOverlay}>NAPERVILLE TAQUERIA</div>
           <div className={styles.fifthOverlay}>HABIBI SHAWARMA</div>
           <RenderTaqueria />
