@@ -13,24 +13,62 @@ const ResizableImage = ({
     { x: 0, y: 0, zoom: 100 },
     { x: 0, y: 0, zoom: 100 },
   ]);
-  const [imageResolution, setImageResolution] = useState({});
-  const [imageResolution1, setImageResolution1] = useState({});
+  const [tempImageCoords, setTempImageCoords] = useState([...imageCoords]); // Temporary state
   const [containerResolution, setContainerResolution] = useState({});
 
   useEffect(() => {
-    // Obtener las coordenadas iniciales de las imágenes
     renderContainerBox();
-    renderImageSize();
-    renderImageSize1();
     const initialImageCoords = selectedColumn[cardIndex].img.map((image) => ({
       x: image.x,
       y: image.y,
       zoom: image.zoom || 100,
     }));
-
-    // Establecer las coordenadas iniciales en el estado
     setImageCoords(initialImageCoords);
+    setTempImageCoords(initialImageCoords); // Initialize temporary state
   }, [cardIndex, selectedColumn]);
+
+  useEffect(() => {
+    imageRefs.current.forEach((ref, index) => {
+      if (ref.current != null) {
+        interact(ref.current).draggable({
+          inertia: true,
+          autoScroll: true,
+          listeners: {
+            move: (event) => {
+              const { dx, dy } = event;
+              const newCoords = {
+                x: tempImageCoords[index].x + dx,
+                y: tempImageCoords[index].y + dy,
+                zoom: tempImageCoords[index].zoom,
+              };
+              setTempImageCoords((prevCoords) => {
+                const newCoordsArray = [...prevCoords];
+                newCoordsArray[index] = newCoords;
+                return newCoordsArray;
+              });
+            },
+          },
+        });
+      }
+    });
+  }, [tempImageCoords]);
+
+  const handleZoomChange = (deltaZoom, index) => {
+    const newZoom = tempImageCoords[index].zoom + deltaZoom;
+    setTempImageCoords((prevCoords) => {
+      const newCoords = [...prevCoords];
+      newCoords[index] = { ...newCoords[index], zoom: newZoom };
+      return newCoords;
+    });
+  };
+
+  const handleConfirmClick = () => {
+    setImageCoords(tempImageCoords); // Apply temporary state
+    tempImageCoords.forEach((coords, index) => {
+      updateImageProperties(cardIndex, index, coords); // Call updateImageProperties
+    });
+    setIsEditingZoom(false);
+  };
 
   const updateImageProperties = (cardIndex, imageIndex, properties) => {
     setSelectedColumn((prevSelectedColumn) => {
@@ -43,111 +81,19 @@ const ResizableImage = ({
     });
   };
 
-  const handleZoomChange = (deltaZoom, index) => {
-    const newZoom = imageCoords[index].zoom + deltaZoom;
-    setImageCoords((prevCoords) => {
-      const newCoords = [...prevCoords];
-      newCoords[index] = { ...newCoords[index], zoom: newZoom };
-      return newCoords;
-    });
-    updateImageProperties(cardIndex, index, { zoom: newZoom });
-  };
-
   const renderContainerBox = () => {
     const elementToCopy = document.getElementsByName(`card-${cardIndex}`)[0];
-
-    // Get the computed styles of the element
     const computedStyles = window.getComputedStyle(elementToCopy);
-
-    // Iterate over the computed styles and copy them
     const stylesToCopy = {};
     for (let i = 0; i < computedStyles.length; i++) {
       const propertyName = computedStyles[i];
       const propertyValue = computedStyles.getPropertyValue(propertyName);
       stylesToCopy[propertyName] = propertyValue;
     }
-
-    // You can now use stylesToCopy object to apply styles elsewhere
     setContainerResolution({
       width: Number(stylesToCopy.width.replace("px", "")),
       height: Number(stylesToCopy.height.replace("px", "")),
     });
-    console.log(imageResolution);
-  };
-
-  const renderImageSize1 = () => {
-    console.log(`image-${cardIndex}-1`);
-    const elementToCopy = document.getElementsByName(`image-${cardIndex}-1`)[0];
-
-    // Get the computed styles of the element
-    const computedStyles = window.getComputedStyle(elementToCopy);
-
-    // Iterate over the computed styles and copy them
-    const stylesToCopy = {};
-    for (let i = 0; i < computedStyles.length; i++) {
-      const propertyName = computedStyles[i];
-      const propertyValue = computedStyles.getPropertyValue(propertyName);
-      stylesToCopy[propertyName] = propertyValue;
-    }
-    console.log(stylesToCopy.scale);
-    // You can now use stylesToCopy object to apply styles elsewhere
-    setImageResolution1({
-      width: Number(stylesToCopy.width.replace("px", "")),
-      height: Number(stylesToCopy.height.replace("px", "")),
-    });
-  };
-
-  const renderImageSize = () => {
-    console.log(`image-${cardIndex}-0`);
-    const elementToCopy = document.getElementsByName(`image-${cardIndex}-0`)[0];
-
-    // Get the computed styles of the element
-    const computedStyles = window.getComputedStyle(elementToCopy);
-
-    // Iterate over the computed styles and copy them
-    const stylesToCopy = {};
-    for (let i = 0; i < computedStyles.length; i++) {
-      const propertyName = computedStyles[i];
-      const propertyValue = computedStyles.getPropertyValue(propertyName);
-      stylesToCopy[propertyName] = propertyValue;
-    }
-    console.log(stylesToCopy.scale);
-    // You can now use stylesToCopy object to apply styles elsewhere
-    setImageResolution({
-      width: Number(stylesToCopy.width.replace("px", "")),
-      height: Number(stylesToCopy.height.replace("px", "")),
-    });
-  };
-
-  useEffect(() => {
-    imageRefs.current.forEach((ref, index) => {
-      if (ref.current != null) {
-        interact(ref.current).draggable({
-          inertia: true,
-          autoScroll: true,
-          listeners: {
-            move: (event) => {
-              const { dx, dy } = event;
-              const newCoords = {
-                x: imageCoords[index].x + dx,
-                y: imageCoords[index].y + dy,
-                zoom: imageCoords[index].zoom,
-              };
-              setImageCoords((prevCoords) => {
-                const newCoordsArray = [...prevCoords];
-                newCoordsArray[index] = newCoords;
-                return newCoordsArray;
-              });
-              updateImageProperties(cardIndex, index, newCoords);
-            },
-          },
-        });
-      }
-    });
-  }, [cardIndex, imageCoords, updateImageProperties]);
-
-  const handleConfirmClick = () => {
-    setIsEditingZoom(false);
   };
 
   return (
@@ -190,11 +136,9 @@ const ResizableImage = ({
                     src={image.src}
                     alt={`Image ${index + 1} - ${cardIndex}`}
                     style={{
-                      height: (index === 0 ? imageResolution.height : imageResolution1.height),
-                      width: (index === 0 ? imageResolution.width : imageResolution1.width),
-                      transform: `translate(${imageCoords[index].x}px, ${
-                        imageCoords[index].y
-                      }px) scale(${imageCoords[index].zoom / 100})`,
+                      transform: `translate(${tempImageCoords[index].x}px, ${
+                        tempImageCoords[index].y
+                      }px) scale(${tempImageCoords[index].zoom / 100})`,
                     }}
                   />
                 </div>
