@@ -14,6 +14,7 @@ const ResizableImage = ({
     { x: 0, y: 0, zoom: 100 },
   ]);
   const [imageResolution, setImageResolution] = useState({});
+  const [imageResolution1, setImageResolution1] = useState({});
   const [containerResolution, setContainerResolution] = useState({});
 
   useEffect(() => {
@@ -90,7 +91,7 @@ const ResizableImage = ({
     }
     console.log(stylesToCopy.scale);
     // You can now use stylesToCopy object to apply styles elsewhere
-    setImageResolution({
+    setImageResolution1({
       width: Number(stylesToCopy.width.replace("px", "")),
       height: Number(stylesToCopy.height.replace("px", "")),
     });
@@ -189,8 +190,8 @@ const ResizableImage = ({
                     src={image.src}
                     alt={`Image ${index + 1} - ${cardIndex}`}
                     style={{
-                      height: imageResolution.height,
-                      width: imageResolution.width,
+                      height: (index === 0 ? imageResolution.height : imageResolution1.height),
+                      width: (index === 0 ? imageResolution.width : imageResolution1.width),
                       transform: `translate(${imageCoords[index].x}px, ${
                         imageCoords[index].y
                       }px) scale(${imageCoords[index].zoom / 100})`,
