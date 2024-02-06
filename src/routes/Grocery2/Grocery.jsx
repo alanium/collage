@@ -16,6 +16,7 @@ import ImageFromCloud from "../../components/ImageFromCloud/ImageFromCloud";
 import TemplatesFromCloud from "../../components/TemplatesFromCloud/TemplatesFromCloud";
 import ZoomSlider from "../../components/ZoomSlider/ZoomSlider";
 import ResizableImage from "../../components/ResizableImage/ResizableImage";
+import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
@@ -63,13 +64,14 @@ function Grocery() {
   const [type, setType] = useState("");
   const [popup2, setPopup2] = useState(false);
   const [popup3, setPopup3] = useState(false);
+  const [popup4, setPopup4] = useState(false);
   const [templates, setTemplates] = useState(null);
   const [images, setImages] = useState(null);
   const [imgIndex, setImgIndex] = useState(null);
 
   const storage = getStorage();
   const imagesRef = ref(storage, "images/");
-  const templatesRef = ref(storage, "templates/");
+  
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
 
@@ -934,6 +936,18 @@ function Grocery() {
           </div>
         </div>
       ) : null}
+      {popup4 ? (
+        <ManageTemplates
+        dynamicColumn={dynamicColumn}
+        staticColumns={staticColumns}
+        setDynamicColumn={setDynamicColumn}
+        setStaticColumns={setStaticColumns}
+        templates={templates}
+        setTemplates={setTemplates}
+        setPopup4={setPopup4}
+        
+        />
+      ): null}
 
       <button
         style={{
@@ -1011,29 +1025,11 @@ function Grocery() {
             Load Template
           </button>
           <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-            }}
-            onClick={(event) => uploadTemplateToCloud(event)}
+            onClick={() => setPopup4(true)}
           >
-            Upload Template To Cloud
+            Open Template Manager
           </button>
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-            }}
-            onClick={(event) => downloadTemplateFromCloud(event)}
-          >
-            Download Template From Cloud
-          </button>
+          
           <ImageUploader />
         </div>
       </div>
@@ -1067,14 +1063,6 @@ function Grocery() {
           setImages={setImages}
           imgIndex={imgIndex}
           maxCardPosition={20}
-        />
-      ) : null}
-      {templates != null ? (
-        <TemplatesFromCloud
-          templates={templates}
-          setDynamicColumn={setDynamicColumn}
-          setStaticColumns={setStaticColumns}
-          setTemplates={setTemplates}
         />
       ) : null}
     </div>
