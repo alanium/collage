@@ -50,8 +50,15 @@
 }
 
 .confirmButton{
-  bottom: 120px;
-  position: relative;
+  bottom: -50px;
+  width: 100%;
+  position: absolute;
+}
+
+.cancelButton{
+  bottom: -100px;
+  width: 100%;
+  position: absolute;
 }
 
 .actionButton {

@@ -74,7 +74,6 @@ const AmountForPrice = ({ textBoxes, setTextBoxes, i, j, cardIndex, backgroundCo
 
       const setBackgroundColor = () => {
         const color = backgroundColor ? 'red' : 'white';
-      console.log('Background Color:', color);
       return color;
       };
     
@@ -109,7 +108,7 @@ const AmountForPrice = ({ textBoxes, setTextBoxes, i, j, cardIndex, backgroundCo
           ref={middleBoxRef}
           style={{ fontSize: `10px` }}
         >
-          {textBoxes[auxIndex].text.bottom && textBoxes[auxIndex].text.bottom.split(" ")[1].toUpperCase()}
+          {textBoxes[auxIndex].text.bottom && textBoxes[auxIndex].text.bottom.split(" ")[1] &&  textBoxes[auxIndex].text.bottom.split(" ")[1].toUpperCase()}
         </div>
         <div
           className={styles.rightBox}

@@ -61,43 +61,47 @@ function NapervilleFreshMarket() {
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
 
-  const handleConvertToPDF = () => {
+  const handleConvertToPDF = async () => {
     const container = document.getElementById("magazineContainer");
 
     if (container) {
-      // Clone the container
-      const containerClone = container.cloneNode(true);
-      containerClone.id = "magazineClone";
+        // Clone the container
+        const containerClone = container.cloneNode(true);
+        containerClone.id = "magazineClone";
 
-      // Apply the specified styles to the clone
-      containerClone.style.display = "flex";
-      containerClone.style.alignItems = "center";
-      containerClone.style.justifyContent = "center";
-      containerClone.style.position = "relative";
-      containerClone.style.zIndex = "1";
-      containerClone.style.width = "cardsInStaticcm";
-      containerClone.style.height = "29.6cm";
-      containerClone.style.backgroundColor = "white";
-      containerClone.style.top = "0";
-      // Apply overflow hidden to the clone with a height of 100px
-      containerClone.style.overflow = "hidden";
+        // Apply the specified styles to the clone
+        containerClone.style.display = "flex";
+        containerClone.style.alignItems = "center";
+        containerClone.style.justifyContent = "center";
+        containerClone.style.position = "relative";
+        containerClone.style.zIndex = "1";
+        containerClone.style.width = "cardsInStaticcm";
+        containerClone.style.height = "29.6cm";
+        containerClone.style.backgroundColor = "white";
+        containerClone.style.top = "-100px";
+        // Apply overflow hidden to the clone with a height of 100px
+        
 
-      document.body.appendChild(containerClone);
+        document.body.appendChild(containerClone);
 
-      const pdfOptions = {
-        filename: "grocery_magazine.pdf",
-        image: { type: "png", quality: 1 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      };
+        const pdfOptions = {
+            filename: "grocery_magazine.pdf",
+            image: { type: "png", quality: 1 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        };
 
-      // Generate PDF from the clone
-      html2pdf().from(containerClone).set(pdfOptions).save();
+        // Delay PDF generation by 1 second (adjust as needed)
 
-      // Remove the clone from the DOM after generating PDF
-      containerClone.parentNode.removeChild(containerClone);
+            // Generate PDF from the clone
+            html2pdf().from(containerClone).set(pdfOptions).save();
+
+            // Remove the clone from the DOM after generating PDF
+            containerClone.parentNode.removeChild(containerClone);
+ // 1000 milliseconds = 1 second
     }
-  };
+};
+
   const handleDynamicColumns = (event) => {
     const cardAmount = prompt(
       "Enter the amount of cards you want on the first column: "
@@ -668,7 +672,7 @@ function NapervilleFreshMarket() {
       <div style={{ position: "relative", zIndex:"1", width: "98%"}} className={styles.topContainerDiv}>
         <img
           style={{ width: "50%" }}
-          src="https://firebasestorage.googleapis.com/v0/b/fb-storage-49d33.appspot.com/o/images%2Flogos%2F0130__0205__digital-scaled.jpg?alt=media&token=9ab3aaa2-17bd-4585-a025-e6160a438735"
+          src="../src/assets/images/0130__0205__digital-scaled.jpg"
         />
         <RenderDynamicColumn />
       </div>
@@ -1138,10 +1142,10 @@ function NapervilleFreshMarket() {
           <RenderTopCards />
           <img
             style={{ zIndex:"1", width: "100%", position: "absolute", top: "150px" }}
-            src="https://firebasestorage.googleapis.com/v0/b/fb-storage-49d33.appspot.com/o/images%2Flogos%2Fnaperville%20banner.jpg?alt=media&token=a4205b6a-09bf-4c63-bcd4-7cc8218370aa"
+            src="../src/assets/images/naperville.jpg"
           />
           <div style={{ position: "relative" }}>
-            <div className={styles.containerDiv} style={{ width: "98%", height: "164%", position: "absolute", top: "-420px" }} ref={contextMenuRef}>
+            <div className={styles.containerDiv} style={{ width: "98%", height: "183%", position: "absolute", top: "-420px" }} ref={contextMenuRef}>
               <RenderCards />
               <RenderCardsSecondColumn />
               {contextMenu && (

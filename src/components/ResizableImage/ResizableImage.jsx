@@ -70,6 +70,10 @@ const ResizableImage = ({
     setIsEditingZoom(false);
   };
 
+  const handleCancelButton = () => {
+    
+  }
+
   const updateImageProperties = (cardIndex, imageIndex, properties) => {
     setSelectedColumn((prevSelectedColumn) => {
       const newSelectedColumn = [...prevSelectedColumn];
@@ -91,7 +95,7 @@ const ResizableImage = ({
       stylesToCopy[propertyName] = propertyValue;
     }
 
-    console.log(stylesToCopy.width, stylesToCopy.height)
+    console.log(stylesToCopy.width, stylesToCopy.height);
     setContainerResolution({
       width: Number(stylesToCopy.width.replace("px", "")),
       height: Number(stylesToCopy.height.replace("px", "")),
@@ -100,63 +104,72 @@ const ResizableImage = ({
 
   return (
     <div className={styles.background}>
-    <div className={styles.popupContainer}>
-      <div
-      className={styles.sidebar}
-      style={{
-        height: `${containerResolution.height}px`,
-        width: `${containerResolution.width}px`,
-      }}
-    >
-      <div className={styles.zoomSliderContainer}>
-        {selectedColumn[cardIndex].img.slice(0, 2).map((image, index) => (
-          <div key={index}>
-            {image.src != "" ? (
-              <div>
-                <div>
-                  <div
-                    className={styles.zoomControlsGrid}
-                  >
-                    <button
-                      onClick={() => handleZoomChange(-5, index)}
-                      className={styles.bttnGrid}
-                    >
-                      Zoom -
-                    </button>
-                    <button
-                      onClick={() => handleZoomChange(5, index)}
-                      className={styles.bttnGrid}
-                    >
-                      Zoom +
-                    </button>
+      <div className={styles.popupContainer}>
+        <div
+          className={styles.sidebar}
+          style={{
+            height: `${containerResolution.height}px`,
+            width: `${containerResolution.width}px`,
+          }}
+        >
+          <div className={styles.zoomSliderContainer}>
+            {selectedColumn[cardIndex].img.slice(0, 2).map((image, index) => (
+              <div key={index}>
+                {image.src != "" ? (
+                  <div>
+                    <div>
+                      <div className={styles.zoomControlsGrid}>
+                        <button
+                          onClick={() => handleZoomChange(-5, index)}
+                          className={styles.bttnGrid}
+                        >
+                          Zoom -
+                        </button>
+                        <button
+                          onClick={() => handleZoomChange(5, index)}
+                          className={styles.bttnGrid}
+                        >
+                          Zoom +
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <img
+                        id={`image-${cardIndex}-${index + 1}`}
+                        ref={imageRefs.current[index]}
+                        className={styles.draggableImage}
+                        src={image.src}
+                        alt={`Image ${index + 1} - ${cardIndex}`}
+                        style={{
+                          transform: `translate(${
+                            tempImageCoords[index].x
+                          }px, ${tempImageCoords[index].y}px) scale(${
+                            tempImageCoords[index].zoom / 100
+                          })`,
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <img
-                    id={`image-${cardIndex}-${index + 1}`}
-                    ref={imageRefs.current[index]}
-                    className={styles.draggableImage}
-                    src={image.src}
-                    alt={`Image ${index + 1} - ${cardIndex}`}
-                    style={{
-                      transform: `translate(${tempImageCoords[index].x}px, ${
-                        tempImageCoords[index].y
-                      }px) scale(${tempImageCoords[index].zoom / 100})`,
-                    }}
-                  />
-                </div>
+                ) : null}
               </div>
-            ) : null}
+            ))}
+            
           </div>
-        ))}
+          <button
+              className={styles.confirmButton}
+              onClick={handleConfirmClick}
+            >
+              OK
+            </button>
+          <button
+          className={styles.cancelButton}
+          onClick={() => setIsEditingZoom(false)}
+          >
+            Back
+          </button>
+        </div>
       </div>
-      <button className={styles.confirmButton} onClick={handleConfirmClick}>
-        OK
-      </button>
     </div>
-    </div>
-    </div>
-    
   );
 };
 

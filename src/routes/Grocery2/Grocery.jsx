@@ -62,6 +62,7 @@ function Grocery() {
   const [popup, setPopup] = useState(false);
   const [type, setType] = useState("");
   const [popup2, setPopup2] = useState(false);
+  const [popup3, setPopup3] = useState(false);
   const [templates, setTemplates] = useState(null);
   const [images, setImages] = useState(null);
   const [imgIndex, setImgIndex] = useState(null);
@@ -194,6 +195,7 @@ function Grocery() {
         }
       });
     }
+    setPopup2(false)
   };
 
   useEffect(() => {
@@ -551,9 +553,10 @@ function Grocery() {
         const names = items.map((item) => item.name);
 
         setImages(names);
-        console.log(names);
+        setPopup2(false)
+        
       })
-      .then(() => setPopup2(false))
+      .then(setPopup2(false))
       .catch((error) => {
         console.log(error);
       });
@@ -603,7 +606,7 @@ function Grocery() {
       try {
         const storageRef = ref(storage, `templates/${fileName}`);
         await uploadBytes(storageRef, blob);
-        console.log("File uploaded successfully");
+        
       } catch (error) {
         console.error("Error uploading file:", error.message);
       }
@@ -622,7 +625,7 @@ function Grocery() {
         const names = items.map((item) => item.name);
 
         setTemplates(names);
-        console.log(names);
+
       })
       .catch((error) => {
         console.log(error);
@@ -912,6 +915,25 @@ function Grocery() {
           </button>
         </div>
       ) : null}
+      {popup3 ? (
+        <div className={styles.popUp2} style={{top: "40%", left: "50%", position: "absolute", zIndex: "1"}}>
+          <div>
+            Do you really wish to go back?
+          </div>  
+          <div>
+            <button
+              onClick={() => navigate("/")}
+            >
+              Yes
+            </button>
+            <button
+              onClick={() => setPopup3(false)}
+            >
+              No
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       <button
         style={{
@@ -935,7 +957,7 @@ function Grocery() {
           backgroundColor: "gray",
           color: "white",
         }}
-        onClick={() => navigate("/")}
+        onClick={() => setPopup3(true)}
       >
         Back to Home
       </button>

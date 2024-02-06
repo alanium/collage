@@ -15,6 +15,7 @@ import { getStorage, ref, listAll, uploadBytes } from "firebase/storage";
 import ImageFromCloud from "../../components/ImageFromCloud/ImageFromCloud";
 import TemplatesFromCloud from "../../components/TemplatesFromCloud/TemplatesFromCloud";
 import ZoomSlider from "../../components/ZoomSlider/ZoomSlider";
+import ResizableImage from "../../components/ResizableImage/ResizableImage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
@@ -61,6 +62,7 @@ function International() {
 
   const [info, setInfo] = useState(false);
   const [popup, setPopup] = useState(false);
+  const [popup3, setPopup3] = useState(false);
   const [type, setType] = useState("");
 
   const [popup2, setPopup2] = useState(false);
@@ -709,6 +711,7 @@ function International() {
 
           cards.push(
             <div
+              name={`card-${cardIndex}`}
               className={styles.card}
               style={{}}
               key={cardIndex}
@@ -716,6 +719,7 @@ function International() {
             >
               {images.img[0] && ( // Check if img[0] exists before rendering
                 <img
+                  name={`image-${cardIndex}-0`}
                   src={images.img[0].src ? images.img[0].src : ""}
                   className={styles.uploadedImage}
                   style={{
@@ -728,6 +732,7 @@ function International() {
 
               {images.img[1] && ( // Check if img[1] exists before rendering
                 <img
+                  name={`image-${cardIndex}-1`}
                   src={images.img[1] ? images.img[1].src : ""}
                   className={styles.uploadedImage}
                   style={{
@@ -793,12 +798,14 @@ function International() {
 
         column.push(
           <div
+          name={`card-${cardIndex}`}
             className={styles.card}
             key={cardIndex}
             onClick={(event) => handleCardClick(cardIndex, event)}
           >
             {images[0] && ( // Check if img[0] exists before rendering
               <img
+                name={`image-${cardIndex}-0`}
                 src={images[0].src ? images[0].src : ""}
                 className={styles.uploadedImage}
                 style={{
@@ -811,6 +818,7 @@ function International() {
 
             {images[1] && ( // Check if img[1] exists before rendering
               <img
+                name={`image-${cardIndex}-1`}
                 src={images[1] ? images[1].src : ""}
                 className={styles.uploadedImage}
                 style={{
@@ -884,7 +892,7 @@ function International() {
         />
       ) : null}
       {isEditingZoom && (
-        <ZoomSlider 
+        <ResizableImage 
           cardIndex={selectedImage.cardIndex > 20 ? selectedImage.cardIndex - 21 : selectedImage.cardIndex}
           selectedColumn={selectedImage.cardIndex > 20 ? dynamicColumn : staticColumns}
           setSelectedColumn={selectedImage.cardIndex > 20 ? setDynamicColumn : setStaticColumns}
@@ -915,6 +923,26 @@ function International() {
         </div>
       ) : null}
 
+      {popup3 ? (
+        <div className={styles.popUp2} style={{top: "40%", left: "50%", position: "absolute", zIndex: "1"}}>
+          <div>
+            Do you really wish to go back?
+          </div>  
+          <div>
+            <button
+              onClick={() => navigate("/")}
+            >
+              Yes
+            </button>
+            <button
+              onClick={() => setPopup3(false)}
+            >
+              No
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       <button
         style={{
           width: "165px",
@@ -937,7 +965,7 @@ function International() {
           backgroundColor: "gray",
           color: "white",
         }}
-        onClick={() => navigate("/")}
+        onClick={() => setPopup3(true)}
       >
         Back to Home
       </button>

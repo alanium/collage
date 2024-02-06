@@ -46,7 +46,7 @@
 
 .containerDiv {
   width: 95%; /* Increased by 3% */
-  height: 95%; /* Adjust to your desired height */
+  height: 100%; /* Adjust to your desired height */
   display: flex;
   flex-direction: row;
   margin: 5px;
