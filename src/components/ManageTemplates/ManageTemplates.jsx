@@ -20,12 +20,10 @@ export default function ManageTemplates({
   setPopup4,
 }) {
   const storage = getStorage();
-  const [visibleTemplates, setVisibleTemplates] = useState(8)
+  const [visibleTemplates, setVisibleTemplates] = useState(8);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [renderedTemplates, setRenderedTemplates] = useState([])
+  const [renderedTemplates, setRenderedTemplates] = useState([]);
   const templatesRef = ref(storage, "templates/");
-
-  
 
   const uploadTemplateToCloud = async () => {
     const fileName = prompt("Enter the name of the file");
@@ -169,22 +167,22 @@ export default function ManageTemplates({
           console.error("Error parsing JSON:", error.message);
           // Handle the error, e.g., set an error state or display a message to the user
         } finally {
-          setPopup4(false)
-      }})
+          setPopup4(false);
+        }
+      })
       .catch((error) => {
         console.error("Error fetching template:", error.message);
         // Handle the error, e.g., set an error state or display a message to the user
-      })
-      
+      });
   };
 
-   const loadMoreImages = () => {
+  const loadMoreImages = () => {
     setVisibleTemplates((prevCount) => prevCount + 8);
   };
 
   useEffect(() => {
     downloadTemplateFromCloud();
-  }, [templates, visibleTemplates]);
+  }, []);
 
   const handleUpdateTemplate = async () => {
     if (selectedTemplate == null) {
@@ -256,11 +254,7 @@ export default function ManageTemplates({
         <button onClick={handleTemplateNameChange}>
           Rename Selected Template
         </button>
-        <button
-          onClick={loadMoreImages}
-        >
-          Show More
-        </button>
+        <button onClick={loadMoreImages}>Show More</button>
         <button onClick={handleConfirmSelection}>Load Selected Template</button>
         <button onClick={() => setPopup4(false)}>Cancel</button>
       </div>
