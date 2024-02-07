@@ -1,5 +1,5 @@
 import {
-    deleteObject,
+  deleteObject,
   getBytes,
   getStorage,
   listAll,
@@ -20,12 +20,12 @@ export default function ManageTemplates({
   setPopup4,
 }) {
   const storage = getStorage();
+  const [visibleTemplates, setVisibleTemplates] = useState(8)
   const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [renderedTemplates, setRenderedTemplates] = useState([])
   const templatesRef = ref(storage, "templates/");
 
-  useEffect(() => {
-    downloadTemplateFromCloud();
-  }, []);
+  
 
   const uploadTemplateToCloud = async () => {
     const fileName = prompt("Enter the name of the file");
@@ -50,9 +50,12 @@ export default function ManageTemplates({
         downloadTemplateFromCloud();
       } catch (error) {
         console.error("Error uploading file:", error.message);
+      } finally {
+        setPopup4(false);
       }
     } else {
       console.error("File name and content are required");
+      setPopup4(false);
     }
   };
 
@@ -66,6 +69,7 @@ export default function ManageTemplates({
         const names = items.map((item) => item.name);
 
         setTemplates(names);
+        setRenderedTemplates(names.slice(0, visibleTemplates));
         console.log(names);
       })
       .catch((error) => {
@@ -75,38 +79,40 @@ export default function ManageTemplates({
 
   const handleDeleteTemplate = () => {
     if (selectedTemplate == null) {
-        console.error("No template selected");
-        return;
+      console.error("No template selected");
+      return;
     }
 
-    const templateRef = ref(storage, `templates/${selectedTemplate}`)
+    const templateRef = ref(storage, `templates/${selectedTemplate}`);
 
-    deleteObject(templateRef).then(() => {
-        console.log("File deleted succesfully")
+    deleteObject(templateRef)
+      .then(() => {
+        console.log("File deleted succesfully");
 
         downloadTemplateFromCloud();
-    }).catch((error) => {
-        console.log(error)
-    })
-
-  }
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+      .finally(setPopup4(false));
+  };
 
   const handleTemplateNameChange = async () => {
     if (selectedTemplate == null) {
       console.error("No template selected");
       return;
     }
-  
+
     const templateRef = ref(storage, `templates/${selectedTemplate}`);
-  
+
     try {
       const fileBytes = await getBytes(templateRef);
       // Convert the file bytes to a string
       const jsonString = new TextDecoder().decode(fileBytes);
-  
+
       // Parse the JSON string
       const parsedResult = JSON.parse(jsonString);
-  
+
       const fileName = prompt("Enter the new name of the file");
       if (!fileName || fileName.trim() === "") {
         console.error("File name is required");
@@ -117,9 +123,11 @@ export default function ManageTemplates({
         console.error("Please enter a different name");
         return;
       }
-  
-      const blob = new Blob([JSON.stringify(parsedResult)], { type: "text/plain" });
-  
+
+      const blob = new Blob([JSON.stringify(parsedResult)], {
+        type: "text/plain",
+      });
+
       if (fileName && blob) {
         const newStorageRef = ref(storage, `templates/${fileName}`);
         await uploadBytes(newStorageRef, blob);
@@ -131,6 +139,8 @@ export default function ManageTemplates({
       }
     } catch (error) {
       console.error("Error handling template name change:", error.message);
+    } finally {
+      setPopup4(false);
     }
   };
 
@@ -158,52 +168,101 @@ export default function ManageTemplates({
         } catch (error) {
           console.error("Error parsing JSON:", error.message);
           // Handle the error, e.g., set an error state or display a message to the user
-        }
-      })
+        } finally {
+          setPopup4(false)
+      }})
       .catch((error) => {
         console.error("Error fetching template:", error.message);
         // Handle the error, e.g., set an error state or display a message to the user
+      })
+      
+  };
+
+   const loadMoreImages = () => {
+    setVisibleTemplates((prevCount) => prevCount + 8);
+  };
+
+  useEffect(() => {
+    downloadTemplateFromCloud();
+  }, [templates, visibleTemplates]);
+
+  const handleUpdateTemplate = async () => {
+    if (selectedTemplate == null) {
+      console.error("No template selected");
+      return;
+    }
+
+    const answer = prompt(
+      "This action will REPLACE the selected template with the current one you're working with. Write REPLACE if you want to proceed"
+    );
+
+    if (answer.toLowerCase() !== "replace") {
+      return;
+    }
+
+    try {
+      const templateRef = ref(storage, `templates/${selectedTemplate}`);
+      await deleteObject(templateRef);
+
+      const fileContent = JSON.stringify({
+        firstColumn: dynamicColumn,
+        otherColumns: staticColumns,
       });
+
+      // Validate file name and content
+      if (!selectedTemplate || selectedTemplate.trim() === "") {
+        console.error("File name is required");
+        return;
+      }
+
+      const blob = new Blob([fileContent], { type: "text/plain" });
+
+      if (selectedTemplate && blob) {
+        const storageRef = ref(storage, `templates/${selectedTemplate}`);
+        await uploadBytes(storageRef, blob);
+
+        downloadTemplateFromCloud();
+      } else {
+        console.error("File name and content are required");
+      }
+    } catch (error) {
+      console.error("Error:", error.message);
+    } finally {
+      setPopup4(false);
+    }
   };
 
   return (
     <div className={styles.background}>
-      <div className={styles.popupContainer}>
-        <div className={styles.sidebar}>
-          <div>
-            {templates != null &&
-              templates.map((template) => (
-                <div
-                  onClick={() => setSelectedTemplate(template)}
-                  style={{ backgroundColor: "white" }}
-                  className={
-                    selectedTemplate === template
-                      ? `${styles.template} ${styles.selected}`
-                      : styles.template
-                  }
-                >
-                  <label>{template}</label>
-                </div>
-              ))}
-          </div>
-          <button onClick={uploadTemplateToCloud}>
-            Upload Current Template
-          </button>
-          <button
-            onClick={handleDeleteTemplate}
-          >
-            Delete Selected Template
-          </button>
-          <button
-            onClick={handleTemplateNameChange}
-          >
-            Rename Selected Template
-          </button>
-          <button onClick={handleConfirmSelection}>
-            Load Selected Template
-          </button>
-          <button onClick={() => setPopup4(false)}>Cancel</button>
+      <div className={styles.container}>
+        <div>
+          {renderedTemplates.length != 0 &&
+            renderedTemplates.map((template) => (
+              <div
+                onClick={() => setSelectedTemplate(template)}
+                className={
+                  selectedTemplate === template
+                    ? `${styles.template} ${styles.selected}`
+                    : styles.template
+                }
+              >
+                <label>{template}</label>
+              </div>
+            ))}
         </div>
+        <button onClick={uploadTemplateToCloud}>Upload Current Template</button>
+        <button onClick={handleUpdateTemplate}>Update Selected Template</button>
+        <button onClick={handleDeleteTemplate}>Delete Selected Template</button>
+        <button onClick={handleTemplateNameChange}>
+          Rename Selected Template
+        </button>
+        <button
+          onClick={loadMoreImages}
+        >
+          Show More
+        </button>
+        <button onClick={handleConfirmSelection}>Load Selected Template</button>
+        <button onClick={() => setPopup4(false)}>Cancel</button>
       </div>
     </div>
   );

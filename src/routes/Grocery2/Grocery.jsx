@@ -795,6 +795,7 @@ function Grocery() {
           <div
             name={`card-${cardIndex}`}
             className={styles.card}
+            style={{transformOrigin: "center", transformBox: "content-box"}}
             key={cardIndex}
             onClick={(event) => handleCardClick(cardIndex, event)}
           >
@@ -804,9 +805,7 @@ function Grocery() {
                 src={images[0].src ? images[0].src : ""}
                 className={styles.uploadedImage}
                 style={{
-                  transform: `scale(${images[0].zoom / 100}) translate(${
-                    images[0].x
-                  }px, ${images[0].y}px)`,
+                  transform: `scale(${images[0].zoom / 100}) translate(${images[0].x}px, ${images[0].y}px)`,
                 }}
               />
             )}

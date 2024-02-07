@@ -19,6 +19,16 @@
   padding: 3px;
 }
 
+.imagesContainer {
+  flex: 1;
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+  margin: 2px;
+  padding: 3px;
+}
+
+
 .zoomControlsGrid {
   position: relative;
   left: -120%;
@@ -26,16 +36,13 @@
   gap: 5px;
   bottom: 5px;
   display: grid;
-
 }
 
 .draggableImage {
-  z-index: 0;
-  top: 0%;
-  left: 0;
-  max-width: 80%;
-  max-height: 80%;
   position: absolute;
+    max-width: 100%;
+    max-height: 100%;
+    z-index: 1;
 }
 
 .sidebar {

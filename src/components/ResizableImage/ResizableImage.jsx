@@ -70,10 +70,6 @@ const ResizableImage = ({
     setIsEditingZoom(false);
   };
 
-  const handleCancelButton = () => {
-    
-  }
-
   const updateImageProperties = (cardIndex, imageIndex, properties) => {
     setSelectedColumn((prevSelectedColumn) => {
       const newSelectedColumn = [...prevSelectedColumn];
@@ -97,14 +93,22 @@ const ResizableImage = ({
 
     console.log(stylesToCopy.width, stylesToCopy.height);
     setContainerResolution({
-      width: Number(stylesToCopy.width.replace("px", "")),
-      height: Number(stylesToCopy.height.replace("px", "")),
+      width: Number(stylesToCopy.width.replace("px", "")) + 4,
+      height: Number(stylesToCopy.height.replace("px", "")) + 5,
     });
   };
 
   return (
     <div className={styles.background}>
       <div className={styles.popupContainer}>
+        <div className={styles.zoomSliderContainer}>
+          {selectedColumn[cardIndex].img.slice(0, 2).map((image, index) => (
+            <div className={styles.zoomControlGrid}>
+              <button onClick={() =>handleZoomChange(5 , index)}>Zoom +</button>
+              <button onClick={() => handleZoomChange(-5 , index)}>Zoom -</button>
+            </div>
+          ))}
+        </div>
         <div
           className={styles.sidebar}
           style={{
@@ -112,28 +116,8 @@ const ResizableImage = ({
             width: `${containerResolution.width}px`,
           }}
         >
-          <div className={styles.zoomSliderContainer}>
-            {selectedColumn[cardIndex].img.slice(0, 2).map((image, index) => (
-              <div key={index}>
-                {image.src != "" ? (
-                  <div>
-                    <div>
-                      <div className={styles.zoomControlsGrid}>
-                        <button
-                          onClick={() => handleZoomChange(-5, index)}
-                          className={styles.bttnGrid}
-                        >
-                          Zoom -
-                        </button>
-                        <button
-                          onClick={() => handleZoomChange(5, index)}
-                          className={styles.bttnGrid}
-                        >
-                          Zoom +
-                        </button>
-                      </div>
-                    </div>
-                    <div>
+          <div className={styles.imagesContainer}>
+            {selectedColumn[cardIndex].img.slice(0, 2).map((image, index) => ( image.src != "" ?
                       <img
                         id={`image-${cardIndex}-${index + 1}`}
                         ref={imageRefs.current[index]}
@@ -141,19 +125,20 @@ const ResizableImage = ({
                         src={image.src}
                         alt={`Image ${index + 1} - ${cardIndex}`}
                         style={{
+                          position: "absolute",
+                        
                           transform: `translate(${
                             tempImageCoords[index].x
                           }px, ${tempImageCoords[index].y}px) scale(${
                             tempImageCoords[index].zoom / 100
                           })`,
                         }}
+                        
                       />
-                    </div>
-                  </div>
-                ) : null}
-              </div>
+                    
+                 : null
+              
             ))}
-            
           </div>
           <button
               className={styles.confirmButton}
