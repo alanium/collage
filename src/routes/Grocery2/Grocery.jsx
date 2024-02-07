@@ -1024,6 +1024,13 @@ function Grocery() {
             Load Template
           </button>
           <button
+            style={{
+              width: "165px",
+              position: "relative",
+              backgroundColor: "gray",
+              color: "white",
+              marginBottom: "10px",
+            }}
             onClick={() => setPopup4(true)}
           >
             Open Template Manager
