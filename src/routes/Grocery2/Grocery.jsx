@@ -521,29 +521,6 @@ function Grocery() {
     }
   };
 
-  const saveTemplate = (event) => {
-    const newText = prompt("Enter template name: ");
-    if (newText) {
-      const blob = new Blob(
-        [
-          JSON.stringify({
-            firstColumn: dynamicColumn,
-            otherColumns: staticColumns,
-          }),
-        ],
-        { type: "application/json" }
-      );
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${newText}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-  };
 
   const getImageList = () => {
     listAll(imagesRef)
@@ -559,76 +536,6 @@ function Grocery() {
         
       })
       .then(setPopup2(false))
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  const loadTemplate = (event) => {
-    event.preventDefault();
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".json"; // Corrected file extension
-    input.onchange = (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target.result;
-          try {
-            const parsedResult = JSON.parse(result);
-            setStaticColumns(parsedResult.otherColumns);
-            setDynamicColumn(parsedResult.firstColumn);
-          } catch (error) {
-            console.error("Error parsing JSON:", error);
-          }
-        };
-        reader.readAsText(file); // Use readAsText to read JSON content
-      }
-    };
-    input.click();
-  };
-
-  const uploadTemplateToCloud = async () => {
-    const fileName = prompt("Enter the name of the file");
-    const fileContent = JSON.stringify({
-      firstColumn: dynamicColumn,
-      otherColumns: staticColumns,
-    });
-
-    // Validate file name and content
-    if (!fileName || fileName.trim() === "") {
-      console.error("File name is required");
-      return;
-    }
-
-    const blob = new Blob([fileContent], { type: "text/plain" });
-
-    if (fileName && blob) {
-      try {
-        const storageRef = ref(storage, `templates/${fileName}`);
-        await uploadBytes(storageRef, blob);
-        
-      } catch (error) {
-        console.error("Error uploading file:", error.message);
-      }
-    } else {
-      console.error("File name and content are required");
-    }
-  };
-
-  const downloadTemplateFromCloud = (event) => {
-    listAll(templatesRef)
-      .then((result) => {
-        // 'items' is an array that contains references to each item in the list
-        const items = result.items;
-
-        // Extract image names from references
-        const names = items.map((item) => item.name);
-
-        setTemplates(names);
-
-      })
       .catch((error) => {
         console.log(error);
       });
@@ -717,8 +624,8 @@ function Grocery() {
                   className={styles.uploadedImage}
                   style={{
                     transform: `scale(${images.img[0].zoom / 100}) translate(${
-                      images.img[0].x
-                    }px, ${images.img[0].y}px)`,
+                      images.img[0].x / ( images.img[0].zoom / 100)
+                    }px, ${images.img[0].y / ( images.img[0].zoom / 100)}px)`,
                   }}
                 />
               )}
@@ -730,8 +637,8 @@ function Grocery() {
                   className={styles.uploadedImage}
                   style={{
                     transform: `scale(${images.img[1].zoom / 100}) translate(${
-                      images.img[1].x
-                    }px, ${images.img[1].y}px)`,
+                      images.img[1].x / ( images.img[1].zoom / 100)
+                    }px, ${images.img[1].y / ( images.img[1].zoom / 100)}px)`,
                   }}
                 />
               )}
@@ -795,33 +702,36 @@ function Grocery() {
           <div
             name={`card-${cardIndex}`}
             className={styles.card}
-            style={{transformOrigin: "center", transformBox: "content-box"}}
+            
             key={cardIndex}
             onClick={(event) => handleCardClick(cardIndex, event)}
           >
-            {images[0] && ( // Check if img[0] exists before rendering
+            
+            {images[0] && images[1].src != "" && ( // Check if img[0] exists before rendering
               <img
                 name={`image-${cardIndex}-0`}
                 src={images[0].src ? images[0].src : ""}
                 className={styles.uploadedImage}
                 style={{
-                  transform: `scale(${images[0].zoom / 100}) translate(${images[0].x}px, ${images[0].y}px)`,
+                  transform: `scale(${images[0].zoom / 100}) translate(${images[0].x / ( images[0].zoom / 100)}px, ${images[0].y / ( images[0].zoom / 100)}px)`,
                 }}
               />
             )}
 
-            {images[1] && ( // Check if img[1] exists before rendering
+            {images[1] && images[1].src != "" && ( // Check if img[1] exists before rendering
               <img
                 name={`image-${cardIndex}-1`}
                 src={images[1] ? images[1].src : ""}
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[1].zoom / 100}) translate(${
-                    images[1].x
-                  }px, ${images[1].y}px)`,
+                    images[1].x / ( images[1].zoom / 100)
+                  }px, ${images[1].y / ( images[1].zoom / 100)}px)`,
                 }}
               />
             )}
+           
+            
             {staticColumns[cardIndex] &&
             staticColumns[cardIndex].text.renderPriceBox ? (
               <div className="priceBox">
@@ -890,7 +800,9 @@ function Grocery() {
           cardIndex={selectedImage.cardIndex > 20 ? selectedImage.cardIndex - 21 : selectedImage.cardIndex}
           selectedColumn={selectedImage.cardIndex > 20 ? dynamicColumn : staticColumns}
           setSelectedColumn={selectedImage.cardIndex > 20 ? setDynamicColumn : setStaticColumns}
-          setIsEditingZoom={setIsEditingZoom} />
+          setIsEditingZoom={setIsEditingZoom}
+          cardNumber={selectedImage.cardIndex}
+          /> 
       )} 
       {popup2 ? (
         <div className={styles.popUp2} style={{ zIndex: "1" }}>
@@ -997,31 +909,6 @@ function Grocery() {
             onClick={() => setInfo(!info)}
           >
             Info
-          </button>
-
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              marginBottom: "10px",
-              color: "white",
-            }}
-            onClick={(event) => saveTemplate(event)}
-          >
-            Download Template
-          </button>
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-            }}
-            onClick={(event) => loadTemplate(event)}
-          >
-            Load Template
           </button>
           <button
             style={{

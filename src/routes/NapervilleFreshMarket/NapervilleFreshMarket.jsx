@@ -15,6 +15,8 @@ import { getStorage, ref, listAll, uploadBytes } from "firebase/storage";
 import ImageFromCloud from "../../components/ImageFromCloud/ImageFromCloud";
 import TemplatesFromCloud from "../../components/TemplatesFromCloud/TemplatesFromCloud";
 import ZoomSlider from "../../components/ZoomSlider/ZoomSlider";
+import ResizableImage from "../../components/ResizableImage/ResizableImage";
+import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
 
 function NapervilleFreshMarket() {
   const cardsInStatic = 30;
@@ -51,6 +53,7 @@ function NapervilleFreshMarket() {
   const [popup, setPopup] = useState(false);
   const [type, setType] = useState("");
   const [popup2, setPopup2] = useState(false);
+  const [popup4, setPopup4] = useState(false);
   const [templates, setTemplates] = useState(null);
   const [images, setImages] = useState(null);
   const [imgIndex, setImgIndex] = useState(null);
@@ -708,6 +711,7 @@ function NapervilleFreshMarket() {
 
           cards.push(
             <div
+              name={`card-${cardIndex}`}
               className={styles.card}
               style={{border: "none"}}
               key={cardIndex}
@@ -719,8 +723,8 @@ function NapervilleFreshMarket() {
                   className={styles.uploadedImage}
                   style={{
                     transform: `scale(${images.img[0].zoom / 100}) translate(${
-                      images.img[0].x
-                    }px, ${images.img[0].y}px)`,
+                      images.img[0].x / ( images.img[0].zoom / 100)
+                    }px, ${images.img[0].y / ( images.img[0].zoom / 100)}px)`,
                   }}
                 />
               )}
@@ -731,8 +735,8 @@ function NapervilleFreshMarket() {
                   className={styles.uploadedImage}
                   style={{
                     transform: `scale(${images.img[1].zoom / 100}) translate(${
-                      images.img[1].x
-                    }px, ${images.img[1].y}px)`,
+                      images.img[1].x / ( images.img[1].zoom / 100)
+                    }px, ${images.img[1].y / ( images.img[1].zoom / 100)}px)`,
                   }}
                 />
               )}
@@ -792,6 +796,7 @@ function NapervilleFreshMarket() {
 
         column.push(
           <div
+            name={`card-${cardIndex}`}
             className={styles.card}
             key={cardIndex}
             onClick={(event) => handleCardClick(cardIndex, event)}
@@ -802,8 +807,8 @@ function NapervilleFreshMarket() {
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[0].zoom / 100}) translate(${
-                    images[0].x
-                  }px, ${images[0].y}px)`,
+                    images[0].x / ( images[0].zoom / 100)
+                  }px, ${images[0].y / ( images[0].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -814,8 +819,8 @@ function NapervilleFreshMarket() {
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[1].zoom / 100}) translate(${
-                    images[1].x
-                  }px, ${images[1].y}px)`,
+                    images[1].x / ( images[1].zoom / 100)
+                  }px, ${images[1].y / ( images[1].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -891,6 +896,7 @@ function NapervilleFreshMarket() {
 
         column.push(
           <div
+            name={`card-${cardIndex}`}
             className={styles.card}
             key={cardIndex}
             onClick={(event) => handleCardClick(cardIndex, event)}
@@ -901,8 +907,8 @@ function NapervilleFreshMarket() {
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[0].zoom / 100}) translate(${
-                    images[0].x
-                  }px, ${images[0].y}px)`,
+                    images[0].x / ( images[0].zoom / 100)
+                  }px, ${images[0].y / ( images[0].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -913,8 +919,8 @@ function NapervilleFreshMarket() {
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[1].zoom / 100}) translate(${
-                    images[1].x
-                  }px, ${images[1].y}px)`,
+                    images[1].x / ( images[1].zoom / 100)
+                  }px, ${images[1].y / ( images[1].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -988,7 +994,7 @@ function NapervilleFreshMarket() {
       ) : null}
 
       {isEditingZoom && (
-        <ZoomSlider
+        <ResizableImage
           cardIndex={
             selectedImage.cardIndex > maxStaticIndex
               ? selectedImage.cardIndex - cardsInStatic
@@ -1005,6 +1011,7 @@ function NapervilleFreshMarket() {
               : setStaticColumns
           }
           setIsEditingZoom={setIsEditingZoom}
+          cardNumber={selectedImage.cardIndex}
         />
       )}
       {popup2 ? (
@@ -1031,7 +1038,18 @@ function NapervilleFreshMarket() {
           </button>
         </div>
       ) : null}
-
+      {popup4 ? (
+        <ManageTemplates
+        dynamicColumn={dynamicColumn}
+        staticColumns={staticColumns}
+        setDynamicColumn={setDynamicColumn}
+        setStaticColumns={setStaticColumns}
+        templates={templates}
+        setTemplates={setTemplates}
+        setPopup4={setPopup4}
+        
+        />
+      ): null}
       
       <div className={styles.sidebar} style={{ top: "1maxStaticIndexpx" }}>
       
@@ -1084,19 +1102,6 @@ function NapervilleFreshMarket() {
           >
             Info
           </button>
-
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              marginBottom: "10px",
-              color: "white",
-            }}
-            onClick={(event) => saveTemplate(event)}
-          >
-            Download Template
-          </button>
           <button
             style={{
               width: "165px",
@@ -1105,33 +1110,9 @@ function NapervilleFreshMarket() {
               color: "white",
               marginBottom: "10px",
             }}
-            onClick={(event) => loadTemplate(event)}
+            onClick={() => setPopup4(true)}
           >
-            Load Template
-          </button>
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-            }}
-            onClick={(event) => uploadTemplateToCloud(event)}
-          >
-            Upload Template To Cloud
-          </button>
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-            }}
-            onClick={(event) => downloadTemplateFromCloud(event)}
-          >
-            Download Template From Cloud
+            Open Template Manager
           </button>
           <ImageUploader />
         </div>
@@ -1177,14 +1158,6 @@ function NapervilleFreshMarket() {
           setImages={setImages}
           imgIndex={imgIndex}
           maxCardPosition={maxStaticIndex}
-        />
-      ) : null}
-      {templates != null ? (
-        <TemplatesFromCloud
-          templates={templates}
-          setDynamicColumn={setDynamicColumn}
-          setStaticColumns={setStaticColumns}
-          setTemplates={setTemplates}
         />
       ) : null}
     </div>

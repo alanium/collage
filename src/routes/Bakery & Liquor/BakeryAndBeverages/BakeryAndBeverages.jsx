@@ -16,6 +16,7 @@ import ImageFromCloud from "../../../components/ImageFromCloud/ImageFromCloud";
 import TemplatesFromCloud from "../../../components/TemplatesFromCloud/TemplatesFromCloud";
 import ZoomSlider from "../../../components/ZoomSlider/ZoomSlider";
 import ResizableImage from "../../../components/ResizableImage/ResizableImage";
+import ManageTemplates from "../../../components/ManageTemplates/ManageTemplates";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
@@ -65,6 +66,7 @@ export default function BakeryLiquor() {
   const [type, setType] = useState("");
   const [popup2, setPopup2] = useState(false);
   const [popup3, setPopup3] = useState(false);
+  const [popup4, setPopup4] = useState(false);
   const [templates, setTemplates] = useState(null);
   const [images, setImages] = useState(null);
   const [imgIndex, setImgIndex] = useState(null);
@@ -723,8 +725,8 @@ export default function BakeryLiquor() {
                   className={styles.uploadedImage}
                   style={{
                     transform: `scale(${images.img[0].zoom / 100}) translate(${
-                      images.img[0].x
-                    }px, ${images.img[0].y}px)`,
+                      images.img[0].x / ( images.img[0].zoom / 100)
+                    }px, ${images.img[0].y / ( images.img[0].zoom / 100)}px)`,
                   }}
                 />
               )}
@@ -736,8 +738,8 @@ export default function BakeryLiquor() {
                   className={styles.uploadedImage}
                   style={{
                     transform: `scale(${images.img[1].zoom / 100}) translate(${
-                      images.img[1].x
-                    }px, ${images.img[1].y}px)`,
+                      images.img[1].x / ( images.img[1].zoom / 100)
+                    }px, ${images.img[1].y / ( images.img[1].zoom / 100)}px)`,
                   }}
                 />
               )}
@@ -808,8 +810,8 @@ export default function BakeryLiquor() {
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[0].zoom / 100}) translate(${
-                    images[0].x
-                  }px, ${images[0].y}px)`,
+                    images[0].x / ( images[0].zoom / 100)
+                  }px, ${images[0].y / ( images[0].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -821,8 +823,8 @@ export default function BakeryLiquor() {
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[1].zoom / 100}) translate(${
-                    images[1].x
-                  }px, ${images[1].y}px)`,
+                    images[1].x / ( images[1].zoom / 100)
+                  }px, ${images[1].y / ( images[1].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -910,8 +912,8 @@ export default function BakeryLiquor() {
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[0].zoom / 100}) translate(${
-                    images[0].x
-                  }px, ${images[0].y}px)`,
+                    images[0].x / ( images[0].zoom / 100)
+                  }px, ${images[0].y / ( images[0].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -923,8 +925,8 @@ export default function BakeryLiquor() {
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[1].zoom / 100}) translate(${
-                    images[1].x
-                  }px, ${images[1].y}px)`,
+                    images[1].x / ( images[1].zoom / 100)
+                  }px, ${images[1].y / ( images[1].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -963,9 +965,6 @@ export default function BakeryLiquor() {
               setSelectedImage={setSelectedImage}
               index={cardIndex}
             />
-            {isEditingThisZoom && (
-              <ZoomSlider cardIndex={selectedImage.cardIndex} />
-            )}
           </div>
         );
       }
@@ -995,10 +994,12 @@ export default function BakeryLiquor() {
       ) : null}
       {isEditingZoom && (
         <ResizableImage 
-          cardIndex={selectedImage.cardIndex > 20 ? selectedImage.cardIndex - 21 : selectedImage.cardIndex}
-          selectedColumn={selectedImage.cardIndex > 20 ? dynamicColumn : staticColumns}
-          setSelectedColumn={selectedImage.cardIndex > 20 ? setDynamicColumn : setStaticColumns}
-          setIsEditingZoom={setIsEditingZoom} />
+        cardIndex={selectedImage.cardIndex > maxStaticIndex ? selectedImage.cardIndex - cardsInStatic : selectedImage.cardIndex}
+        selectedColumn={selectedImage.cardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
+        setSelectedColumn={selectedImage.cardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns}
+        setIsEditingZoom={setIsEditingZoom}
+        cardNumber={selectedImage.cardIndex}
+          />
       )}
       {popup2 ? (
         <div className={styles.popUp2} style={{ zIndex: "1" }}>
@@ -1044,6 +1045,19 @@ export default function BakeryLiquor() {
           </div>
         </div>
       ) : null}
+
+      {popup4 ? (
+        <ManageTemplates
+        dynamicColumn={dynamicColumn}
+        staticColumns={staticColumns}
+        setDynamicColumn={setDynamicColumn}
+        setStaticColumns={setStaticColumns}
+        templates={templates}
+        setTemplates={setTemplates}
+        setPopup4={setPopup4}
+        
+        />
+      ): null}
 
       <div className={styles.sidebar} style={{ top: "0px" }}>
         
@@ -1096,19 +1110,6 @@ export default function BakeryLiquor() {
           >
             Info
           </button>
-
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              marginBottom: "10px",
-              color: "white",
-            }}
-            onClick={(event) => saveTemplate(event)}
-          >
-            Download Template
-          </button>
           <button
             style={{
               width: "165px",
@@ -1117,34 +1118,11 @@ export default function BakeryLiquor() {
               color: "white",
               marginBottom: "10px",
             }}
-            onClick={(event) => loadTemplate(event)}
+            onClick={() => setPopup4(true)}
           >
-            Load Template
+            Open Template Manager
           </button>
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-            }}
-            onClick={(event) => uploadTemplateToCloud(event)}
-          >
-            Upload Template To Cloud
-          </button>
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-            }}
-            onClick={(event) => downloadTemplateFromCloud(event)}
-          >
-            Download Template From Cloud
-          </button>
+          
           <ImageUploader />
         </div>
       </div>
@@ -1185,14 +1163,6 @@ export default function BakeryLiquor() {
           setImages={setImages}
           imgIndex={imgIndex}
           maxCardPosition={maxStaticIndex}
-        />
-      ) : null}
-      {templates != null ? (
-        <TemplatesFromCloud
-          templates={templates}
-          setDynamicColumn={setDynamicColumn}
-          setStaticColumns={setStaticColumns}
-          setTemplates={setTemplates}
         />
       ) : null}
     </div>

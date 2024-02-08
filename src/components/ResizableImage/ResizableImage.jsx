@@ -7,6 +7,7 @@ const ResizableImage = ({
   selectedColumn,
   setSelectedColumn,
   setIsEditingZoom,
+  cardNumber,
 }) => {
   const imageRefs = useRef([useRef(null), useRef(null)]);
   const [imageCoords, setImageCoords] = useState([
@@ -82,7 +83,7 @@ const ResizableImage = ({
   };
 
   const renderContainerBox = () => {
-    const elementToCopy = document.getElementsByName(`card-${cardIndex}`)[0];
+    const elementToCopy = document.getElementsByName(`card-${cardNumber}`)[0];
     const computedStyles = window.getComputedStyle(elementToCopy);
     const stylesToCopy = {};
     for (let i = 0; i < computedStyles.length; i++) {
@@ -104,8 +105,10 @@ const ResizableImage = ({
         <div className={styles.zoomSliderContainer}>
           {selectedColumn[cardIndex].img.slice(0, 2).map((image, index) => (
             <div className={styles.zoomControlGrid}>
-              <button onClick={() =>handleZoomChange(5 , index)}>Zoom +</button>
-              <button onClick={() => handleZoomChange(-5 , index)}>Zoom -</button>
+              <button onClick={() => handleZoomChange(5, index)}>Zoom +</button>
+              <button onClick={() => handleZoomChange(-5, index)}>
+                Zoom -
+              </button>
             </div>
           ))}
         </div>
@@ -117,38 +120,31 @@ const ResizableImage = ({
           }}
         >
           <div className={styles.imagesContainer}>
-            {selectedColumn[cardIndex].img.slice(0, 2).map((image, index) => ( image.src != "" ?
-                      <img
-                        id={`image-${cardIndex}-${index + 1}`}
-                        ref={imageRefs.current[index]}
-                        className={styles.draggableImage}
-                        src={image.src}
-                        alt={`Image ${index + 1} - ${cardIndex}`}
-                        style={{
-                          position: "absolute",
-                        
-                          transform: `translate(${
-                            tempImageCoords[index].x
-                          }px, ${tempImageCoords[index].y}px) scale(${
-                            tempImageCoords[index].zoom / 100
-                          })`,
-                        }}
-                        
-                      />
-                    
-                 : null
-              
-            ))}
+            {selectedColumn[cardIndex].img.slice(0, 2).map((image, index) =>
+              image.src != "" ? (
+                <img
+                  id={`image-${cardIndex}-${index + 1}`}
+                  ref={imageRefs.current[index]}
+                  className={styles.draggableImage}
+                  src={image.src}
+                  alt={`Image ${index + 1} - ${cardIndex}`}
+                  style={{
+                    position: "absolute",
+
+                    transform: `translate(${tempImageCoords[index].x}px, ${
+                      tempImageCoords[index].y
+                    }px) scale(${tempImageCoords[index].zoom / 100})`,
+                  }}
+                />
+              ) : null
+            )}
           </div>
+          <button className={styles.confirmButton} onClick={handleConfirmClick}>
+            OK
+          </button>
           <button
-              className={styles.confirmButton}
-              onClick={handleConfirmClick}
-            >
-              OK
-            </button>
-          <button
-          className={styles.cancelButton}
-          onClick={() => setIsEditingZoom(false)}
+            className={styles.cancelButton}
+            onClick={() => setIsEditingZoom(false)}
           >
             Back
           </button>

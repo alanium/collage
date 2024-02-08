@@ -16,6 +16,7 @@ import ImageFromCloud from "../../components/ImageFromCloud/ImageFromCloud";
 import TemplatesFromCloud from "../../components/TemplatesFromCloud/TemplatesFromCloud";
 import ZoomSlider from "../../components/ZoomSlider/ZoomSlider";
 import ResizableImage from "../../components/ResizableImage/ResizableImage";
+import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
@@ -65,6 +66,7 @@ export default function FrozenAndBeverages() {
   const [type, setType] = useState("");
   const [popup2, setPopup2] = useState(false);
   const [popup3, setPopup3] = useState(false);
+  const [popup4, setPopup4] = useState(false);
   const [templates, setTemplates] = useState(null);
   const [images, setImages] = useState(null);
   const [imgIndex, setImgIndex] = useState(null);
@@ -331,7 +333,7 @@ export default function FrozenAndBeverages() {
         !newStaticColumns[cardIndex].text.priceBoxBorder;
       setStaticColumns(newStaticColumns);
     }
-  }
+  };
 
   const ContextMenu = ({ x, y, items, onClose }) => (
     <div
@@ -406,7 +408,7 @@ export default function FrozenAndBeverages() {
       {
         label: "Change PriceBox Border",
         action: () => changePriceBoxBorder(cardIndex),
-      }
+      },
     ];
 
     if (selectedColumn[index].img[1].src == "") {
@@ -657,6 +659,7 @@ export default function FrozenAndBeverages() {
 
           cards.push(
             <div
+              name={`card-${cardIndex}`}
               className={styles.card}
               style={{}}
               key={cardIndex}
@@ -664,13 +667,13 @@ export default function FrozenAndBeverages() {
             >
               {images.img[0] && ( // Check if img[0] exists before rendering
                 <img
-                name={`image-${cardIndex}-0`}
+                  name={`image-${cardIndex}-0`}
                   src={images.img[0].src ? images.img[0].src : ""}
                   className={styles.uploadedImage}
                   style={{
                     transform: `scale(${images.img[0].zoom / 100}) translate(${
-                      images.img[0].x
-                    }px, ${images.img[0].y}px)`,
+                      images.img[0].x / (images.img[0].zoom / 100)
+                    }px, ${images.img[0].y / (images.img[0].zoom / 100)}px)`,
                   }}
                 />
               )}
@@ -682,8 +685,8 @@ export default function FrozenAndBeverages() {
                   className={styles.uploadedImage}
                   style={{
                     transform: `scale(${images.img[1].zoom / 100}) translate(${
-                      images.img[1].x
-                    }px, ${images.img[1].y}px)`,
+                      images.img[1].x / (images.img[1].zoom / 100)
+                    }px, ${images.img[1].y / (images.img[1].zoom / 100)}px)`,
                   }}
                 />
               )}
@@ -742,33 +745,33 @@ export default function FrozenAndBeverages() {
 
         column.push(
           <div
-          name={`card-${cardIndex}`}
+            name={`card-${cardIndex}`}
             className={styles.card}
             key={cardIndex}
             onClick={(event) => handleCardClick(cardIndex, event)}
           >
             {images[0] && ( // Check if img[0] exists before rendering
               <img
-              name={`image-${cardIndex}-0`}
+                name={`image-${cardIndex}-0`}
                 src={images[0].src ? images[0].src : ""}
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[0].zoom / 100}) translate(${
-                    images[0].x
-                  }px, ${images[0].y}px)`,
+                    images[0].x / (images[0].zoom / 100)
+                  }px, ${images[0].y / (images[0].zoom / 100)}px)`,
                 }}
               />
             )}
 
             {images[1] && ( // Check if img[1] exists before rendering
               <img
-              name={`image-${cardIndex}-1`}
+                name={`image-${cardIndex}-1`}
                 src={images[1] ? images[1].src : ""}
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[1].zoom / 100}) translate(${
-                    images[1].x
-                  }px, ${images[1].y}px)`,
+                    images[1].x / (images[1].zoom / 100)
+                  }px, ${images[1].y / (images[1].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -818,87 +821,85 @@ export default function FrozenAndBeverages() {
       );
     }
 
-    const cardIndex = 1 + 3 * 2 + 14;
-        const isEditingThisZoom =
-          isEditingZoom &&
-          selectedImage &&
-          selectedImage.cardIndex === cardIndex;
+    const cardIndex = 23;
+    const isEditingThisZoom =
+      isEditingZoom && selectedImage && selectedImage.cardIndex === cardIndex;
 
-        let images = staticColumns[cardIndex].img;
+    let images = staticColumns[cardIndex].img;
 
-        const textBoxes = [];
+    const textBoxes = [];
 
-        staticColumns.map((card) => {
-          textBoxes.push(card.text);
-        });
+    staticColumns.map((card) => {
+      textBoxes.push(card.text);
+    });
 
     cards.push(
-          <div
-          name={`card-${cardIndex}`}
-            className={styles.card}
-            key={cardIndex}
-            onClick={(event) => handleCardClick(cardIndex, event)}
-          >
-            {images[0] && ( // Check if img[0] exists before rendering
-              <img
-                src={images[0].src ? images[0].src : ""}
-                className={styles.uploadedImage}
-                style={{
-                  transform: `scale(${images[0].zoom / 100}) translate(${
-                    images[0].x
-                  }px, ${images[0].y}px)`,
-                }}
-              />
+      <div
+        name={`card-${cardIndex}`}
+        className={styles.card}
+        key={cardIndex}
+        onClick={(event) => handleCardClick(cardIndex, event)}
+      >
+        {images[0] && ( // Check if img[0] exists before rendering
+          <img
+            src={images[0].src ? images[0].src : ""}
+            className={styles.uploadedImage}
+            style={{
+              transform: `scale(${images[0].zoom / 100}) translate(${
+                images[0].x / (images[0].zoom / 100)
+              }px, ${images[0].y / (images[0].zoom / 100)}px)`,
+            }}
+          />
+        )}
+
+        {images[1] && ( // Check if img[1] exists before rendering
+          <img
+            src={images[1] ? images[1].src : ""}
+            className={styles.uploadedImage}
+            style={{
+              transform: `scale(${images[1].zoom / 100}) translate(${
+                images[1].x / (images[1].zoom / 100)
+              }px, ${images[1].y / (images[1].zoom / 100)}px)`,
+            }}
+          />
+        )}
+        {staticColumns[cardIndex] &&
+        staticColumns[cardIndex].text.renderPriceBox ? (
+          <div className="priceBox">
+            {renderPriceBox(
+              staticColumns[cardIndex].text.priceBoxType,
+              staticColumns,
+              setStaticColumns,
+              cardIndex,
+              staticColumns[cardIndex].text.priceBoxColor,
+              staticColumns[cardIndex].text.priceBoxBorder
             )}
-
-            {images[1] && ( // Check if img[1] exists before rendering
-              <img
-                src={images[1] ? images[1].src : ""}
-                className={styles.uploadedImage}
-                style={{
-                  transform: `scale(${images[1].zoom / 100}) translate(${
-                    images[1].x
-                  }px, ${images[1].y}px)`,
-                }}
-              />
-            )}
-            {staticColumns[cardIndex] &&
-            staticColumns[cardIndex].text.renderPriceBox ? (
-              <div className="priceBox">
-                {renderPriceBox(
-                  staticColumns[cardIndex].text.priceBoxType,
-                  staticColumns,
-                  setStaticColumns,
-                  cardIndex,
-                  staticColumns[cardIndex].text.priceBoxColor,
-                  staticColumns[cardIndex].text.priceBoxBorder
-                )}
-              </div>
-            ) : null}
-
-            <TopTextBox
-              textBoxes={staticColumns}
-              setTextBoxes={setStaticColumns}
-              cardIndex={cardIndex}
-              setPopup={setPopup}
-              setSelectedTextBox={setSelectedTextBox}
-              setType={setType}
-              setSelectedImage={setSelectedImage}
-              index={cardIndex}
-            />
-
-            <TextBoxLeft
-              textBoxes={staticColumns}
-              setTextBoxes={setStaticColumns}
-              cardIndex={cardIndex}
-              setPopup={setPopup}
-              setSelectedTextBox={setSelectedTextBox}
-              setType={setType}
-              setSelectedImage={setSelectedImage}
-              index={cardIndex}
-            />
           </div>
-    )
+        ) : null}
+
+        <TopTextBox
+          textBoxes={staticColumns}
+          setTextBoxes={setStaticColumns}
+          cardIndex={cardIndex}
+          setPopup={setPopup}
+          setSelectedTextBox={setSelectedTextBox}
+          setType={setType}
+          setSelectedImage={setSelectedImage}
+          index={cardIndex}
+        />
+
+        <TextBoxLeft
+          textBoxes={staticColumns}
+          setTextBoxes={setStaticColumns}
+          cardIndex={cardIndex}
+          setPopup={setPopup}
+          setSelectedTextBox={setSelectedTextBox}
+          setType={setType}
+          setSelectedImage={setSelectedImage}
+          index={cardIndex}
+        />
+      </div>
+    );
     return cards;
   };
 
@@ -926,7 +927,7 @@ export default function FrozenAndBeverages() {
 
         column.push(
           <div
-          name={`card-${cardIndex}`}
+            name={`card-${cardIndex}`}
             className={styles.card}
             key={cardIndex}
             onClick={(event) => handleCardClick(cardIndex, event)}
@@ -938,8 +939,8 @@ export default function FrozenAndBeverages() {
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[0].zoom / 100}) translate(${
-                    images[0].x
-                  }px, ${images[0].y}px)`,
+                    images[0].x / (images[0].zoom / 100)
+                  }px, ${images[0].y / (images[0].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -951,8 +952,8 @@ export default function FrozenAndBeverages() {
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[1].zoom / 100}) translate(${
-                    images[1].x
-                  }px, ${images[1].y}px)`,
+                    images[1].x / (images[1].zoom / 100)
+                  }px, ${images[1].y / (images[1].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -1026,11 +1027,25 @@ export default function FrozenAndBeverages() {
         />
       ) : null}
       {isEditingZoom && (
-        <ResizableImage 
-          cardIndex={selectedImage.cardIndex > 20 ? selectedImage.cardIndex - 21 : selectedImage.cardIndex}
-          selectedColumn={selectedImage.cardIndex > 20 ? dynamicColumn : staticColumns}
-          setSelectedColumn={selectedImage.cardIndex > 20 ? setDynamicColumn : setStaticColumns}
-          setIsEditingZoom={setIsEditingZoom} />
+        <ResizableImage
+          cardIndex={
+            selectedImage.cardIndex > maxStaticIndex
+              ? selectedImage.cardIndex - cardsInStatic
+              : selectedImage.cardIndex
+          }
+          selectedColumn={
+            selectedImage.cardIndex > maxStaticIndex
+              ? dynamicColumn
+              : staticColumns
+          }
+          setSelectedColumn={
+            selectedImage.cardIndex > maxStaticIndex
+              ? setDynamicColumn
+              : setStaticColumns
+          }
+          setIsEditingZoom={setIsEditingZoom}
+          cardNumber={selectedImage.cardIndex}
+        />
       )}
       {popup2 ? (
         <div className={styles.popUp2} style={{ zIndex: "1" }}>
@@ -1057,25 +1072,29 @@ export default function FrozenAndBeverages() {
         </div>
       ) : null}
       {popup3 ? (
-        <div className={styles.popUp2} style={{top: "40%", left: "50%", position: "absolute", zIndex: "1"}}>
+        <div
+          className={styles.popUp2}
+          style={{ top: "40%", left: "50%", position: "absolute", zIndex: "1" }}
+        >
+          <div>Do you really wish to go back?</div>
           <div>
-            Do you really wish to go back?
-          </div>  
-          <div>
-            <button
-              onClick={() => navigate("/")}
-            >
-              Yes
-            </button>
-            <button
-              onClick={() => setPopup3(false)}
-            >
-              No
-            </button>
+            <button onClick={() => navigate("/")}>Yes</button>
+            <button onClick={() => setPopup3(false)}>No</button>
           </div>
         </div>
       ) : null}
-
+      {popup4 ? (
+        <ManageTemplates
+        dynamicColumn={dynamicColumn}
+        staticColumns={staticColumns}
+        setDynamicColumn={setDynamicColumn}
+        setStaticColumns={setStaticColumns}
+        templates={templates}
+        setTemplates={setTemplates}
+        setPopup4={setPopup4}
+        
+        />
+      ): null}
       <div className={styles.sidebar} style={{ top: "0px" }}>
         <div
           style={{
@@ -1126,19 +1145,6 @@ export default function FrozenAndBeverages() {
           >
             Info
           </button>
-
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              marginBottom: "10px",
-              color: "white",
-            }}
-            onClick={(event) => saveTemplate(event)}
-          >
-            Download Template
-          </button>
           <button
             style={{
               width: "165px",
@@ -1147,40 +1153,20 @@ export default function FrozenAndBeverages() {
               color: "white",
               marginBottom: "10px",
             }}
-            onClick={(event) => loadTemplate(event)}
+            onClick={() => setPopup4(true)}
           >
-            Load Template
-          </button>
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-            }}
-            onClick={(event) => uploadTemplateToCloud(event)}
-          >
-            Upload Template To Cloud
-          </button>
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-            }}
-            onClick={(event) => downloadTemplateFromCloud(event)}
-          >
-            Download Template From Cloud
+            Open Template Manager
           </button>
           <ImageUploader />
         </div>
       </div>
 
       <div id="magazineContainer" className={styles.containerDivBorder}>
-        <div className={styles.containerDiv} style={{height: "129%"}} ref={contextMenuRef}>
+        <div
+          className={styles.containerDiv}
+          style={{ height: "129%" }}
+          ref={contextMenuRef}
+        >
           <RenderCards />
           <div className={styles.overlay}>FROZEN</div>
           {contextMenu && (
@@ -1214,14 +1200,6 @@ export default function FrozenAndBeverages() {
           setImages={setImages}
           imgIndex={imgIndex}
           maxCardPosition={maxStaticIndex}
-        />
-      ) : null}
-      {templates != null ? (
-        <TemplatesFromCloud
-          templates={templates}
-          setDynamicColumn={setDynamicColumn}
-          setStaticColumns={setStaticColumns}
-          setTemplates={setTemplates}
         />
       ) : null}
     </div>

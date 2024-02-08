@@ -16,6 +16,7 @@ import ImageFromCloud from "../../components/ImageFromCloud/ImageFromCloud";
 import TemplatesFromCloud from "../../components/TemplatesFromCloud/TemplatesFromCloud";
 import ZoomSlider from "../../components/ZoomSlider/ZoomSlider";
 import ResizableImage from "../../components/ResizableImage/ResizableImage";
+import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
@@ -63,6 +64,7 @@ function International() {
   const [info, setInfo] = useState(false);
   const [popup, setPopup] = useState(false);
   const [popup3, setPopup3] = useState(false);
+  const [popup4, setPopup4] = useState(false);
   const [type, setType] = useState("");
 
   const [popup2, setPopup2] = useState(false);
@@ -525,30 +527,6 @@ function International() {
     }
   }
 
-  const saveTemplate = (event) => {
-    const newText = prompt("Enter template name: ");
-    if (newText) {
-      const blob = new Blob(
-        [
-          JSON.stringify({
-            firstColumn: dynamicColumn,
-            otherColumns: staticColumns,
-          }),
-        ],
-        { type: "application/json" }
-      );
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${newText}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-  };
-
   const getImageList = () => {
     listAll(imagesRef)
       .then((result) => {
@@ -590,51 +568,6 @@ function International() {
       }
     };
     input.click();
-  };
-
-  const uploadTemplateToCloud = async () => {
-    const fileName = prompt("Enter the name of the file");
-    const fileContent = JSON.stringify({
-      firstColumn: dynamicColumn,
-      otherColumns: staticColumns,
-    });
-
-    // Validate file name and content
-    if (!fileName || fileName.trim() === "") {
-      console.error("File name is required");
-      return;
-    }
-
-    const blob = new Blob([fileContent], { type: "text/plain" });
-
-    if (fileName && blob) {
-      try {
-        const storageRef = ref(storage, `templates/${fileName}`);
-        await uploadBytes(storageRef, blob);
-        console.log("File uploaded successfully");
-      } catch (error) {
-        console.error("Error uploading file:", error.message);
-      }
-    } else {
-      console.error("File name and content are required");
-    }
-  };
-
-  const downloadTemplateFromCloud = (event) => {
-    listAll(templatesRef)
-      .then((result) => {
-        // 'items' is an array that contains references to each item in the list
-        const items = result.items;
-
-        // Extract image names from references
-        const names = items.map((item) => item.name);
-
-        setTemplates(names);
-        console.log(names);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
   };
 
   const renderPriceBox = (
@@ -724,8 +657,8 @@ function International() {
                   className={styles.uploadedImage}
                   style={{
                     transform: `scale(${images.img[0].zoom / 100}) translate(${
-                      images.img[0].x
-                    }px, ${images.img[0].y}px)`,
+                      images.img[0].x / ( images.img[0].zoom / 100)
+                    }px, ${images.img[0].y / ( images.img[0].zoom / 100)}px)`,
                   }}
                 />
               )}
@@ -737,8 +670,8 @@ function International() {
                   className={styles.uploadedImage}
                   style={{
                     transform: `scale(${images.img[1].zoom / 100}) translate(${
-                      images.img[1].x
-                    }px, ${images.img[1].y}px)`,
+                      images.img[1].x / ( images.img[1].zoom / 100)
+                    }px, ${images.img[1].y / ( images.img[1].zoom / 100)}px)`,
                   }}
                 />
               )}
@@ -810,8 +743,8 @@ function International() {
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[0].zoom / 100}) translate(${
-                    images[0].x
-                  }px, ${images[0].y}px)`,
+                    images[0].x / ( images[0].zoom / 100)
+                  }px, ${images[0].y / ( images[0].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -823,8 +756,8 @@ function International() {
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[1].zoom / 100}) translate(${
-                    images[1].x
-                  }px, ${images[1].y}px)`,
+                    images[1].x / ( images[1].zoom / 100)
+                  }px, ${images[1].y / ( images[1].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -896,7 +829,9 @@ function International() {
           cardIndex={selectedImage.cardIndex > 20 ? selectedImage.cardIndex - 21 : selectedImage.cardIndex}
           selectedColumn={selectedImage.cardIndex > 20 ? dynamicColumn : staticColumns}
           setSelectedColumn={selectedImage.cardIndex > 20 ? setDynamicColumn : setStaticColumns}
-          setIsEditingZoom={setIsEditingZoom} />
+          setIsEditingZoom={setIsEditingZoom}
+          cardNumber={selectedImage.cardIndex}
+          />
       )}
       {popup2 ? (
         <div className={styles.popUp2} style={{ zIndex: "1" }}>
@@ -942,6 +877,18 @@ function International() {
           </div>
         </div>
       ) : null}
+      {popup4 ? (
+        <ManageTemplates
+        dynamicColumn={dynamicColumn}
+        staticColumns={staticColumns}
+        setDynamicColumn={setDynamicColumn}
+        setStaticColumns={setStaticColumns}
+        templates={templates}
+        setTemplates={setTemplates}
+        setPopup4={setPopup4}
+        
+        />
+      ): null}
 
       <button
         style={{
@@ -993,55 +940,20 @@ function International() {
           >
             Info
           </button>
+          <button
+            style={{
+              width: "165px",
+              position: "relative",
+              backgroundColor: "gray",
+              color: "white",
+              marginBottom: "10px",
+            }}
+            onClick={() => setPopup4(true)}
+          >
+            Open Template Manager
+          </button>
 
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              marginBottom: "10px",
-              color: "white",
-            }}
-            onClick={(event) => saveTemplate(event)}
-          >
-            Download Template
-          </button>
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-            }}
-            onClick={(event) => loadTemplate(event)}
-          >
-            Load Template
-          </button>
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-            }}
-            onClick={(event) => uploadTemplateToCloud(event)}
-          >
-            Upload Template To Cloud
-          </button>
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-            }}
-            onClick={(event) => downloadTemplateFromCloud(event)}
-          >
-            Download Template From Cloud
-          </button>
+          
           <ImageUploader />
         </div>
       </div>
@@ -1077,14 +989,7 @@ function International() {
           maxCardPosition={20}
         />
       ) : null}
-      {templates != null ? (
-        <TemplatesFromCloud
-          templates={templates}
-          setDynamicColumn={setDynamicColumn}
-          setStaticColumns={setStaticColumns}
-          setTemplates={setTemplates}
-        />
-      ) : null}
+
     </div>
   );
 }

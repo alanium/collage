@@ -57,81 +57,57 @@ export default function ManageTemplates({
     }
   };
 
-  const downloadTemplateFromCloud = (event) => {
+  const downloadTemplateFromCloud = () => {
     listAll(templatesRef)
       .then((result) => {
-        // 'items' is an array that contains references to each item in the list
         const items = result.items;
-
-        // Extract image names from references
         const names = items.map((item) => item.name);
-
         setTemplates(names);
         setRenderedTemplates(names.slice(0, visibleTemplates));
-        console.log(names);
       })
       .catch((error) => {
         console.log(error);
       });
   };
 
-  const handleDeleteTemplate = () => {
-    if (selectedTemplate == null) {
-      console.error("No template selected");
-      return;
-    }
-
-    const templateRef = ref(storage, `templates/${selectedTemplate}`);
+  const handleDeleteTemplate = (templateName) => {
+    const templateRef = ref(storage, `templates/${templateName}`);
 
     deleteObject(templateRef)
       .then(() => {
-        console.log("File deleted succesfully");
-
+        console.log("File deleted successfully");
         downloadTemplateFromCloud();
       })
       .catch((error) => {
         console.log(error);
-      })
-      .finally(setPopup4(false));
+      });
   };
 
-  const handleTemplateNameChange = async () => {
-    if (selectedTemplate == null) {
-      console.error("No template selected");
-      return;
-    }
-
-    const templateRef = ref(storage, `templates/${selectedTemplate}`);
+  const handleTemplateNameChange = async (templateName) => {
+    const templateRef = ref(storage, `templates/${templateName}`);
 
     try {
       const fileBytes = await getBytes(templateRef);
-      // Convert the file bytes to a string
       const jsonString = new TextDecoder().decode(fileBytes);
 
-      // Parse the JSON string
-      const parsedResult = JSON.parse(jsonString);
-
-      const fileName = prompt("Enter the new name of the file");
-      if (!fileName || fileName.trim() === "") {
+      const newFileName = prompt("Enter the new name of the file");
+      if (!newFileName || newFileName.trim() === "") {
         console.error("File name is required");
         return;
       }
 
-      if (fileName === selectedTemplate) {
+      if (newFileName === templateName) {
         console.error("Please enter a different name");
         return;
       }
 
-      const blob = new Blob([JSON.stringify(parsedResult)], {
-        type: "text/plain",
-      });
+      const blob = new Blob([jsonString], { type: "text/plain" });
 
-      if (fileName && blob) {
-        const newStorageRef = ref(storage, `templates/${fileName}`);
+      if (newFileName && blob) {
+        const newStorageRef = ref(storage, `templates/${newFileName}`);
         await uploadBytes(newStorageRef, blob);
         await deleteObject(templateRef);
-        // After the deletion and upload, download the updated list of templates
-        await downloadTemplateFromCloud();
+        downloadTemplateFromCloud();
       } else {
         console.error("File name and content are required");
       }
@@ -142,22 +118,13 @@ export default function ManageTemplates({
     }
   };
 
-  const handleConfirmSelection = (event) => {
-    event.preventDefault();
-
-    if (selectedTemplate == null) {
-      console.error("No template selected");
-      return;
-    }
-
-    const templateRef = ref(storage, `templates/${selectedTemplate}`);
+  const handleConfirmSelection = (templateName) => {
+    const templateRef = ref(storage, `templates/${templateName}`);
     getBytes(templateRef)
       .then((fileBytes) => {
-        // Convert the file bytes to a string
         const jsonString = new TextDecoder().decode(fileBytes);
 
         try {
-          // Parse the JSON string
           const parsedResult = JSON.parse(jsonString);
           setDynamicColumn(parsedResult.firstColumn);
           setStaticColumns(parsedResult.otherColumns);
@@ -165,97 +132,108 @@ export default function ManageTemplates({
           setTemplates(null);
         } catch (error) {
           console.error("Error parsing JSON:", error.message);
-          // Handle the error, e.g., set an error state or display a message to the user
         } finally {
           setPopup4(false);
         }
       })
       .catch((error) => {
         console.error("Error fetching template:", error.message);
-        // Handle the error, e.g., set an error state or display a message to the user
       });
   };
 
-  const loadMoreImages = () => {
+  const loadMoreTemplates = () => {
     setVisibleTemplates((prevCount) => prevCount + 8);
+  };
+
+  const loadTemplate = (event) => {
+    event.preventDefault();
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json"; // Corrected file extension
+    input.onchange = (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = e.target.result;
+          try {
+            const parsedResult = JSON.parse(result);
+            setStaticColumns(parsedResult.otherColumns);
+            setDynamicColumn(parsedResult.firstColumn);
+          } catch (error) {
+            console.error("Error parsing JSON:", error);
+          }
+        };
+        reader.readAsText(file); // Use readAsText to read JSON content
+      }
+    };
+    input.click();
+  };
+
+  const saveTemplate = (event) => {
+    const newText = prompt("Enter template name: ");
+    if (newText) {
+      const blob = new Blob(
+        [
+          JSON.stringify({
+            firstColumn: dynamicColumn,
+            otherColumns: staticColumns,
+          }),
+        ],
+        { type: "application/json" }
+      );
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${newText}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
   };
 
   useEffect(() => {
     downloadTemplateFromCloud();
   }, []);
 
-  const handleUpdateTemplate = async () => {
-    if (selectedTemplate == null) {
-      console.error("No template selected");
-      return;
-    }
-
-    const answer = prompt(
-      "This action will REPLACE the selected template with the current one you're working with. Write REPLACE if you want to proceed"
-    );
-
-    if (answer.toLowerCase() !== "replace") {
-      return;
-    }
-
-    try {
-      const templateRef = ref(storage, `templates/${selectedTemplate}`);
-      await deleteObject(templateRef);
-
-      const fileContent = JSON.stringify({
-        firstColumn: dynamicColumn,
-        otherColumns: staticColumns,
-      });
-
-      // Validate file name and content
-      if (!selectedTemplate || selectedTemplate.trim() === "") {
-        console.error("File name is required");
-        return;
-      }
-
-      const blob = new Blob([fileContent], { type: "text/plain" });
-
-      if (selectedTemplate && blob) {
-        const storageRef = ref(storage, `templates/${selectedTemplate}`);
-        await uploadBytes(storageRef, blob);
-
-        downloadTemplateFromCloud();
-      } else {
-        console.error("File name and content are required");
-      }
-    } catch (error) {
-      console.error("Error:", error.message);
-    } finally {
-      setPopup4(false);
-    }
-  };
-
   return (
     <div className={styles.background}>
       <div className={styles.container}>
-        <div>
-          {renderedTemplates.length != 0 &&
-            renderedTemplates.map((template) => (
-              <div
-                onClick={() => setSelectedTemplate(template)}
-                className={
-                  selectedTemplate === template
-                    ? `${styles.template} ${styles.selected}`
-                    : styles.template
-                }
-              >
-                <label>{template}</label>
-              </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {renderedTemplates.map((template) => (
+              <tr key={template}>
+                <td onClick={() => setSelectedTemplate(template)}>{template}</td>
+                <td>
+                  <button onClick={() => handleConfirmSelection(template)}>Load</button>
+                  <button onClick={() => handleDeleteTemplate(template)}>Delete</button>
+                  <button onClick={() => handleTemplateNameChange(template)}>Rename</button>
+                </td>
+              </tr>
             ))}
-        </div>
+          </tbody>
+        </table>
+        <button onClick={loadMoreTemplates}>Show More</button>
+
         <button onClick={uploadTemplateToCloud}>Upload Current Template</button>
-        <button onClick={handleUpdateTemplate}>Update Selected Template</button>
-        <button onClick={handleDeleteTemplate}>Delete Selected Template</button>
-        <button onClick={handleTemplateNameChange}>
-          Rename Selected Template
+        <button
+              onClick={(event) => loadTemplate(event)}
+        >
+              Load Template From Computer
         </button>
-        <button onClick={loadMoreImages}>Show More</button>
-        <button onClick={handleConfirmSelection}>Load Selected Template</button>
+        <button
+              onClick={(event) => saveTemplate(event)}
+        >
+              Download Template To Computer
+        </button>
         <button onClick={() => setPopup4(false)}>Cancel</button>
       </div>
     </div>
