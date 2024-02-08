@@ -545,30 +545,7 @@ function International() {
       });
   };
 
-  const loadTemplate = (event) => {
-    event.preventDefault();
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".json"; // Corrected file extension
-    input.onchange = (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target.result;
-          try {
-            const parsedResult = JSON.parse(result);
-            setStaticColumns(parsedResult.otherColumns);
-            setDynamicColumn(parsedResult.firstColumn);
-          } catch (error) {
-            console.error("Error parsing JSON:", error);
-          }
-        };
-        reader.readAsText(file); // Use readAsText to read JSON content
-      }
-    };
-    input.click();
-  };
+  
 
   const renderPriceBox = (
     number,

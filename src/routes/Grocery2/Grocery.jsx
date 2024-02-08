@@ -707,7 +707,7 @@ function Grocery() {
             onClick={(event) => handleCardClick(cardIndex, event)}
           >
             
-            {images[0] && images[1].src != "" && ( // Check if img[0] exists before rendering
+            {images[0] && images[0].src != "" && ( // Check if img[0] exists before rendering
               <img
                 name={`image-${cardIndex}-0`}
                 src={images[0].src ? images[0].src : ""}
