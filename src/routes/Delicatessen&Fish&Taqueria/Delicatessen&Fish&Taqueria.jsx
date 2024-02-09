@@ -78,41 +78,57 @@ export default function DelicatessenAndMore() {
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
 
-  const handleConvertToPDF = () => {
+  const handleConvertToPDF = async () => {
     const container = document.getElementById("magazineContainer");
 
     if (container) {
-      // Clone the container
-      const containerClone = container.cloneNode(true);
-      containerClone.id = "magazineClone";
 
-      // Apply the specified styles to the clone
-      containerClone.style.display = "grid";
+        await downloadExternalImages(container);
 
-      containerClone.style.position = "relative";
-      containerClone.style.zIndex = "0";
-      containerClone.style.width = "21cm";
-      containerClone.style.height = "29.6cm";
-      containerClone.style.backgroundColor = "white";
-      containerClone.style.top = "0";
-      // Apply overflow hidden to the clone with a height of 100px
-      containerClone.style.overflow = "hidden";
+        const pdfOptions = {
+            filename: "grocery_magazine.pdf",
+            image: { type: "png", quality: 1 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        };
 
-      document.body.appendChild(containerClone);
+        container.style.top = "0"
+        // Generar PDF desde el clon
+        await html2pdf().from(container).set(pdfOptions).save()
 
-      const pdfOptions = {
-        filename: "liquor_magazine.pdf",
-        image: { type: "png", quality: 1 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      };
-
-      // Generate PDF from the clone
-      html2pdf().from(containerClone).set(pdfOptions).save();
-
-      // Remove the clone from the DOM after generating PDF
-      containerClone.parentNode.removeChild(containerClone);
+        container.style.top = "100px"
     }
+  };
+
+  const downloadExternalImages = async (container) => {
+      const images = container.querySelectorAll("img");
+      const promises = [];
+
+      images.forEach((img) => {
+          if (img.src.startsWith("http")) {
+              promises.push(new Promise((resolve, reject) => {
+                  const xhr = new XMLHttpRequest();
+                  xhr.open("GET", img.src, true);
+                  xhr.responseType = "blob";
+                  xhr.onload = () => {
+                      if (xhr.status === 200) {
+                          const blob = xhr.response;
+                          const urlCreator = window.URL || window.webkitURL;
+                          const imageUrl = urlCreator.createObjectURL(blob);
+                          img.src = imageUrl;
+                          resolve();
+                      } else {
+                          reject(xhr.statusText);
+                      }
+                  };
+                  xhr.onerror = () => {
+                      reject(xhr.statusText);
+                  };
+                  xhr.send();
+              }));
+          }
+      });
+      await Promise.all(promises);
   };
 
   const handleDynamicColumns = (event) => {
@@ -1187,7 +1203,7 @@ export default function DelicatessenAndMore() {
         templates={templates}
         setTemplates={setTemplates}
         setPopup4={setPopup4}
-        
+        templateFolder="Delicatessen&Taqueria"
         />
       ): null}
 

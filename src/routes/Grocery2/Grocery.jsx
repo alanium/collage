@@ -75,43 +75,60 @@ function Grocery() {
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
 
-  const handleConvertToPDF = () => {
+  const handleConvertToPDF = async () => {
     const container = document.getElementById("magazineContainer");
 
     if (container) {
-      // Clone the container
-      const containerClone = container.cloneNode(true);
-      containerClone.id = "magazineClone";
 
-      // Apply the specified styles to the clone
-      containerClone.style.display = "flex";
-      containerClone.style.alignItems = "center";
-      containerClone.style.justifyContent = "center";
-      containerClone.style.position = "relative";
-      containerClone.style.zIndex = "0";
-      containerClone.style.width = "21cm";
-      containerClone.style.height = "29.6cm";
-      containerClone.style.backgroundColor = "white";
-      containerClone.style.top = "0";
-      // Apply overflow hidden to the clone with a height of 100px
-      containerClone.style.overflow = "hidden";
+        await downloadExternalImages(container);
 
-      document.body.appendChild(containerClone);
+        const pdfOptions = {
+            filename: "grocery_magazine.pdf",
+            image: { type: "png", quality: 1 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        };
 
-      const pdfOptions = {
-        filename: "grocery_magazine.pdf",
-        image: { type: "png", quality: 1 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      };
+        container.style.top = "0"
+        // Generar PDF desde el clon
+        await html2pdf().from(container).set(pdfOptions).save()
 
-      // Generate PDF from the clone
-      html2pdf().from(containerClone).set(pdfOptions).save();
-
-      // Remove the clone from the DOM after generating PDF
-      containerClone.parentNode.removeChild(containerClone);
+        container.style.top = "100px"
     }
   };
+
+  const downloadExternalImages = async (container) => {
+      const images = container.querySelectorAll("img");
+      const promises = [];
+
+      images.forEach((img) => {
+          if (img.src.startsWith("http")) {
+              promises.push(new Promise((resolve, reject) => {
+                  const xhr = new XMLHttpRequest();
+                  xhr.open("GET", img.src, true);
+                  xhr.responseType = "blob";
+                  xhr.onload = () => {
+                      if (xhr.status === 200) {
+                          const blob = xhr.response;
+                          const urlCreator = window.URL || window.webkitURL;
+                          const imageUrl = urlCreator.createObjectURL(blob);
+                          img.src = imageUrl;
+                          resolve();
+                      } else {
+                          reject(xhr.statusText);
+                      }
+                  };
+                  xhr.onerror = () => {
+                      reject(xhr.statusText);
+                  };
+                  xhr.send();
+              }));
+          }
+      });
+      await Promise.all(promises);
+  };
+
+
   const handleDynamicColumns = (event) => {
     const cardAmount = prompt(
       "Enter the amount of cards you want on the first column: "
@@ -856,7 +873,7 @@ function Grocery() {
         templates={templates}
         setTemplates={setTemplates}
         setPopup4={setPopup4}
-        
+        templateFolder="Grocery"
         />
       ): null}
 

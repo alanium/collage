@@ -18,12 +18,13 @@ export default function ManageTemplates({
   templates,
   setTemplates,
   setPopup4,
+  templateFolder
 }) {
   const storage = getStorage();
   const [visibleTemplates, setVisibleTemplates] = useState(8);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [renderedTemplates, setRenderedTemplates] = useState([]);
-  const templatesRef = ref(storage, "templates/");
+  const templatesRef = ref(storage, `templates/${templateFolder}`);
 
   const uploadTemplateToCloud = async () => {
     const fileName = prompt("Enter the name of the file");
@@ -42,7 +43,7 @@ export default function ManageTemplates({
 
     if (fileName && blob) {
       try {
-        const storageRef = ref(storage, `templates/${fileName}`);
+        const storageRef = ref(storage, `templates/${templateFolder}/${fileName}`);
         await uploadBytes(storageRef, blob);
 
         downloadTemplateFromCloud();
@@ -71,7 +72,7 @@ export default function ManageTemplates({
   };
 
   const handleDeleteTemplate = (templateName) => {
-    const templateRef = ref(storage, `templates/${templateName}`);
+    const templateRef = ref(storage, `templates/${templateFolder}/${templateName}`);
 
     deleteObject(templateRef)
       .then(() => {
@@ -84,7 +85,7 @@ export default function ManageTemplates({
   };
 
   const handleTemplateNameChange = async (templateName) => {
-    const templateRef = ref(storage, `templates/${templateName}`);
+    const templateRef = ref(storage, `templates/${templateFolder}/${templateName}`);
 
     try {
       const fileBytes = await getBytes(templateRef);
@@ -104,7 +105,7 @@ export default function ManageTemplates({
       const blob = new Blob([jsonString], { type: "text/plain" });
 
       if (newFileName && blob) {
-        const newStorageRef = ref(storage, `templates/${newFileName}`);
+        const newStorageRef = ref(storage, `templates/${templateFolder}/${newFileName}`);
         await uploadBytes(newStorageRef, blob);
         await deleteObject(templateRef);
         downloadTemplateFromCloud();
@@ -119,7 +120,7 @@ export default function ManageTemplates({
   };
 
   const handleConfirmSelection = (templateName) => {
-    const templateRef = ref(storage, `templates/${templateName}`);
+    const templateRef = ref(storage, `templates/${templateFolder}/${templateName}`);
     getBytes(templateRef)
       .then((fileBytes) => {
         const jsonString = new TextDecoder().decode(fileBytes);
