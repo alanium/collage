@@ -17,6 +17,8 @@ import TemplatesFromCloud from "../../components/TemplatesFromCloud/TemplatesFro
 import ZoomSlider from "../../components/ZoomSlider/ZoomSlider";
 import ResizableImage from "../../components/ResizableImage/ResizableImage";
 import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
+import BugReport from "../../components/BugReport/BugReport";
+import AutomaticImageCropper from "../../components/AutomaticImageCropper/AutomaticImageCropper";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
@@ -65,6 +67,7 @@ function Grocery() {
   const [popup2, setPopup2] = useState(false);
   const [popup3, setPopup3] = useState(false);
   const [popup4, setPopup4] = useState(false);
+  const [popup5, setPopup5] = useState(false);
   const [templates, setTemplates] = useState(null);
   const [images, setImages] = useState(null);
   const [imgIndex, setImgIndex] = useState(null);
@@ -723,29 +726,20 @@ function Grocery() {
             key={cardIndex}
             onClick={(event) => handleCardClick(cardIndex, event)}
           >
-            
             {images[0] && images[0].src != "" && ( // Check if img[0] exists before rendering
-              <img
-                name={`image-${cardIndex}-0`}
-                src={images[0].src ? images[0].src : ""}
-                className={styles.uploadedImage}
-                style={{
-                  transform: `scale(${images[0].zoom / 100}) translate(${images[0].x / ( images[0].zoom / 100)}px, ${images[0].y / ( images[0].zoom / 100)}px)`,
-                }}
+              <AutomaticImageCropper
+                selectedCardColumn={staticColumns}
+                cardIndex={cardIndex}
+                imageIndex={0}
               />
             )}
 
             {images[1] && images[1].src != "" && ( // Check if img[1] exists before rendering
-              <img
-                name={`image-${cardIndex}-1`}
-                src={images[1] ? images[1].src : ""}
-                className={styles.uploadedImage}
-                style={{
-                  transform: `scale(${images[1].zoom / 100}) translate(${
-                    images[1].x / ( images[1].zoom / 100)
-                  }px, ${images[1].y / ( images[1].zoom / 100)}px)`,
-                }}
-              />
+               <AutomaticImageCropper
+               selectedCardColumn={staticColumns}
+               cardIndex={cardIndex}
+               imageIndex={1}
+             />
             )}
            
             
@@ -876,6 +870,9 @@ function Grocery() {
         templateFolder="Grocery"
         />
       ): null}
+      {popup5 ? (
+        <BugReport setPopup5={setPopup5} />
+      ) : null}
 
       <button
         style={{
@@ -927,6 +924,19 @@ function Grocery() {
           >
             Info
           </button>
+          <button
+        style={{
+          width: "165px",
+          position: "relative",
+          backgroundColor: "gray",
+          color: "white",
+          marginBottom: "10px",
+          zIndex: "1",
+        }}
+        onClick={() => setPopup5(true)}
+      >
+        Report a Bug
+      </button>
           <button
             style={{
               width: "165px",
