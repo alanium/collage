@@ -19,6 +19,7 @@ import ResizableImage from "../../components/ResizableImage/ResizableImage";
 import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
 import BugReport from "../../components/BugReport/BugReport";
 import AutomaticImageCropper from "../../components/AutomaticImageCropper/AutomaticImageCropper";
+import ImageCropper from "../../components/ImageCropper/ImageCropper";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
@@ -58,6 +59,7 @@ function Grocery() {
   const [dynamicColumn, setDynamicColumn] = useState([]);
   const [contextMenu, setContextMenu] = useState(null);
   const [isEditingZoom, setIsEditingZoom] = useState(false);
+  const [isCroppingImage, setIsCroppingImage] = useState(false)
   const [selectedImage, setSelectedImage] = useState({});
   const [selectedTextBox, setSelectedTextBox] = useState({});
   const [selectedCardIndex, setSelectedCardIndex] = useState({});
@@ -403,6 +405,10 @@ function Grocery() {
     }
   }
 
+  const handleCropImage = () => {
+    setIsCroppingImage(true)
+  }
+
   const ContextMenu = ({ x, y, items, onClose }) => (
     <div
       style={{
@@ -508,6 +514,11 @@ function Grocery() {
       contextMenuItems.push({
         label: "Delete 1",
         action: () => handleDeleteImage(cardIndex, 0),
+      });
+    } if (selectedColumn[index].img[0].src != "") {
+      contextMenuItems.push({
+        label: "crop image 1",
+        action: () => handleCropImage(cardIndex, 0),
       });
     }
 
@@ -726,7 +737,7 @@ function Grocery() {
             key={cardIndex}
             onClick={(event) => handleCardClick(cardIndex, event)}
           >
-            {images[0] && images[0].src != "" && ( // Check if img[0] exists before rendering
+            {/* {images[0] && images[0].src != "" && ( // Check if img[0] exists before rendering
               <AutomaticImageCropper
                 selectedCardColumn={staticColumns}
                 cardIndex={cardIndex}
@@ -740,8 +751,32 @@ function Grocery() {
                cardIndex={cardIndex}
                imageIndex={1}
              />
-            )}
-           
+            )} */}
+           {images[0] && ( // Check if img[0] exists before rendering
+                <img
+                  name={`image-${cardIndex}-0`}
+                  src={images[0].src ? images[0].src : ""}
+                  className={styles.uploadedImage}
+                  style={{
+                    transform: `scale(${images[0].zoom / 100}) translate(${
+                      images[0].x / ( images[0].zoom / 100)
+                    }px, ${images[0].y / ( images[0].zoom / 100)}px)`,
+                  }}
+                />
+              )}
+
+              {images[1] && ( // Check if img[1] exists before rendering
+                <img
+                  name={`image-${cardIndex}-1`}
+                  src={images[1] ? images[1].src : ""}
+                  className={styles.uploadedImage}
+                  style={{
+                    transform: `scale(${images[1].zoom / 100}) translate(${
+                      images[1].x / ( images[1].zoom / 100)
+                    }px, ${images[1].y / ( images[1].zoom / 100)}px)`,
+                  }}
+                />
+              )}
             
             {staticColumns[cardIndex] &&
             staticColumns[cardIndex].text.renderPriceBox ? (
@@ -814,6 +849,20 @@ function Grocery() {
           setIsEditingZoom={setIsEditingZoom}
           cardNumber={selectedImage.cardIndex}
           /> 
+      )}
+      {isCroppingImage && (
+        <ImageCropper src={
+          selectedCardIndex > 20 ? dynamicColumn[selectedCardIndex  - 21].img[0].src : staticColumns[selectedCardIndex ].img[0].src
+        }
+        setIsCroppingImage={
+          setIsCroppingImage
+        }
+        selectedColumn={selectedCardIndex > 20 ? dynamicColumn : staticColumns}
+        setSelectedColumn={
+          selectedCardIndex > 20 ? setDynamicColumn : setStaticColumns
+        }
+        selectedCardIndex={selectedCardIndex}
+        />
       )} 
       {popup2 ? (
         <div className={styles.popUp2} style={{ zIndex: "1" }}>
