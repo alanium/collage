@@ -3,7 +3,7 @@ import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import Cropper from "react-easy-crop";
 import styles from "./ImageCropper.module.css"
 
-const ImageCropper = ({ src, setIsCroppingImage, selectedColumn, setSelectedColumn, selectedCardIndex }) => {
+const ImageCropper = ({ src, setIsCroppingImage, selectedColumn, setSelectedColumn, imageIndex, selectedCardIndex }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [downloadedImgSrc, setDownloadedImgSrc] = useState(null)
@@ -103,7 +103,7 @@ const ImageCropper = ({ src, setIsCroppingImage, selectedColumn, setSelectedColu
         const newSelectedColumn=[...selectedColumn]
         getDownloadURL(ref(storage, 'images/cropped-image-test'))
           .then((url) => {
-            newSelectedColumn[selectedCardIndex].img[0].src = url
+            newSelectedColumn[selectedCardIndex].img[imageIndex].src = url
             setSelectedColumn(newSelectedColumn)
           })
           .catch((error) => {
@@ -147,7 +147,7 @@ const ImageCropper = ({ src, setIsCroppingImage, selectedColumn, setSelectedColu
         <button onClick={() => handleButton(1)}>Make Crop Area Shorter</button>
         <button onClick={() => handleButton(3)}>Make Crop Area Thinner</button>
         <button onClick={() => handleButton(4)}>Make Crop Area Wider</button>
-        <button onClick={() => handleButton(0)}>Download</button>
+        <button onClick={() => handleButton(0)}>Save</button>
       </div>
       </div>
       

@@ -518,7 +518,16 @@ function Grocery() {
     } if (selectedColumn[index].img[0].src != "") {
       contextMenuItems.push({
         label: "crop image 1",
-        action: () => handleCropImage(cardIndex, 0),
+        action: () => {
+          setImgIndex(0)
+          handleCropImage(cardIndex, imgIndex)},
+      });
+    } if (selectedColumn[index].img[1].src != "") {
+      contextMenuItems.push({
+        label: "crop image 1",
+        action: () => {
+          setImgIndex(1)
+          handleCropImage(cardIndex, imgIndex)},
       });
     }
 
@@ -862,6 +871,7 @@ function Grocery() {
           selectedCardIndex > 20 ? setDynamicColumn : setStaticColumns
         }
         selectedCardIndex={selectedCardIndex}
+        imageIndex={imgIndex}
         />
       )} 
       {popup2 ? (
