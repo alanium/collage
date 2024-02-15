@@ -524,7 +524,7 @@ function Grocery() {
       });
     } if (selectedColumn[index].img[1].src != "") {
       contextMenuItems.push({
-        label: "crop image 1",
+        label: "crop image 2",
         action: () => {
           setImgIndex(1)
           handleCropImage(cardIndex, imgIndex)},
@@ -861,7 +861,7 @@ function Grocery() {
       )}
       {isCroppingImage && (
         <ImageCropper src={
-          selectedCardIndex > 20 ? dynamicColumn[selectedCardIndex  - 21].img[0].src : staticColumns[selectedCardIndex ].img[0].src
+          selectedCardIndex > 20 ? dynamicColumn[selectedCardIndex  - 21].img[imgIndex].src : staticColumns[selectedCardIndex ].img[imgIndex].src
         }
         setIsCroppingImage={
           setIsCroppingImage
