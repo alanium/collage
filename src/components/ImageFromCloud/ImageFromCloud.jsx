@@ -9,7 +9,8 @@ export default function ImageFromCloud({
   setSelectedColumn,
   setImages,
   imgIndex,
-  maxCardPosition
+  maxCardPosition,
+  imageFolder
 }) {
   const [selectedImage, setSelectedImage] = useState(null);
   const [downloadedImageUrl, setDownloadedImageUrl] = useState(null);
@@ -39,7 +40,7 @@ export default function ImageFromCloud({
   const renderImages = () => {
     Promise.all(
       images.map((imageName) =>
-        getDownloadURL(ref(storage, `images/${imageName}`))
+        getDownloadURL(ref(storage, `images/${imageFolder}/${imageName}`))
       )
     )
       .then((urls) => {

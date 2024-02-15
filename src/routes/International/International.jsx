@@ -77,7 +77,7 @@ function International() {
 
   const storage = getStorage();
 
-  const imagesRef = ref(storage, "images/");
+  const imagesRef = ref(storage, "images/International");
 
   const templatesRef = ref(storage, "templates/");
 
@@ -824,6 +824,7 @@ function International() {
           setSelectedColumn={selectedImage.cardIndex > 20 ? setDynamicColumn : setStaticColumns}
           setIsEditingZoom={setIsEditingZoom}
           cardNumber={selectedImage.cardIndex}
+          imageFolder="International"
           />
       )}
       {popup2 ? (
@@ -947,7 +948,7 @@ function International() {
           </button>
 
           
-          <ImageUploader />
+          <ImageUploader imageFolder="International" />
         </div>
       </div>
 
@@ -980,6 +981,7 @@ function International() {
           setImages={setImages}
           imgIndex={imgIndex}
           maxCardPosition={20}
+          imageFolder="International"
         />
       ) : null}
 

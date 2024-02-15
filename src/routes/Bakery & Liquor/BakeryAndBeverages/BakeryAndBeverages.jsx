@@ -73,7 +73,7 @@ export default function BakeryLiquor() {
   const [selectedTextBox, setSelectedTextBox] = useState({});
 
   const storage = getStorage();
-  const imagesRef = ref(storage, "images/");
+  const imagesRef = ref(storage, (selectedCardIndex > 11 && selectedCardIndex < 28 ? "images/liquor" : "images/bakery"));
   const templatesRef = ref(storage, "templates/");
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
@@ -1015,6 +1015,7 @@ export default function BakeryLiquor() {
         setSelectedColumn={selectedImage.cardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns}
         setIsEditingZoom={setIsEditingZoom}
         cardNumber={selectedImage.cardIndex}
+        imageFolder={selectedCardIndex > 11 && selectedCardIndex < 28 ? "liquor" : "bakery"}
           />
       )}
       {popup2 ? (
@@ -1139,7 +1140,7 @@ export default function BakeryLiquor() {
             Open Template Manager
           </button>
           
-          <ImageUploader />
+          <ImageUploader imageFolder={selectedCardIndex > 11 && selectedCardIndex < 28 ? "liquor" : "bakery"} />
         </div>
       </div>
 
@@ -1179,6 +1180,7 @@ export default function BakeryLiquor() {
           setImages={setImages}
           imgIndex={imgIndex}
           maxCardPosition={maxStaticIndex}
+          imageFolder={selectedCardIndex > 11 && selectedCardIndex < 28 ? "liquor" : "bakery"}
         />
       ) : null}
     </div>

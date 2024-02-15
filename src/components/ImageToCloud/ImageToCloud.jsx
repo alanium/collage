@@ -9,7 +9,7 @@ const ImageUploader = () => {
 
   const handleUpload = async (imgName, selectedImage) => {
     try {
-      const storageRef = ref(storage, `images/${imgName}`);
+      const storageRef = ref(storage, `images/${imageFolder}/${imgName}`);
       await uploadBytes(storageRef, selectedImage);
       console.log("Upload successful");
     } catch (error) {

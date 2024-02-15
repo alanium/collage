@@ -59,7 +59,7 @@ function NapervilleFreshMarket() {
   const [imgIndex, setImgIndex] = useState(null);
 
   const storage = getStorage();
-  const imagesRef = ref(storage, "images/");
+  const imagesRef = ref(storage, (selectedCardIndex > 15 && selectedCardIndex < 30 ? "images/produce" : "images/produce"));
   const templatesRef = ref(storage, "templates/");
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
@@ -1024,6 +1024,7 @@ function NapervilleFreshMarket() {
           }
           setIsEditingZoom={setIsEditingZoom}
           cardNumber={selectedImage.cardIndex}
+          imageFolder={selectedCardIndex > 15 && selectedCardIndex < 30 ? "produce" : "produce"}
         />
       )}
       {popup2 ? (
@@ -1126,7 +1127,7 @@ function NapervilleFreshMarket() {
           >
             Open Template Manager
           </button>
-          <ImageUploader />
+          <ImageUploader imageFolder={selectedCardIndex > 15 && selectedCardIndex < 30 ? "produce" : "produce"} />
         </div>
       </div>
 
@@ -1170,6 +1171,7 @@ function NapervilleFreshMarket() {
           setImages={setImages}
           imgIndex={imgIndex}
           maxCardPosition={maxStaticIndex}
+          imageFolder={selectedCardIndex > 15 && selectedCardIndex < 30 ? "produce" : "produce"}
         />
       ) : null}
     </div>

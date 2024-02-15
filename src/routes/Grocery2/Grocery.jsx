@@ -75,7 +75,7 @@ function Grocery() {
   const [imgIndex, setImgIndex] = useState(null);
 
   const storage = getStorage();
-  const imagesRef = ref(storage, "images/");
+  const imagesRef = ref(storage, "images/Grocery");
   
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
@@ -857,6 +857,7 @@ function Grocery() {
           setSelectedColumn={selectedImage.cardIndex > 20 ? setDynamicColumn : setStaticColumns}
           setIsEditingZoom={setIsEditingZoom}
           cardNumber={selectedImage.cardIndex}
+          imageFolder="Grocery"
           /> 
       )}
       {isCroppingImage && (
@@ -872,6 +873,7 @@ function Grocery() {
         }
         selectedCardIndex={selectedCardIndex}
         imageIndex={imgIndex}
+        imageFolder="Grocery"
         />
       )} 
       {popup2 ? (
@@ -1009,7 +1011,7 @@ function Grocery() {
             Open Template Manager
           </button>
           
-          <ImageUploader />
+          <ImageUploader imageFolder="Grocery" />
         </div>
       </div>
 
@@ -1042,6 +1044,7 @@ function Grocery() {
           setImages={setImages}
           imgIndex={imgIndex}
           maxCardPosition={20}
+          imageFolder="Grocery"
         />
       ) : null}
     </div>

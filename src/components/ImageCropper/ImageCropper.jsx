@@ -3,7 +3,7 @@ import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import Cropper from "react-easy-crop";
 import styles from "./ImageCropper.module.css"
 
-const ImageCropper = ({ src, setIsCroppingImage, selectedColumn, setSelectedColumn, imageIndex, selectedCardIndex }) => {
+const ImageCropper = ({ src, setIsCroppingImage, selectedColumn, setSelectedColumn, imageIndex, selectedCardIndex, imageFolder }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [downloadedImgSrc, setDownloadedImgSrc] = useState(null)
@@ -76,7 +76,8 @@ const ImageCropper = ({ src, setIsCroppingImage, selectedColumn, setSelectedColu
 
   const uploadToFirebase = async () => {
     if (!croppedArea) return; // Ensure croppedArea is defined
-    const imageRef = ref(storage, "images/cropped-image-test")
+    const imageName = prompt("Name the image")
+    const imageRef = ref(storage, `images/${imageFolder}/${imageName}`)
     const canvas = document.createElement("canvas");
     const image = new Image();
     image.src = downloadedImgSrc;
@@ -101,7 +102,7 @@ const ImageCropper = ({ src, setIsCroppingImage, selectedColumn, setSelectedColu
         })
         setIsCroppingImage(false)
         const newSelectedColumn=[...selectedColumn]
-        getDownloadURL(ref(storage, 'images/cropped-image-test'))
+        getDownloadURL(ref(storage, `images/${imageFolder}/${imageName}`))
           .then((url) => {
             newSelectedColumn[selectedCardIndex].img[imageIndex].src = url
             setSelectedColumn(newSelectedColumn)

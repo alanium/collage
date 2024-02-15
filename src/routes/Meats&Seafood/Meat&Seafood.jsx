@@ -73,7 +73,7 @@ export default function MeatAndSeafood() {
   const [selectedTextBox, setSelectedTextBox] = useState({});
 
   const storage = getStorage();
-  const imagesRef = ref(storage, "images/");
+  const imagesRef = ref(storage, (selectedCardIndex > maxStaticIndex ? "images/seafood" : "images/meat" ));
   const templatesRef = ref(storage, "templates/");
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
@@ -550,30 +550,6 @@ export default function MeatAndSeafood() {
     }
   };
 
-  const saveTemplate = (event) => {
-    const newText = prompt("Enter template name: ");
-    if (newText) {
-      const blob = new Blob(
-        [
-          JSON.stringify({
-            firstColumn: dynamicColumn,
-            otherColumns: staticColumns,
-          }),
-        ],
-        { type: "application/json" }
-      );
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${newText}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-  };
-
   const getImageList = () => {
     listAll(imagesRef)
       .then((result) => {
@@ -587,76 +563,6 @@ export default function MeatAndSeafood() {
         console.log(names);
       })
       .then(() => setPopup2(false))
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  const loadTemplate = (event) => {
-    event.preventDefault();
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".json"; // Corrected file extension
-    input.onchange = (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target.result;
-          try {
-            const parsedResult = JSON.parse(result);
-            setStaticColumns(parsedResult.otherColumns);
-            setDynamicColumn(parsedResult.firstColumn);
-          } catch (error) {
-            console.error("Error parsing JSON:", error);
-          }
-        };
-        reader.readAsText(file); // Use readAsText to read JSON content
-      }
-    };
-    input.click();
-  };
-
-  const uploadTemplateToCloud = async () => {
-    const fileName = prompt("Enter the name of the file");
-    const fileContent = JSON.stringify({
-      firstColumn: dynamicColumn,
-      otherColumns: staticColumns,
-    });
-
-    // Validate file name and content
-    if (!fileName || fileName.trim() === "") {
-      console.error("File name is required");
-      return;
-    }
-
-    const blob = new Blob([fileContent], { type: "text/plain" });
-
-    if (fileName && blob) {
-      try {
-        const storageRef = ref(storage, `templates/${fileName}`);
-        await uploadBytes(storageRef, blob);
-        console.log("File uploaded successfully");
-      } catch (error) {
-        console.error("Error uploading file:", error.message);
-      }
-    } else {
-      console.error("File name and content are required");
-    }
-  };
-
-  const downloadTemplateFromCloud = (event) => {
-    listAll(templatesRef)
-      .then((result) => {
-        // 'items' is an array that contains references to each item in the list
-        const items = result.items;
-
-        // Extract image names from references
-        const names = items.map((item) => item.name);
-
-        setTemplates(names);
-        console.log(names);
-      })
       .catch((error) => {
         console.log(error);
       });
@@ -1030,6 +936,7 @@ export default function MeatAndSeafood() {
           setSelectedColumn={selectedImage.cardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns}
           setIsEditingZoom={setIsEditingZoom}
           cardNumber={selectedImage.cardIndex}
+          imageFolder={selectedCardIndex > maxStaticIndex ? "meat" : "seafood"}
           />
       )}
       {popup2 ? (
@@ -1153,7 +1060,7 @@ export default function MeatAndSeafood() {
             Open Template Manager
           </button>
           
-          <ImageUploader />
+          <ImageUploader imageFolder={selectedCardIndex > maxStaticIndex ? "seafood" : "meat" } />
         </div>
       </div>
 
@@ -1204,6 +1111,7 @@ export default function MeatAndSeafood() {
           setImages={setImages}
           imgIndex={imgIndex}
           maxCardPosition={maxStaticIndex}
+          imageFolder={selectedCardIndex > maxStaticIndex ? "seafood" : "meat" }
         />
       ) : null}
     </div>
