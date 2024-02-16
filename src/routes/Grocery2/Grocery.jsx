@@ -84,7 +84,6 @@ function Grocery() {
     const container = document.getElementById("magazineContainer");
 
     if (container) {
-
         await downloadExternalImages(container);
 
         const pdfOptions = {
@@ -94,13 +93,27 @@ function Grocery() {
             jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
         };
 
-        container.style.top = "0"
-        // Generar PDF desde el clon
-        await html2pdf().from(container).set(pdfOptions).save()
+        // Get the original top value
+        const originalTop = container.style.top;
 
-        container.style.top = "100px"
+        console.log(originalTop);
+
+        // Ensure container's position property is set
+        const computedStyle = window.getComputedStyle(container);
+        const position = computedStyle.getPropertyValue('position');
+        if (position === 'static') {
+            container.style.position = 'relative'; // or 'absolute' depending on your layout needs
+        }
+
+        container.style.top = "0";
+
+        // Generate PDF from the container
+        await html2pdf().from(container).set(pdfOptions).save();
+
+        // Reset the top value to the original
+        container.style.top = originalTop;
     }
-  };
+};
 
   const downloadExternalImages = async (container) => {
       const images = container.querySelectorAll("img");
@@ -424,18 +437,35 @@ function Grocery() {
         color: "gray",
       }}
     >
-      {items.map((item, index) => (
-        <div
-          key={index}
-          style={{ cursor: "pointer", padding: "5px" }}
-          onClick={() => {
-            item.action();
-            onClose(); // Cierra el menú contextual al hacer clic en una opción
-          }}
-        >
-          {item.label}
-        </div>
-      ))}
+      {items.map((item, index) => {
+        if (item.type === "divider") {
+          return (
+            <div
+              key={index}
+              style={{
+                borderTop: "1px solid #ccc",
+                margin: "5px 0",
+              }}
+            ></div>
+          );
+        } else {
+          return (
+            <div
+              key={index}
+              style={{ cursor: "pointer", padding: "5px" }}
+              onClick={() => {
+                if (item.action) {
+                  item.action();
+                }
+                onClose(); // Cierra el menú contextual al hacer clic en una opción
+              }}
+            >
+              {item.label}
+            </div>
+            
+          );
+        }
+      })}
       <div
         style={{
           cursor: "pointer",
@@ -458,29 +488,32 @@ function Grocery() {
     const index = cardIndex > 20 ? cardIndex - 21 : cardIndex;
 
     const contextMenuItems = [
+      
+     
       {
-        label: "Edit ",
+        label: "Show/Hide Price Box",
+        action: () => showHidePriceBox(cardIndex),
+      },
+      {
+        label: "Change Price Box Type",
+        action: () => switchBoxType(cardIndex),
+      },
+      {
+        label: "Change Price Box Color",
+        action: () => changePriceBoxColor(cardIndex),
+      },
+      {
+        label: "Change Price Box Border",
+        action: () => changePriceBoxBorder(cardIndex),
+      },
+      { type: "divider" },
+      {
+        label: "Move Images",
         action: () => {
           setIsEditingZoom(true);
           setSelectedImage({ cardIndex });
         },
       },
-      {
-        label: "Show/Hide",
-        action: () => showHidePriceBox(cardIndex),
-      },
-      {
-        label: "Box1/Box2/Box3",
-        action: () => switchBoxType(cardIndex),
-      },
-      {
-        label: "Change PriceBox Color",
-        action: () => changePriceBoxColor(cardIndex),
-      },
-      {
-        label: "Change PriceBox Border",
-        action: () => changePriceBoxBorder(cardIndex),
-      }
     ];
 
     if (selectedColumn[index].img[1].src == "") {
@@ -496,13 +529,13 @@ function Grocery() {
     } else if (selectedColumn[index].img[1].src != "") {
       // If both images uploaded, allow editing and deleting the second image
       contextMenuItems.push({
-        label: "Delete 2",
+        label: "Delete Image 2",
         action: () => handleDeleteImage(cardIndex, 1),
       });
     }
     if (selectedColumn[index].img[0].src == "") {
       contextMenuItems.push({
-        label: "Upload 1",
+        label: "Upload Image 1",
         action: () => {
           setImgIndex(0);
           setPopup2(true);
@@ -512,19 +545,19 @@ function Grocery() {
     }
     if (selectedColumn[index].img[0].src != "") {
       contextMenuItems.push({
-        label: "Delete 1",
+        label: "Delete Image 1",
         action: () => handleDeleteImage(cardIndex, 0),
       });
     } if (selectedColumn[index].img[0].src != "") {
       contextMenuItems.push({
-        label: "crop image 1",
+        label: "Crop Image 1",
         action: () => {
           setImgIndex(0)
           handleCropImage(cardIndex, imgIndex)},
       });
     } if (selectedColumn[index].img[1].src != "") {
       contextMenuItems.push({
-        label: "crop image 2",
+        label: "Crop Image 2",
         action: () => {
           setImgIndex(1)
           handleCropImage(cardIndex, imgIndex)},

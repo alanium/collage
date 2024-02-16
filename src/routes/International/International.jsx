@@ -17,6 +17,7 @@ import TemplatesFromCloud from "../../components/TemplatesFromCloud/TemplatesFro
 import ZoomSlider from "../../components/ZoomSlider/ZoomSlider";
 import ResizableImage from "../../components/ResizableImage/ResizableImage";
 import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
+import ImageCropper from "../../components/ImageCropper/ImageCropper";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
@@ -58,7 +59,7 @@ function International() {
   const [isEditingZoom, setIsEditingZoom] = useState(false);
   const [selectedImage, setSelectedImage] = useState({});
   const [selectedTextBox, setSelectedTextBox] = useState({});
-
+  const [isCroppingImage, setIsCroppingImage] = useState(false)
   const [selectedCardIndex, setSelectedCardIndex] = useState({});
 
   const [info, setInfo] = useState(false);
@@ -393,6 +394,10 @@ function International() {
     }
   };
 
+  const handleCropImage = () => {
+    setIsCroppingImage(true)
+  }
+
   const ContextMenu = ({ x, y, items, onClose }) => (
     <div
       style={{
@@ -499,7 +504,21 @@ function International() {
         label: "Delete 1",
         action: () => handleDeleteImage(cardIndex, 0),
       });
-    }
+    } if (selectedColumn[index].img[0].src != "") {
+      contextMenuItems.push({
+        label: "crop image 1",
+        action: () => {
+          setImgIndex(0)
+          handleCropImage(cardIndex, imgIndex)},
+      });
+    } if (selectedColumn[index].img[1].src != "") {
+      contextMenuItems.push({
+        label: "crop image 2",
+        action: () => {
+          setImgIndex(1)
+          handleCropImage(cardIndex, imgIndex)},
+      });
+    } 
 
     const containerRect = contextMenuRef.current.getBoundingClientRect();
     setContextMenu({
@@ -827,6 +846,22 @@ function International() {
           imageFolder="International"
           />
       )}
+      {isCroppingImage && (
+        <ImageCropper src={
+          selectedCardIndex > 20 ? dynamicColumn[selectedCardIndex  - 21].img[imgIndex].src : staticColumns[selectedCardIndex ].img[imgIndex].src
+        }
+        setIsCroppingImage={
+          setIsCroppingImage
+        }
+        selectedColumn={selectedCardIndex > 20 ? dynamicColumn : staticColumns}
+        setSelectedColumn={
+          selectedCardIndex > 20 ? setDynamicColumn : setStaticColumns
+        }
+        selectedCardIndex={selectedCardIndex}
+        imageIndex={imgIndex}
+        imageFolder="International"
+        />
+      )} 
       {popup2 ? (
         <div className={styles.popUp2} style={{ zIndex: "1" }}>
           <button

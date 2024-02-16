@@ -1,157 +1,110 @@
-import React, { useState, useCallback, useEffect } from "react";
-import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
-import Cropper from "react-easy-crop";
-import styles from "./ImageCropper.module.css"
+import React, { useRef, useEffect } from "react";
+import Cropper from "cropperjs";
+import "cropperjs/dist/cropper.min.css";
+import styles from "./ImageCropper.module.css";
+import { getDownloadURL, getMetadata, getStorage, ref, uploadBytes } from "firebase/storage";
 
-const ImageCropper = ({ src, setIsCroppingImage, selectedColumn, setSelectedColumn, imageIndex, selectedCardIndex, imageFolder }) => {
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [downloadedImgSrc, setDownloadedImgSrc] = useState(null)
-  const [croppedArea, setCroppedArea] = useState(null);
-  const [buttonType, setButtonType] = useState(0);
-  const [aspectRatio, setAspectRatio] = useState({ x: 16, y: 9 });
-
+const ImageCropper = ({
+  src,
+  setIsCroppingImage,
+  selectedColumn,
+  setSelectedColumn,
+  imageIndex,
+  selectedCardIndex,
+  imageFolder,
+}) => {
+  const imageRef = useRef(null);
+  const cropper = useRef(null);
   const storage = getStorage();
 
-  const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
-    console.log(croppedArea, croppedAreaPixels);
-    setCroppedArea(croppedAreaPixels);
-  }, []);
-
-  const changeCropAreaWidth = (increment) => {
-    setAspectRatio((prevAspectRatio) => ({
-      x: increment ? prevAspectRatio.x + 1 : prevAspectRatio.x - 1,
-      y: prevAspectRatio.y,
-    }));
-  };
-
-  const changeCropAreaHeight = (increment) => {
-    setAspectRatio((prevAspectRatio) => ({
-      x: prevAspectRatio.x,
-      y: increment ? prevAspectRatio.y + 1 : prevAspectRatio.y - 1,
-    }));
-  };
-
-
   useEffect(() => {
-    const downloadImage = async () => {
-      try {
-        const response = await fetch(src);
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        setDownloadedImgSrc(url);
-      } catch (error) {
-        console.error("Error downloading image:", error);
-      }
+    if (!src) return;
+
+    cropper.current = new Cropper(imageRef.current, {
+      viewMode: 2,
+      dragMode: 'move',
+      autoCropArea: 1,
+      background: false,
+      crop(event) {
+        console.log(event.detail.x);
+        console.log(event.detail.y);
+        console.log(event.detail.width);
+        console.log(event.detail.height);
+      },
+    });
+
+    return () => {
+      cropper.current.destroy();
     };
+  }, [src]);
 
-    if (src) {
-      downloadImage();
-    }
-  }, []);
-
-
-  const handleButton = (type) => {
-    // Toggle between different button types
-    switch (type) {
-      case 0:
-        uploadToFirebase();
-        break;
-      case 1:
-        changeCropAreaWidth(true);
-        break;
-      case 2:
-        changeCropAreaWidth(false);
-        break;
-      case 3:
-        changeCropAreaHeight(true);
-        break;
-      case 4:
-        changeCropAreaHeight(false);
-        break;
-      default:
-        break;
+  const isImageNameValid = async (imageName) => {
+    try {
+      const imageRef = ref(storage, `images/${imageFolder}/${imageName}`);
+      const metadata = await getMetadata(imageRef);
+      return !!metadata;
+    } catch (error) {
+      console.error("Error checking image validity:", error);
+      return false;
     }
   };
 
-  const uploadToFirebase = async () => {
-    if (!croppedArea) return; // Ensure croppedArea is defined
-    const imageName = prompt("Name the image")
-    const imageRef = ref(storage, `images/${imageFolder}/${imageName}`)
-    const canvas = document.createElement("canvas");
-    const image = new Image();
-    image.src = downloadedImgSrc;
-    image.onload = () => {
-      canvas.width = croppedArea.width;
-      canvas.height = croppedArea.height;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(
-        image,
-        croppedArea.x,
-        croppedArea.y,
-        croppedArea.width,
-        croppedArea.height,
-        0,
-        0,
-        croppedArea.width,
-        croppedArea.height
-      );
-      canvas.toBlob(async (blob) => {
-        await uploadBytes(imageRef, blob).then((snapshot) => {
-          console.log("blob uploaded")
-        })
-        setIsCroppingImage(false)
-        const newSelectedColumn=[...selectedColumn]
-        getDownloadURL(ref(storage, `images/${imageFolder}/${imageName}`))
-          .then((url) => {
-            newSelectedColumn[selectedCardIndex].img[imageIndex].src = url
-            setSelectedColumn(newSelectedColumn)
-          })
-          .catch((error) => {
-            console.log(error)
-          })
-        
-      }, "image/png");
-    };
+  const handleSave = async () => {
+    const imageName = prompt("Name the image");
+    if (imageName && imageName.trim() !== "") {
+      const isValid = await isImageNameValid(imageName);
+      if (isValid) {
+        const imageRef = ref(storage, `images/${imageFolder}/${imageName}`);
+        cropper.current.getCroppedCanvas().toBlob(async (blob) => {
+          try {
+            await uploadBytes(imageRef, blob);
+            setIsCroppingImage(false);
+            const updatedColumn = selectedColumn.map((column, index) => {
+              if (index === selectedCardIndex) {
+                return {
+                  ...column,
+                  img: column.img.map((img, i) => {
+                    if (i === imageIndex) {
+                      return { ...img, src: url };
+                    }
+                    return img;
+                  }),
+                };
+              }
+              return column;
+            });
+            setSelectedColumn(updatedColumn);
+          } catch (error) {
+            console.error("Error uploading image:", error);
+          }
+        }, "image/png");
+      } else {
+        alert("Image name is invalid or already exists.");
+      }
+    } else {
+      alert("Please provide a valid image name.");
+    }
+  };
+
+  const handleCancel = () => {
+    setIsCroppingImage(false);
   };
 
   return (
     <div className={styles.background}>
       <div className={styles.popupContainer}>
-      <div>
-        <Cropper
-          image={downloadedImgSrc}
-          crop={crop}
-          zoom={zoom}
-          zoomSpeed={0.01}
-          aspect={aspectRatio.x / aspectRatio.y}
-          onCropChange={setCrop}
-          onCropComplete={onCropComplete}
-          onZoomChange={setZoom}
-        />
+        <div>
+          <img ref={imageRef} src={src} alt="Crop preview" />
+        </div>
+        <div className={styles.actionButtons}>
+          <button onClick={handleSave} className={styles.saveButton}>
+            Save
+          </button>
+          <button onClick={handleCancel} className={styles.cancelButton}>
+            Cancel
+          </button>
+        </div>
       </div>
-      <div
-        style={{
-          position: "absolute",
-          bottom: "10px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          padding: "10px 20px",
-          backgroundColor: "#007bff",
-          color: "#fff",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-        }}
-      >
-        <button onClick={() => handleButton(2)}>Make Crop Area Taller</button>
-        <button onClick={() => handleButton(1)}>Make Crop Area Shorter</button>
-        <button onClick={() => handleButton(3)}>Make Crop Area Thinner</button>
-        <button onClick={() => handleButton(4)}>Make Crop Area Wider</button>
-        <button onClick={() => handleButton(0)}>Save</button>
-      </div>
-      </div>
-      
     </div>
   );
 };

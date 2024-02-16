@@ -17,6 +17,7 @@ import TemplatesFromCloud from "../../components/TemplatesFromCloud/TemplatesFro
 import ZoomSlider from "../../components/ZoomSlider/ZoomSlider";
 import ResizableImage from "../../components/ResizableImage/ResizableImage";
 import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
+import ImageCropper from "../../components/ImageCropper/ImageCropper";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
@@ -59,6 +60,7 @@ export default function MeatAndSeafood() {
   const [dynamicColumn, setDynamicColumn] = useState([]);
   const [contextMenu, setContextMenu] = useState(null);
   const [isEditingZoom, setIsEditingZoom] = useState(false);
+  const [isCroppingImage, setIsCroppingImage] = useState(false)
   const [selectedImage, setSelectedImage] = useState({});
   const [selectedCardIndex, setSelectedCardIndex] = useState({});
   const [info, setInfo] = useState(false);
@@ -410,6 +412,10 @@ export default function MeatAndSeafood() {
     }
   }
 
+  const handleCropImage = () => {
+    setIsCroppingImage(true)
+  }
+
   const ContextMenu = ({ x, y, items, onClose }) => (
     <div
       style={{
@@ -517,6 +523,20 @@ export default function MeatAndSeafood() {
       contextMenuItems.push({
         label: "Delete 1",
         action: () => handleDeleteImage(cardIndex, 0),
+      });
+    } if (selectedColumn[index].img[0].src != "") {
+      contextMenuItems.push({
+        label: "crop image 1",
+        action: () => {
+          setImgIndex(0)
+          handleCropImage(cardIndex, imgIndex)},
+      });
+    } if (selectedColumn[index].img[1].src != "") {
+      contextMenuItems.push({
+        label: "crop image 2",
+        action: () => {
+          setImgIndex(1)
+          handleCropImage(cardIndex, imgIndex)},
       });
     }
 
@@ -939,6 +959,20 @@ export default function MeatAndSeafood() {
           imageFolder={selectedCardIndex > maxStaticIndex ? "meat" : "seafood"}
           />
       )}
+      {isCroppingImage && (
+        <ImageCropper src={
+          selectedCardIndex > maxStaticIndex ? dynamicColumn[selectedCardIndex  - cardsInStatic].img[imgIndex].src : staticColumns[selectedCardIndex ].img[imgIndex].src
+        }
+        setIsCroppingImage={
+          setIsCroppingImage
+        }
+        selectedColumn={selectedImage.cardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
+        setSelectedColumn={selectedImage.cardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns}
+        selectedCardIndex={selectedCardIndex}
+        imageIndex={imgIndex}
+        imageFolder={selectedCardIndex > maxStaticIndex ? "meat" : "seafood"}
+        />
+      )} 
       {popup2 ? (
         <div className={styles.popUp2} style={{ zIndex: "1" }}>
           <button

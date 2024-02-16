@@ -17,6 +17,7 @@ import TemplatesFromCloud from "../../../components/TemplatesFromCloud/Templates
 import ZoomSlider from "../../../components/ZoomSlider/ZoomSlider";
 import ResizableImage from "../../../components/ResizableImage/ResizableImage";
 import ManageTemplates from "../../../components/ManageTemplates/ManageTemplates";
+import ImageCropper from "../../../components/ImageCropper/ImageCropper";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
@@ -61,6 +62,7 @@ export default function BakeryLiquor() {
   const [isEditingZoom, setIsEditingZoom] = useState(false);
   const [selectedImage, setSelectedImage] = useState({});
   const [selectedCardIndex, setSelectedCardIndex] = useState({});
+  const [isCroppingImage, setIsCroppingImage] = useState(false)
   const [info, setInfo] = useState(false);
   const [popup, setPopup] = useState(false);
   const [type, setType] = useState("");
@@ -409,6 +411,10 @@ export default function BakeryLiquor() {
     }
   }
 
+  const handleCropImage = () => {
+    setIsCroppingImage(true)
+  }
+
   const ContextMenu = ({ x, y, items, onClose }) => (
     <div
       style={{
@@ -514,6 +520,20 @@ export default function BakeryLiquor() {
       contextMenuItems.push({
         label: "Delete 1",
         action: () => handleDeleteImage(cardIndex, 0),
+      });
+    } if (selectedColumn[index].img[0].src != "") {
+      contextMenuItems.push({
+        label: "crop image 1",
+        action: () => {
+          setImgIndex(0)
+          handleCropImage(cardIndex, imgIndex)},
+      });
+    } if (selectedColumn[index].img[1].src != "") {
+      contextMenuItems.push({
+        label: "crop image 2",
+        action: () => {
+          setImgIndex(1)
+          handleCropImage(cardIndex, imgIndex)},
       });
     }
 
@@ -1018,6 +1038,21 @@ export default function BakeryLiquor() {
         imageFolder={selectedCardIndex > 11 && selectedCardIndex < 28 ? "liquor" : "bakery"}
           />
       )}
+{isCroppingImage && (
+        <ImageCropper src={
+          selectedCardIndex > maxStaticIndex ? dynamicColumn[selectedCardIndex  - cardsInStatic].img[imgIndex].src : staticColumns[selectedCardIndex ].img[imgIndex].src
+        }
+        setIsCroppingImage={
+          setIsCroppingImage
+        }
+        selectedColumn={selectedImage.cardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
+        setSelectedColumn={selectedImage.cardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns}
+        
+        selectedCardIndex={selectedCardIndex}
+        imageIndex={imgIndex}
+        imageFolder={selectedCardIndex > 11 && selectedCardIndex < 28 ? "liquor" : "bakery"}
+        />
+      )} 
       {popup2 ? (
         <div className={styles.popUp2} style={{ zIndex: "1" }}>
           <button
