@@ -121,7 +121,7 @@ function Grocery() {
     const promises = [];
 
     images.forEach((img) => {
-        if (img.src && img.src != "http://localhost:3000/grocery" && img.src.startsWith("http")) {
+        if (img.src && img.src != "http://3.129.9.251:3000/grocery" && img.src.startsWith("http")) {
           console.log(img.src)
             promises.push(new Promise((resolve, reject) => {
                 const xhr = new XMLHttpRequest();
