@@ -2,9 +2,9 @@ import React, { useRef, useEffect } from "react";
 import Cropper from "cropperjs";
 import "cropperjs/dist/cropper.min.css";
 import styles from "./ImageCropper.module.css";
-import { getDownloadURL, getMetadata, getStorage, ref, uploadBytes } from "firebase/storage";
+import { getDownloadURL, getStorage, listAll, ref, uploadBytes } from "firebase/storage";
 
-const ImageCropper = ({
+ const ImageCropper = ({
   src,
   setIsCroppingImage,
   selectedColumn,
@@ -38,51 +38,50 @@ const ImageCropper = ({
     };
   }, [src]);
 
-  const isImageNameValid = async (imageName) => {
+  const isImageNameIncluded = async (imageName) => {
+    const imagesRef = ref(storage, `images/${imageFolder}`);
+  
     try {
-      const imageRef = ref(storage, `images/${imageFolder}/${imageName}`);
-      const metadata = await getMetadata(imageRef);
-      return !!metadata;
+      const result = await listAll(imagesRef);
+      const items = result.items;
+      const names = items.map((item) => item.name);
+  
+      console.log(names);
+  
+      return names.includes(imageName);
     } catch (error) {
-      console.error("Error checking image validity:", error);
-      return false;
+      console.log(error);
+      return false; // Return false in case of any error
     }
   };
 
   const handleSave = async () => {
     const imageName = prompt("Name the image");
-    if (imageName && imageName.trim() !== "") {
-      const isValid = await isImageNameValid(imageName);
-      if (isValid) {
+    if (imageName !== null) {
+      const imageExists = await isImageNameIncluded(imageName);
+      if (!imageExists) {
+        console.log(imageExists)
+        // Upload the image if it doesn't exist
         const imageRef = ref(storage, `images/${imageFolder}/${imageName}`);
         cropper.current.getCroppedCanvas().toBlob(async (blob) => {
           try {
             await uploadBytes(imageRef, blob);
+            console.log("Blob uploaded successfully");
             setIsCroppingImage(false);
-            const updatedColumn = selectedColumn.map((column, index) => {
-              if (index === selectedCardIndex) {
-                return {
-                  ...column,
-                  img: column.img.map((img, i) => {
-                    if (i === imageIndex) {
-                      return { ...img, src: url };
-                    }
-                    return img;
-                  }),
-                };
-              }
-              return column;
-            });
-            setSelectedColumn(updatedColumn);
+  
+            const newSelectedColumn = [...selectedColumn];
+            const url = await getDownloadURL(
+              ref(storage, `images/${imageFolder}/${imageName}`)
+            );
+            newSelectedColumn[selectedCardIndex].img[imageIndex].src = url;
+            setSelectedColumn(newSelectedColumn);
           } catch (error) {
-            console.error("Error uploading image:", error);
+            console.log("Error uploading image:", error);
           }
         }, "image/png");
       } else {
-        alert("Image name is invalid or already exists.");
+        alert("Image with that name already exists.");
       }
-    } else {
-      alert("Please provide a valid image name.");
     }
   };
 

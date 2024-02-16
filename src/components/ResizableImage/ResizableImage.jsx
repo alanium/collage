@@ -104,12 +104,14 @@ const ResizableImage = ({
       <div className={styles.popupContainer}>
         <div className={styles.zoomSliderContainer}>
           {selectedColumn[cardIndex].img.slice(0, 2).map((image, index) => (
-            <div className={styles.zoomControlGrid}>
+            image.src != "" ? (
+              <div className={styles.zoomControlGrid}>
               <button onClick={() => handleZoomChange(5, index)}>Zoom +</button>
               <button onClick={() => handleZoomChange(-5, index)}>
                 Zoom -
               </button>
             </div>
+            ) : null
           ))}
         </div>
         <div

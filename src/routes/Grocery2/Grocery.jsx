@@ -115,36 +115,38 @@ function Grocery() {
     }
 };
 
-  const downloadExternalImages = async (container) => {
-      const images = container.querySelectorAll("img");
-      const promises = [];
+ const downloadExternalImages = async (container) => {
+    const images = container.querySelectorAll("img");
+    console.log(images);
+    const promises = [];
 
-      images.forEach((img) => {
-          if (img.src.startsWith("http")) {
-              promises.push(new Promise((resolve, reject) => {
-                  const xhr = new XMLHttpRequest();
-                  xhr.open("GET", img.src, true);
-                  xhr.responseType = "blob";
-                  xhr.onload = () => {
-                      if (xhr.status === 200) {
-                          const blob = xhr.response;
-                          const urlCreator = window.URL || window.webkitURL;
-                          const imageUrl = urlCreator.createObjectURL(blob);
-                          img.src = imageUrl;
-                          resolve();
-                      } else {
-                          reject(xhr.statusText);
-                      }
-                  };
-                  xhr.onerror = () => {
-                      reject(xhr.statusText);
-                  };
-                  xhr.send();
-              }));
-          }
-      });
-      await Promise.all(promises);
-  };
+    images.forEach((img) => {
+        if (img.src && img.src != "http://localhost:3000/grocery" && img.src.startsWith("http")) {
+          console.log(img.src)
+            promises.push(new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open("GET", img.src, true);
+                xhr.responseType = "blob";
+                xhr.onload = () => {
+                    if (xhr.status === 200) {
+                        const blob = xhr.response;
+                        const urlCreator = window.URL || window.webkitURL;
+                        const imageUrl = urlCreator.createObjectURL(blob);
+                        img.src = imageUrl;
+                        resolve();
+                    } else {
+                        reject(xhr.statusText);
+                    }
+                };
+                xhr.onerror = () => {
+                    reject(xhr.statusText);
+                };
+                xhr.send();
+            }));
+        }
+    });
+    await Promise.all(promises);
+};
 
 
   const handleDynamicColumns = (event) => {
@@ -693,7 +695,7 @@ function Grocery() {
               {images.img[0] && ( // Check if img[0] exists before rendering
                 <img
                   name={`image-${cardIndex}-0`}
-                  src={images.img[0].src ? images.img[0].src : ""}
+                  src={images.img[0].src ? images.img[0].src : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"}
                   className={styles.uploadedImage}
                   style={{
                     transform: `scale(${images.img[0].zoom / 100}) translate(${
@@ -706,7 +708,7 @@ function Grocery() {
               {images.img[1] && ( // Check if img[1] exists before rendering
                 <img
                   name={`image-${cardIndex}-1`}
-                  src={images.img[1] ? images.img[1].src : ""}
+                  src={images.img[1] ? images.img[1].src : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"}
                   className={styles.uploadedImage}
                   style={{
                     transform: `scale(${images.img[1].zoom / 100}) translate(${
@@ -797,7 +799,7 @@ function Grocery() {
            {images[0] && ( // Check if img[0] exists before rendering
                 <img
                   name={`image-${cardIndex}-0`}
-                  src={images[0].src ? images[0].src : ""}
+                  src={images[0].src ? images[0].src : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"}
                   className={styles.uploadedImage}
                   style={{
                     transform: `scale(${images[0].zoom / 100}) translate(${
@@ -810,7 +812,7 @@ function Grocery() {
               {images[1] && ( // Check if img[1] exists before rendering
                 <img
                   name={`image-${cardIndex}-1`}
-                  src={images[1] ? images[1].src : ""}
+                  src={images[1] ? images[1].src : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"}
                   className={styles.uploadedImage}
                   style={{
                     transform: `scale(${images[1].zoom / 100}) translate(${
