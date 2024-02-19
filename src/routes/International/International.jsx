@@ -18,6 +18,7 @@ import ZoomSlider from "../../components/ZoomSlider/ZoomSlider";
 import ResizableImage from "../../components/ResizableImage/ResizableImage";
 import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
 import ImageCropper from "../../components/ImageCropper/ImageCropper";
+import AutomaticImageCropper from "../../components/AutomaticImageCropper/AutomaticImageCropper";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
@@ -60,6 +61,7 @@ function International() {
   const [selectedImage, setSelectedImage] = useState({});
   const [selectedTextBox, setSelectedTextBox] = useState({});
   const [isCroppingImage, setIsCroppingImage] = useState(false)
+  const [isAutomaticCropping, setIsAutomaticCropping] = useState(false)
   const [selectedCardIndex, setSelectedCardIndex] = useState({});
 
   const [info, setInfo] = useState(false);
@@ -510,14 +512,24 @@ function International() {
         action: () => {
           setImgIndex(0)
           handleCropImage(cardIndex, imgIndex)},
-      });
+      }, {
+        label: "Delete Background of Image 1",
+        action: () => {
+          setImgIndex(0),
+          setIsAutomaticCropping(true)
+      }});
     } if (selectedColumn[index].img[1].src != "") {
       contextMenuItems.push({
         label: "crop image 2",
         action: () => {
           setImgIndex(1)
           handleCropImage(cardIndex, imgIndex)},
-      });
+      }, {
+        label: "Delete Background of Image 2",
+        action: () => {
+          setImgIndex(1),
+          setIsAutomaticCropping(true)
+      }});
     } 
 
     const containerRect = contextMenuRef.current.getBoundingClientRect();
@@ -860,6 +872,15 @@ function International() {
         selectedCardIndex={selectedCardIndex}
         imageIndex={imgIndex}
         imageFolder="International"
+        />
+      )}
+      {isAutomaticCropping && (
+        <AutomaticImageCropper
+        selectedCardColumn={selectedCardIndex > 20 ? dynamicColumn : staticColumns}
+        setSelectedCardColumn={selectedCardIndex > 20 ? setDynamicColumn : setStaticColumns}
+        cardIndex={selectedCardIndex}
+        imageIndex={imgIndex}
+        setIsAutomaticCropping={setIsAutomaticCropping}
         />
       )} 
       {popup2 ? (

@@ -60,6 +60,7 @@ function Grocery() {
   const [contextMenu, setContextMenu] = useState(null);
   const [isEditingZoom, setIsEditingZoom] = useState(false);
   const [isCroppingImage, setIsCroppingImage] = useState(false)
+  const [isAutomaticCropping, setIsAutomaticCropping] = useState(false)
   const [selectedImage, setSelectedImage] = useState({});
   const [selectedTextBox, setSelectedTextBox] = useState({});
   const [selectedCardIndex, setSelectedCardIndex] = useState({});
@@ -556,16 +557,26 @@ function Grocery() {
         action: () => {
           setImgIndex(0)
           handleCropImage(cardIndex, imgIndex)},
-      });
+      }, {
+        label: "Delete Background of Image 1",
+        action: () => {
+          setImgIndex(0),
+          setIsAutomaticCropping(true)
+      }});
     } if (selectedColumn[index].img[1].src != "") {
       contextMenuItems.push({
         label: "Crop Image 2",
         action: () => {
           setImgIndex(1)
           handleCropImage(cardIndex, imgIndex)},
-      });
+      }, {
+        label: "Delete Background of Image 2",
+        action: () => {
+          setImgIndex(1),
+          setIsAutomaticCropping(true)
+      }});
     }
-
+    
     const containerRect = contextMenuRef.current.getBoundingClientRect();
     setContextMenu({
       x: event.clientX - containerRect.left,
@@ -910,7 +921,16 @@ function Grocery() {
         imageIndex={imgIndex}
         imageFolder="Grocery"
         />
-      )} 
+      )}
+      {isAutomaticCropping && (
+        <AutomaticImageCropper
+        selectedCardColumn={selectedCardIndex > 20 ? dynamicColumn : staticColumns}
+        setSelectedCardColumn={selectedCardIndex > 20 ? setDynamicColumn : setStaticColumns}
+        cardIndex={selectedCardIndex}
+        imageIndex={imgIndex}
+        setIsAutomaticCropping={setIsAutomaticCropping}
+        />
+      )}  
       {popup2 ? (
         <div className={styles.popUp2} style={{ zIndex: "1" }}>
           <button

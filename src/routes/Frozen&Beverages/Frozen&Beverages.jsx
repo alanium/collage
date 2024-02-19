@@ -69,6 +69,7 @@ export default function FrozenAndBeverages() {
   const [popup3, setPopup3] = useState(false);
   const [popup4, setPopup4] = useState(false);
   const [isCroppingImage, setIsCroppingImage] = useState(false)
+  const [isAutomaticCropping, setIsAutomaticCropping] = useState(false)
   const [templates, setTemplates] = useState(null);
   const [images, setImages] = useState(null);
   const [imgIndex, setImgIndex] = useState(null);
@@ -995,18 +996,29 @@ export default function FrozenAndBeverages() {
       )}
       {isCroppingImage && (
         <ImageCropper src={
-          selectedCardIndex > 20 ? dynamicColumn[selectedCardIndex  - 21].img[imgIndex].src : staticColumns[selectedCardIndex ].img[imgIndex].src
+          selectedCardIndex > maxStaticIndex ? dynamicColumn[selectedCardIndex  - cardsInStatic].img[imgIndex].src : staticColumns[selectedCardIndex ].img[imgIndex].src
         }
         setIsCroppingImage={
           setIsCroppingImage
         }
-        selectedColumn={selectedCardIndex > 20 ? dynamicColumn : staticColumns}
+        selectedColumn={selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
         setSelectedColumn={
           selectedCardIndex > 20 ? setDynamicColumn : setStaticColumns
         }
         selectedCardIndex={selectedCardIndex}
         imageIndex={imgIndex}
         imageFolder={selectedCardIndex > 14 && selectedCardIndex < 24 ? "beverages" : "frozen"}
+        />
+      )}
+      {isAutomaticCropping && (
+        <AutomaticImageCropper
+        selectedColumn={selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
+        setSelectedColumn={
+          selectedCardIndex > 20 ? setDynamicColumn : setStaticColumns
+        }
+        cardIndex={selectedCardIndex}
+        imageIndex={imgIndex}
+        setIsAutomaticCropping={setIsAutomaticCropping}
         />
       )} 
       {popup2 ? (

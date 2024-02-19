@@ -61,6 +61,7 @@ export default function MeatAndSeafood() {
   const [contextMenu, setContextMenu] = useState(null);
   const [isEditingZoom, setIsEditingZoom] = useState(false);
   const [isCroppingImage, setIsCroppingImage] = useState(false)
+  const [isAutomaticCropping, setIsAutomaticCropping] = useState(false)
   const [selectedImage, setSelectedImage] = useState({});
   const [selectedCardIndex, setSelectedCardIndex] = useState({});
   const [info, setInfo] = useState(false);
@@ -972,7 +973,16 @@ export default function MeatAndSeafood() {
         imageIndex={imgIndex}
         imageFolder={selectedCardIndex > maxStaticIndex ? "meat" : "seafood"}
         />
-      )} 
+      )}
+      {isAutomaticCropping && (
+        <AutomaticImageCropper
+        selectedColumn={selectedImage.cardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
+        setSelectedColumn={selectedImage.cardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns}
+        selectedCardIndex={selectedCardIndex}
+        imageIndex={imgIndex}
+        setIsAutomaticCropping={setIsAutomaticCropping}
+        />
+      )}  
       {popup2 ? (
         <div className={styles.popUp2} style={{ zIndex: "1" }}>
           <button
