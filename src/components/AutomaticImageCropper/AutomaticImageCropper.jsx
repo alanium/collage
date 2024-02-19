@@ -117,6 +117,8 @@ const AutomaticImageCropper = ({
       }
     } catch (error) {
       console.error("Error uploading transparent image:", error);
+    } finally {
+      handleCancel()
     }
   };
 
