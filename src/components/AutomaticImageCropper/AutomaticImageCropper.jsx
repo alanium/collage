@@ -13,6 +13,7 @@ const AutomaticImageCropper = ({
   const selectedImage = selectedCardColumn[cardIndex].img[imageIndex];
   const [downloadedSelectedImage, setDownloadedSelectedImage] = useState(null)
   const transparentCanvasRef = useRef(null);
+  const previewCanvasRef = useRef(null); // New canvas ref for preview
   const storage = getStorage();
   const imagenSrc = selectedCardColumn[cardIndex].img[imageIndex].src
   const tempRef = ref(storage, "images/temp");
@@ -88,7 +89,22 @@ const AutomaticImageCropper = ({
     processImage();
   }, [selectedCardColumn, cardIndex, imageIndex, storage]);
     
-  
+  useEffect(() => {
+    if (transparentImageSrc) {
+      // Draw transparent canvas onto preview canvas
+      const previewCanvas = previewCanvasRef.current;
+      const previewCtx = previewCanvas.getContext("2d");
+      const transparentCanvas = transparentCanvasRef.current;
+
+      previewCtx.drawImage(
+        transparentCanvas,
+        0,
+        0,
+        previewCanvas.width,
+        previewCanvas.height
+      );
+    }
+  }, [transparentImageSrc]);
 
   const handleTransparentImageUpload = async () => {
     try {
@@ -133,11 +149,15 @@ const AutomaticImageCropper = ({
     >
       <div className={styles.popupContainer}>
         <div>
-          <canvas ref={canvasRef} />    
+          <canvas ref={canvasRef} style={{ display: 'none' }} />    
           <canvas
             ref={transparentCanvasRef}
-            style={{ backgroundColor: "transparent" }}
-          />         
+            style={{ display: 'none' }}
+          />   
+          <canvas
+            ref={previewCanvasRef}
+            
+          />      
         </div>
         <div className={styles.actionButtons}>
           <button onClick={handleTransparentImageUpload}>Crop Image</button>
