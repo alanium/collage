@@ -96,6 +96,8 @@ import { getDownloadURL, getStorage, listAll, ref, uploadBytes } from "firebase/
           <img ref={imageRef} src={src} alt="Crop preview" />
         </div>
         <div className={styles.actionButtons}>
+          <button onClick={autoCrop} className={styles.saveButton}>
+            Crop automatically</button>
           <button onClick={handleSave} className={styles.saveButton}>
             Save
           </button>

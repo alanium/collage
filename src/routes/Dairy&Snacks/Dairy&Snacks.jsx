@@ -17,6 +17,8 @@ import TemplatesFromCloud from "../../components/TemplatesFromCloud/TemplatesFro
 import ZoomSlider from "../../components/ZoomSlider/ZoomSlider";
 import ResizableImage from "../../components/ResizableImage/ResizableImage";
 import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
+import AutomaticImageCropper from "../../components/AutomaticImageCropper/AutomaticImageCropper";
+import ImageCropper from "../../components/ImageCropper/ImageCropper";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
@@ -59,6 +61,8 @@ export default function DairyAndSnacks() {
   const [dynamicColumn, setDynamicColumn] = useState([]);
   const [contextMenu, setContextMenu] = useState(null);
   const [isEditingZoom, setIsEditingZoom] = useState(false);
+  const [isCroppingImage, setIsCroppingImage] = useState(false)
+  const [isAutomaticCropping, setIsAutomaticCropping] = useState(false)
   const [selectedImage, setSelectedImage] = useState({});
   const [selectedCardIndex, setSelectedCardIndex] = useState({});
   const [info, setInfo] = useState(false);
@@ -73,7 +77,7 @@ export default function DairyAndSnacks() {
   const [selectedTextBox, setSelectedTextBox] = useState({});
 
   const storage = getStorage();
-  const imagesRef = ref(storage, "images/");
+  const imagesRef = ref(storage, `images/${(selectedCardIndex > 11 && selectedCardIndex < maxStaticIndex ? "snacks" : "dairy")}`);
   const templatesRef = ref(storage, "templates/");
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
@@ -410,6 +414,10 @@ export default function DairyAndSnacks() {
     }
   };
 
+  const handleCropImage = () => {
+    setIsCroppingImage(true)
+  }
+
   const ContextMenu = ({ x, y, items, onClose }) => (
     <div
       style={{
@@ -518,6 +526,30 @@ export default function DairyAndSnacks() {
         label: "Delete 1",
         action: () => handleDeleteImage(cardIndex, 0),
       });
+    } if (selectedColumn[index].img[0].src != "") {
+      contextMenuItems.push({
+        label: "Crop Image 1",
+        action: () => {
+          setImgIndex(0)
+          handleCropImage(cardIndex, imgIndex)},
+      }, {
+        label: "Delete Background of Image 1",
+        action: () => {
+          setImgIndex(0),
+          setIsAutomaticCropping(true)
+      }});
+    } if (selectedColumn[index].img[1].src != "") {
+      contextMenuItems.push({
+        label: "Crop Image 2",
+        action: () => {
+          setImgIndex(1)
+          handleCropImage(cardIndex, imgIndex)},
+      }, {
+        label: "Delete Background of Image 2",
+        action: () => {
+          setImgIndex(1),
+          setIsAutomaticCropping(true)
+      }});
     }
 
     const containerRect = contextMenuRef.current.getBoundingClientRect();
@@ -592,75 +624,6 @@ export default function DairyAndSnacks() {
       });
   };
 
-  const loadTemplate = (event) => {
-    event.preventDefault();
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".json"; // Corrected file extension
-    input.onchange = (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target.result;
-          try {
-            const parsedResult = JSON.parse(result);
-            setStaticColumns(parsedResult.otherColumns);
-            setDynamicColumn(parsedResult.firstColumn);
-          } catch (error) {
-            console.error("Error parsing JSON:", error);
-          }
-        };
-        reader.readAsText(file); // Use readAsText to read JSON content
-      }
-    };
-    input.click();
-  };
-
-  const uploadTemplateToCloud = async () => {
-    const fileName = prompt("Enter the name of the file");
-    const fileContent = JSON.stringify({
-      firstColumn: dynamicColumn,
-      otherColumns: staticColumns,
-    });
-
-    // Validate file name and content
-    if (!fileName || fileName.trim() === "") {
-      console.error("File name is required");
-      return;
-    }
-
-    const blob = new Blob([fileContent], { type: "text/plain" });
-
-    if (fileName && blob) {
-      try {
-        const storageRef = ref(storage, `templates/${fileName}`);
-        await uploadBytes(storageRef, blob);
-        console.log("File uploaded successfully");
-      } catch (error) {
-        console.error("Error uploading file:", error.message);
-      }
-    } else {
-      console.error("File name and content are required");
-    }
-  };
-
-  const downloadTemplateFromCloud = (event) => {
-    listAll(templatesRef)
-      .then((result) => {
-        // 'items' is an array that contains references to each item in the list
-        const items = result.items;
-
-        // Extract image names from references
-        const names = items.map((item) => item.name);
-
-        setTemplates(names);
-        console.log(names);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
 
   const renderPriceBox = (
     number,
@@ -1029,6 +992,31 @@ export default function DairyAndSnacks() {
         cardNumber={selectedImage.cardIndex}
           />
       )}
+      {isCroppingImage && (
+        <ImageCropper src={
+          selectedCardIndex > maxStaticIndex ? dynamicColumn[selectedCardIndex  - cardsInStatic].img[imgIndex].src : staticColumns[selectedCardIndex ].img[imgIndex].src
+        }
+        setIsCroppingImage={
+          setIsCroppingImage
+        }
+        selectedColumn={selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
+        setSelectedColumn={
+          selectedCardIndex > 20 ? setDynamicColumn : setStaticColumns
+        }
+        selectedCardIndex={selectedCardIndex}
+        imageIndex={imgIndex}
+        imageFolder={selectedCardIndex > 11 && selectedCardIndex < maxStaticIndex ? "snacks" : "dairy"}
+        />
+      )}
+      {isAutomaticCropping && (
+        <AutomaticImageCropper
+        selectedColumn={selectedImage.cardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
+        setSelectedColumn={selectedImage.cardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns}
+        cardIndex={selectedCardIndex}
+        imageIndex={imgIndex}
+        setIsAutomaticCropping={setIsAutomaticCropping}
+        />
+      )} 
       {popup2 ? (
         <div className={styles.popUp2} style={{ zIndex: "1" }}>
           <button
@@ -1191,6 +1179,7 @@ export default function DairyAndSnacks() {
           setImages={setImages}
           imgIndex={imgIndex}
           maxCardPosition={maxStaticIndex}
+          imageFolder={selectedCardIndex > 11 && selectedCardIndex < maxStaticIndex ? "snacks" : "dairy"}
         />
       ) : null}
     </div>
