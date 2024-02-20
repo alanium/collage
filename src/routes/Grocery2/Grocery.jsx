@@ -249,6 +249,9 @@ function Grocery() {
       }
     };
 
+    () => setSelectedCardIndex(null);
+    () => setSelectedImage(null)
+
     // Agregar el event listener al documento
     document.addEventListener("mousedown", handleClickOutside);
 
@@ -556,23 +559,27 @@ function Grocery() {
         label: "Crop Image 1",
         action: () => {
           setImgIndex(0)
+          setSelectedCardIndex(cardIndex);
           handleCropImage(cardIndex, imgIndex)},
       }, {
         label: "Delete Background of Image 1",
         action: () => {
           setImgIndex(0),
           setIsAutomaticCropping(true)
+          setSelectedCardIndex(cardIndex);
       }});
     } if (selectedColumn[index].img[1].src != "") {
       contextMenuItems.push({
         label: "Crop Image 2",
         action: () => {
           setImgIndex(1)
+          setSelectedCardIndex(cardIndex);
           handleCropImage(cardIndex, imgIndex)},
       }, {
         label: "Delete Background of Image 2",
         action: () => {
-          setImgIndex(1),
+          setImgIndex(1)
+          setSelectedCardIndex(cardIndex)
           setIsAutomaticCropping(true)
       }});
     }
@@ -602,6 +609,7 @@ function Grocery() {
     if (image.img[0].src === "" && image.img[1].src === "") {
       setPopup2(true);
       setSelectedCardIndex(cardIndex);
+      console.log(selectedCardIndex)
     } else {
       handleContextMenu(event, cardIndex, image);
     }
