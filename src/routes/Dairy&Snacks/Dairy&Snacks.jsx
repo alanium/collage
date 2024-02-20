@@ -109,7 +109,7 @@ export default function DairyAndSnacks() {
       const promises = [];
 
       images.forEach((img) => {
-          if (img.src.startsWith("http")) {
+          if (img.src && new URL(img.src).host != window.location.host && img.src.startsWith("http")) {
               promises.push(new Promise((resolve, reject) => {
                   const xhr = new XMLHttpRequest();
                   xhr.open("GET", img.src, true);
