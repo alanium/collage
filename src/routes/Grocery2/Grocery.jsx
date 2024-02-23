@@ -1066,27 +1066,31 @@ function Grocery() {
         />
       )}
       {popup2 ? (
-        <div className={styles.popUp2} style={{ zIndex: "1" }}>
-          <button
-            className={styles.actionButton}
-            onClick={(event) =>
-              handleImageUpload(event, selectedCardIndex, imgIndex)
-            }
-          >
-            Import from Device
-          </button>
-          <button
-            className={styles.actionButton}
-            onClick={(event) => getImageList(event)}
-          >
-            Import from Database
-          </button>
-          <button
-            className={styles.closeButton}
-            onClick={() => setPopup2(false)}
-          >
-            Close
-          </button>
+        <div className={styles.background}>
+          <div className={styles.popUp2} style={{zIndex: "1"}}>
+            <button
+              className={styles.actionButton}
+              onClick={(event) =>
+                handleImageUpload(event, selectedCardIndex, imgIndex)
+              }
+              style={{marginBottom: "10px"}}
+            >
+              Import from Device
+            </button>
+            <button
+              className={styles.actionButton}
+              onClick={(event) => getImageList(event)}
+              style={{marginBottom: "10px"}}
+            >
+              Import from Database
+            </button>
+            <button
+              className={styles.actionButton}
+              onClick={() => setPopup2(false)}
+            >
+              Close
+            </button>
+          </div>
         </div>
       ) : null}
       {popup3 ? (

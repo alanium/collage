@@ -65,20 +65,20 @@ export default function ManageTemplates({
 
 const handleCreateNewTemplate = async () => {
   try {
-    // Prompt the user for an ID
-    const templateId = prompt("Enter Name for the template:");
+    // Prompt the user for a name for the template
+    const templateName = prompt("Enter Name for the template:");
 
-    // Ensure the user entered an ID
-    if (!templateId) {
-      console.error("No template Name provided.");
+    // Ensure the user entered a name
+    if (!templateName) {
+      console.error("No template name provided.");
       return;
     }
 
     // Get a reference to the "Grocery" collection
     const templatesCollection = collection(db, "Grocery");
 
-    // Add the document with the provided ID
-    const newTemplate = await setDoc(doc(templatesCollection, templateId), {
+    // Add the document with the provided name
+    await setDoc(doc(templatesCollection, templateName), {
       staticColumns: Array(21)
         .fill()
         .map((_, index) => ({
@@ -101,7 +101,12 @@ const handleCreateNewTemplate = async () => {
     });
 
     console.log("Template added successfully!");
-    downloadTemplateFromFirestore();
+
+    // Load the newly created template
+    await handleConfirmSelection(templateName);
+
+    // Close the ManageTemplates component
+    setPopup4(false);
   } catch (error) {
     console.error("Error uploading template:", error.message);
   }
@@ -205,6 +210,7 @@ const handleTemplateNameChange = async (templateName) => {
         setStaticColumns(templateData.staticColumns);
         setSelectedTemplate(null);
         setTemplates(null);
+        setPopup4(false);
       } else {
         console.error("Template not found");
       }
