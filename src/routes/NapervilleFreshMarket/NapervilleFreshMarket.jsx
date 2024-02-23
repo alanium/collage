@@ -8,13 +8,9 @@ import AmountForPrice from "../../components/AmountForPrice/AmountForPrice";
 import TextBoxLeft from "../../components/ParagraphBox/ParagraphBox";
 import TopTextBox from "../../components/TopTextBox/TopTextBox";
 import TextPopUp from "../../components/TextPopup/TextPopup";
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore/lite";
 import ImageUploader from "../../components/ImageToCloud/ImageToCloud";
 import { getStorage, ref, listAll, uploadBytes } from "firebase/storage";
 import ImageFromCloud from "../../components/ImageFromCloud/ImageFromCloud";
-import TemplatesFromCloud from "../../components/TemplatesFromCloud/TemplatesFromCloud";
-import ZoomSlider from "../../components/ZoomSlider/ZoomSlider";
 import ResizableImage from "../../components/ResizableImage/ResizableImage";
 import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
 

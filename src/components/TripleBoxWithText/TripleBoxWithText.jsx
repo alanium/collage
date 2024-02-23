@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from "./TripleBoxWithText.module.css";  
 
-const TripleBox = ({ textBoxes, setTextBoxes , i, cardIndex, backgroundColor, maxStaticIndex, priceBoxBorder }) => {
+const TripleBox = ({ textBoxes, setTextBoxes , i, cardIndex, backgroundColor, maxStaticIndex, priceBoxBorder, uploadDataToFirebase }) => {
   const [topBoxFontSize, setTopBoxFontSize] = useState(50);
   const [bottomBoxFontSize, setBottomBoxFontSize] = useState(10);
   const [leftBoxFontSize, setLeftBoxFontSize] = useState(60);
@@ -87,7 +87,7 @@ const TripleBox = ({ textBoxes, setTextBoxes , i, cardIndex, backgroundColor, ma
         newTextBoxes[auxIndex].text.priceBoxType = 2
       }
       setTextBoxes(newTextBoxes);
-      
+      uploadDataToFirebase()
     }
   };
 

@@ -7,7 +7,8 @@ const AutomaticImageCropper = ({
   setSelectedCardColumn,
   cardIndex,
   imageIndex,
-  setIsAutomaticCropping
+  setIsAutomaticCropping,
+  uploadDataToFirebase
 }) => {
   const canvasRef = useRef(null);
   const selectedImage = selectedCardColumn[cardIndex].img[imageIndex];
@@ -126,7 +127,9 @@ const AutomaticImageCropper = ({
             const newCardColumn = [...selectedCardColumn];
             newCardColumn[cardIndex].img[imageIndex].src = url;
             setSelectedCardColumn(newCardColumn);
-          }
+            uploadDataToFirebase()
+          },
+          
         );
       } else {
         console.error("No transparent image to upload");

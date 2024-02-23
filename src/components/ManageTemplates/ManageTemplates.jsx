@@ -1,145 +1,174 @@
-import {
-  deleteObject,
-  getBytes,
-  getStorage,
-  listAll,
-  ref,
-  updateMetadata,
-  uploadBytes,
-} from "firebase/storage";
+
 import React, { useEffect, useState } from "react";
 import styles from "./ManageTemplates.module.css";
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, setDoc, updateDoc } from "firebase/firestore";
 
 export default function ManageTemplates({
   dynamicColumn,
   staticColumns,
   setDynamicColumn,
   setStaticColumns,
-  templates,
   setTemplates,
   setPopup4,
-  templateFolder
+  setCurrentTemplate,
+  db
 }) {
-  const storage = getStorage();
+ 
   const [visibleTemplates, setVisibleTemplates] = useState(8);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [renderedTemplates, setRenderedTemplates] = useState([]);
-  const templatesRef = ref(storage, `templates/${templateFolder}`);
 
-  const uploadTemplateToCloud = async () => {
-    const fileName = prompt("Enter the name of the file");
-    const fileContent = JSON.stringify({
-      firstColumn: dynamicColumn,
-      otherColumns: staticColumns,
+  const uploadTemplateToFirestore = async () => {
+    const templateName = prompt("Enter the name of the template");
+
+    // Validate template name
+    if (!templateName || templateName.trim() === "") {
+        console.error("Template name is required");
+        return;
+    }
+
+    try {
+        // Create a reference to the template document
+        const groceryCollectionRef = collection(db, "Grocery");
+
+        // Add the document with the user-inputted template name as the document ID
+        await setDoc(doc(groceryCollectionRef, templateName), {
+            dynamicColumn: dynamicColumn,
+            staticColumns: staticColumns,
+            name: templateName
+        });
+
+        downloadTemplateFromFirestore();
+    } catch (error) {
+        console.error("Error uploading template:", error.message);
+    } finally {
+        setPopup4(false);
+    }
+};
+
+  const downloadTemplateFromFirestore = async () => {
+    try {
+        const groceryCollectionRef = collection(db, "Grocery");
+        const templatesQuerySnapshot = await getDocs(groceryCollectionRef);
+
+        const templateNames = [];
+        templatesQuerySnapshot.forEach((doc) => {
+            templateNames.push(doc.id);
+        });
+
+        setTemplates(templateNames);
+        setRenderedTemplates(templateNames.slice(0, visibleTemplates));
+    } catch (error) {
+        console.error("Error fetching template names:", error.message);
+    }
+};
+
+const handleDeleteTemplate = async (templateName) => {
+  try {
+    const templatesCollection = collection(db, "Grocery");
+    const querySnapshot = await getDocs(templatesCollection);
+
+    console.log("Template Name:", templateName);
+    console.log("Query Snapshot:", querySnapshot.docs);
+
+    const deletePromises = [];
+
+    querySnapshot.docs.forEach((doc) => {
+      const data = doc.data();
+      console.log("Document Data:", data);
+      if (doc.id === templateName) {
+        deletePromises.push(deleteDoc(doc.ref));
+      }
     });
 
-    // Validate file name and content
-    if (!fileName || fileName.trim() === "") {
-      console.error("File name is required");
+    await Promise.all(deletePromises);
+    
+    console.log("Templates deleted successfully");
+    await downloadTemplateFromFirestore(); // Wait for download to finish
+  } catch (error) {
+    console.error("Error deleting template:", error.message);
+  }
+};
+
+const handleTemplateNameChange = async (templateName) => {
+  try {
+    const newTemplateName = prompt("Enter the new name of the template");
+    const newTemplateId = newTemplateName
+    
+    if (!newTemplateName || newTemplateName.trim() === "" || !newTemplateId || newTemplateId.trim() === "") {
+      console.error("Template name and ID are required");
       return;
     }
 
-    const blob = new Blob([fileContent], { type: "text/plain" });
+    const templatesCollection = collection(db, "Grocery");
+    const querySnapshot = await getDocs(templatesCollection);
+    let templateDoc;
 
-    if (fileName && blob) {
-      try {
-        const storageRef = ref(storage, `templates/${templateFolder}/${fileName}`);
-        await uploadBytes(storageRef, blob);
+    console.log("Template Name:", templateName);
+    console.log("Query Snapshot:", querySnapshot.docs);
 
-        downloadTemplateFromCloud();
-      } catch (error) {
-        console.error("Error uploading file:", error.message);
-      } finally {
-        setPopup4(false);
+    // Find the document with the provided templateName
+    querySnapshot.docs.forEach(doc => {
+      if (doc.id === templateName) {
+        templateDoc = doc;
       }
+    });
+
+    console.log("Template Doc:", templateDoc);
+
+    if (templateDoc) {
+      // Create a new document with the newTemplateId and newTemplateName
+      await setDoc(doc(db, "Grocery", newTemplateId), {
+        dynamicColumn: templateDoc.data().dynamicColumn,
+        staticColumns: templateDoc.data().staticColumns,
+        name: newTemplateName
+      });
+
+      // Delete the old document
+      await deleteDoc(doc(db, "Grocery", templateDoc.id));
+
+      console.log("Template updated successfully");
+      downloadTemplateFromFirestore();
     } else {
-      console.error("File name and content are required");
-      setPopup4(false);
+      console.error("Template not found");
     }
-  };
+  } catch (error) {
+    console.error("Error updating template:", error.message);
+  }
+};
 
-  const downloadTemplateFromCloud = () => {
-    listAll(templatesRef)
-      .then((result) => {
-        const items = result.items;
-        const names = items.map((item) => item.name);
-        setTemplates(names);
-        setRenderedTemplates(names.slice(0, visibleTemplates));
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  const handleDeleteTemplate = (templateName) => {
-    const templateRef = ref(storage, `templates/${templateFolder}/${templateName}`);
-
-    deleteObject(templateRef)
-      .then(() => {
-        console.log("File deleted successfully");
-        downloadTemplateFromCloud();
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  const handleTemplateNameChange = async (templateName) => {
-    const templateRef = ref(storage, `templates/${templateFolder}/${templateName}`);
-
+  const handleConfirmSelection = async (templateName) => {
     try {
-      const fileBytes = await getBytes(templateRef);
-      const jsonString = new TextDecoder().decode(fileBytes);
+      const templatesCollection = collection(db, "Grocery");
+      const querySnapshot = await getDocs(templatesCollection);
+      let templateDoc;
 
-      const newFileName = prompt("Enter the new name of the file");
-      if (!newFileName || newFileName.trim() === "") {
-        console.error("File name is required");
-        return;
-      }
-
-      if (newFileName === templateName) {
-        console.error("Please enter a different name");
-        return;
-      }
-
-      const blob = new Blob([jsonString], { type: "text/plain" });
-
-      if (newFileName && blob) {
-        const newStorageRef = ref(storage, `templates/${templateFolder}/${newFileName}`);
-        await uploadBytes(newStorageRef, blob);
-        await deleteObject(templateRef);
-        downloadTemplateFromCloud();
+      console.log("Template Name:", templateName);
+      console.log("Query Snapshot:", querySnapshot.docs);
+      querySnapshot.docs.forEach(doc => {
+        if (doc.id === templateName) {
+          templateDoc = doc;
+        }
+      });
+  
+      if (templateDoc) {
+        const templateData = templateDoc.data();
+        console.log(templateData.dynamicColumn)
+        console.log(templateData.staticColumns)
+        
+        setCurrentTemplate(templateDoc.id)
+        setDynamicColumn(templateData.dynamicColumn);
+        setStaticColumns(templateData.staticColumns);
+        setSelectedTemplate(null);
+        setTemplates(null);
       } else {
-        console.error("File name and content are required");
+        console.error("Template not found");
       }
     } catch (error) {
-      console.error("Error handling template name change:", error.message);
+      console.error("Error loading template:", error.message);
     } finally {
       setPopup4(false);
     }
-  };
-
-  const handleConfirmSelection = (templateName) => {
-    const templateRef = ref(storage, `templates/${templateFolder}/${templateName}`);
-    getBytes(templateRef)
-      .then((fileBytes) => {
-        const jsonString = new TextDecoder().decode(fileBytes);
-
-        try {
-          const parsedResult = JSON.parse(jsonString);
-          setDynamicColumn(parsedResult.firstColumn);
-          setStaticColumns(parsedResult.otherColumns);
-          setSelectedTemplate(null);
-          setTemplates(null);
-        } catch (error) {
-          console.error("Error parsing JSON:", error.message);
-        } finally {
-          setPopup4(false);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching template:", error.message);
-      });
   };
 
   const loadMoreTemplates = () => {
@@ -151,16 +180,32 @@ export default function ManageTemplates({
     const input = document.createElement("input");
     input.type = "file";
     input.accept = ".json"; // Corrected file extension
-    input.onchange = (event) => {
+    input.onchange = async (event) => {
       const file = event.target.files[0];
       if (file) {
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
           const result = e.target.result;
           try {
             const parsedResult = JSON.parse(result);
-            setStaticColumns(parsedResult.otherColumns);
-            setDynamicColumn(parsedResult.firstColumn);
+  
+            // Prompt user to enter the template name
+            const templateName = prompt("Enter template name:");
+            if (!templateName || templateName.trim() === "") {
+              console.error("Template name is required");
+              return;
+            }
+  
+            // Save the template to Firestore
+            const templatesCollection = collection(db, "Grocery");
+            await addDoc(templatesCollection, {
+              name: templateName,
+              dynamicColumn: parsedResult.dynamicColumn,
+              staticColumns: parsedResult.staticColumns,
+            });
+  
+            // Refresh template list
+            downloadTemplateFromFirestore();
           } catch (error) {
             console.error("Error parsing JSON:", error);
           }
@@ -171,32 +216,49 @@ export default function ManageTemplates({
     input.click();
   };
 
-  const saveTemplate = (event) => {
-    const newText = prompt("Enter template name: ");
-    if (newText) {
-      const blob = new Blob(
-        [
-          JSON.stringify({
-            firstColumn: dynamicColumn,
-            otherColumns: staticColumns,
-          }),
-        ],
-        { type: "application/json" }
-      );
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${newText}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+  const saveTemplate = async (event) => {
+    const templateName = prompt("Enter template name:");
+    if (!templateName || templateName.trim() === "") {
+      console.error("Template name is required");
+      return;
+    }
+  
+    try {
+      const templatesCollection = collection(db, "Grocery");
+      const querySnapshot = await getDocs(templatesCollection);
+      const templateDoc = querySnapshot.docs.find(doc => doc.data().name === templateName);
+  
+      if (templateDoc) {
+        const templateData = templateDoc.data();
+  
+        // Create a Blob from the template data
+        const blob = new Blob(
+          [JSON.stringify({
+            firstColumn: templateData.dynamicColumn,
+            otherColumns: templateData.staticColumns,
+          })],
+          { type: "application/json" }
+        );
+  
+        // Create a URL for the Blob and trigger download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${templateName}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } else {
+        console.error("Template not found");
+      }
+    } catch (error) {
+      console.error("Error saving template:", error.message);
     }
   };
 
   useEffect(() => {
-    downloadTemplateFromCloud();
+    downloadTemplateFromFirestore();
   }, []);
 
   return (
@@ -224,7 +286,7 @@ export default function ManageTemplates({
         </table>
         <button onClick={loadMoreTemplates}>Show More</button>
 
-        <button onClick={uploadTemplateToCloud}>Upload Current Template</button>
+        <button onClick={uploadTemplateToFirestore}>Upload Current Template</button>
         <button
               onClick={(event) => loadTemplate(event)}
         >

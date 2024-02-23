@@ -1,10 +1,10 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import Cropper from "cropperjs";
 import "cropperjs/dist/cropper.min.css";
 import styles from "./ImageCropper.module.css";
 import { getDownloadURL, getStorage, listAll, ref, uploadBytes } from "firebase/storage";
 
- const ImageCropper = ({
+const ImageCropper = ({
   src,
   setIsCroppingImage,
   selectedColumn,
@@ -12,10 +12,12 @@ import { getDownloadURL, getStorage, listAll, ref, uploadBytes } from "firebase/
   imageIndex,
   selectedCardIndex,
   imageFolder,
+  uploadDataToFirebase
 }) => {
   const imageRef = useRef(null);
   const cropper = useRef(null);
   const storage = getStorage();
+  const [rotationValue, setRotationValue] = useState(0);
 
   useEffect(() => {
     if (!src) return;
@@ -75,6 +77,7 @@ import { getDownloadURL, getStorage, listAll, ref, uploadBytes } from "firebase/
             );
             newSelectedColumn[selectedCardIndex].img[imageIndex].src = url;
             setSelectedColumn(newSelectedColumn);
+            uploadDataToFirebase();
           } catch (error) {
             console.log("Error uploading image:", error);
           }
@@ -82,6 +85,14 @@ import { getDownloadURL, getStorage, listAll, ref, uploadBytes } from "firebase/
       } else {
         alert("Image with that name already exists.");
       }
+    }
+  };
+
+  const handleRotationChange = (event) => {
+    const value = parseInt(event.target.value);
+    setRotationValue(value);
+    if (cropper.current) {
+      cropper.current.rotateTo(value);
     }
   };
 
@@ -95,11 +106,21 @@ import { getDownloadURL, getStorage, listAll, ref, uploadBytes } from "firebase/
         <div>
           <img style={{maxHeight: "700px", maxWidth:"500px"}} ref={imageRef} src={src} alt="Crop preview" />
         </div>
+        <div className={styles.rotationSliderContainer}>
+          <input
+            type="range"
+            min="-180"
+            max="180"
+            value={rotationValue}
+            onChange={handleRotationChange}
+            className={styles.rotationSlider}
+          />
+        </div>
         <div className={styles.actionButtons}>
-          <button onClick={handleSave} className={styles.saveButton}>
+          <button onClick={handleSave} className={styles.Button}>
             Save
           </button>
-          <button onClick={handleCancel} className={styles.cancelButton}>
+          <button onClick={handleCancel} className={styles.Button}>
             Cancel
           </button>
         </div>

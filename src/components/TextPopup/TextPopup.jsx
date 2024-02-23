@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import styles from "./TextPopup.module.css"
 
-export default function TextPopUp({textBox, setTextBox, setPopup, cardIndex, type, setSelectedImage, maxCardPosition}) {
+export default function TextPopUp({textBox, setTextBox, setPopup, cardIndex, type, setSelectedImage, maxCardPosition, uploadDataToFirebase}) {
   const [text, setText] = useState("");
 
   const calculatedIndex = ( cardIndex.cardIndex  > maxCardPosition ? cardIndex.cardIndex  - (maxCardPosition + 1) : cardIndex.cardIndex )
@@ -18,6 +18,7 @@ export default function TextPopUp({textBox, setTextBox, setPopup, cardIndex, typ
     newTextBox[calculatedIndex].text[type] = text
     
     setTextBox(newTextBox);
+    uploadDataToFirebase()
     setPopup(false);
   };
 

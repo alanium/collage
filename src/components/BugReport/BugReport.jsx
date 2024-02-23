@@ -51,7 +51,7 @@ function BugReport({ setPopup5 }) {
         <h1>Report a Bug</h1>
         <form onSubmit={handleSubmit}>
           <label>
-            Your Email:
+            Enter your Email:
             <input
               type="email"
               value={email}
@@ -69,10 +69,9 @@ function BugReport({ setPopup5 }) {
             />
           </label>
           <br />
-          <button type="submit">Send</button>
-          
+          <button type="submit" className={styles.actionButton}>Send</button>
         </form>
-        <button onClick={handleClose} >Close</button>
+        <button onClick={handleClose} className={styles.closeButton}>Close</button>
       </div>
     </div>
   );

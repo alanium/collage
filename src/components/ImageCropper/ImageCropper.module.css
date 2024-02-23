@@ -18,25 +18,27 @@
 }
 
 .actionButtons {
-  display: flex;
+  display:inline;
   justify-content: space-between;
   margin-top: 20px;
 }
 
-.saveButton,
-.cancelButton {
-  padding: 10px 20px;
-  border: none;
+.Button {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #000000;
+  color: white;
   border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button[type="submit"] {
   cursor: pointer;
 }
 
-.saveButton {
-  background-color: #007bff;
-  color: white;
-}
-
-.cancelButton {
+button[type="submit"]:disabled {
   background-color: #ccc;
-  color: black;
+  cursor: not-allowed;
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from "./BoxWithText.module.css";
 
-const FixedBox = ({ textBoxes, setTextBoxes, i, cardIndex, backgroundColor, maxStaticIndex, priceBoxBorder  }) => {
+const FixedBox = ({ textBoxes, setTextBoxes, i, cardIndex, backgroundColor, maxStaticIndex, priceBoxBorder, uploadDataToFirebase  }) => {
   const [isEditing, setIsEditing] = useState(false);
 
   const boxRef = useRef(null);
@@ -20,6 +20,7 @@ const FixedBox = ({ textBoxes, setTextBoxes, i, cardIndex, backgroundColor, maxS
       }
       newTextBoxes[index].text.bottom = newText;
       setTextBoxes(newTextBoxes);
+      uploadDataToFirebase()
     }
   };
 

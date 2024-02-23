@@ -1,18 +1,19 @@
-.popupContainer {
-  background-color: #333333;
-  color: white;
-  position: absolute;
+.background {
+  background-color: rgba(0, 0, 0, 0.7);
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  z-index: 1;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  border: 1px solid #555555;
-  padding: 15px;
-  border-radius: 5px;
+  backdrop-filter: blur(10px);
+  border: 1px solid black;
 }
-.imagesContainer {
-  display: grid;
-  justify-content: space-evenly;
-  max-width: 80%;
+
+.title{
+  color: black;
+  font-size: 36px;
 }
 
 .image {
@@ -21,70 +22,38 @@
   height: 100%;
   object-fit: cover;
   border-radius: 5px;
-  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.144); /* Ajusta los valores según sea necesario */
+  transition: transform 0.3s ease;
 }
 
-.container {
-  text-align: center;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 21cm;
-  transform: translate(-50%, -50%);
-  background-color: #424242e3;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(5px);
+.image:hover {
+  transform: scale(1.05);
 }
 
 .gridContainer {
   border-radius: 10px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 15px;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 5px;
   margin: 20px;
-  height: 500px;
+  height: 50vh;
   overflow-y: auto;
-}
-
-.title{
-  color: black;
-  font-size: 36px;
 }
 
 .gridItem {
   padding: 10px;
   text-align: center;
-  width: 150px; /* Establecer un ancho fijo para cada contenedor */
-  height: 150px; /* Establecer una altura fija para cada contenedor */
 }
 
-body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh; /* Asegura que el body ocupe toda la altura de la ventana */
-  margin: 0; /* Elimina el margen predeterminado del body */
+.gridItem img {
+  width: 100%;
+  height: 100px;
+  border-radius: 5px;
+  transition: transform 0.3s ease;
 }
 
 
 .selected {
-  position: relative;
-  max-height: 150px;
-  max-width: 150px;
-  border-radius: 5px;
-  background-color: #ffffff38;
-}
-
-.showMoreButton {
-  background-color: #3498db;
-  color: white;
-  padding: 10px;
-  margin-top: 10px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+  box-shadow: 0 0 30px rgb(0, 0, 0);
 }
 
 .confirmButton {
@@ -95,6 +64,74 @@ body {
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  width: 96%;
+  width: 100%;
   padding: 10px;
+}
+
+.containerWithPreview {
+  display: flex;
+  justify-content: space-between;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  position: fixed;
+  width: 80%;
+}
+
+.container {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  width: 100%
+}
+
+.containerToLeft {
+  width: 75%;
+}
+
+
+.previewContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 25%;
+  background-color: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-left: 10px;
+}
+
+
+.previewImage {
+  max-width: 80%; 
+  max-height: 80%;
+  display: block;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed; /* Fija la posición para cubrir toda la ventana */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7); /* Ajusta el color de fondo según lo necesites */
+  z-index: 9999; /* Ajusta el índice z según sea necesario */
+}
+
+
+.loadingSpinner {
+  font-size: 160px; /* Tamaño del ícono de carga */
+  color: white; /* Color del ícono de carga */
+  animation: spin 2s cubic-bezier(0.42, 0, 0.58, 1) infinite; /* Animación de giro con curva de aceleración personalizada */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(720deg); } /* Giro rápido a la mitad de la animación */
+  100% { transform: rotate(1440deg); } /* Giro lento para completar la vuelta */
 }

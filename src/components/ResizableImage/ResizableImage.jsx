@@ -8,6 +8,7 @@ const ResizableImage = ({
   setSelectedColumn,
   setIsEditingZoom,
   cardNumber,
+  uploadDataToFirebase
 }) => {
   const imageRefs = useRef([useRef(null), useRef(null)]);
   const [imageCoords, setImageCoords] = useState([
@@ -68,6 +69,7 @@ const ResizableImage = ({
     tempImageCoords.forEach((coords, index) => {
       updateImageProperties(cardIndex, index, coords); // Call updateImageProperties
     });
+    uploadDataToFirebase()
     setIsEditingZoom(false);
   };
 
