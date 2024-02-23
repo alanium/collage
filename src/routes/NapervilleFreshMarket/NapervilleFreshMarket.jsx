@@ -981,7 +981,7 @@ function NapervilleFreshMarket() {
   };
 
   return (
-    <div>
+    <div className={styles.body}>
       {popup ? (
         <TextPopUp
           textBox={
@@ -1131,7 +1131,7 @@ function NapervilleFreshMarket() {
         <div style={{ display: "grid" }} className={styles.containerDivBorder}>
           <RenderTopCards />
           <img
-            style={{ zIndex:"1", width: "100%", position: "absolute", top: "150px" }}
+            style={{ zIndex:"1", width: "100%", top: "150px" }}
             src="../src/assets/images/naperville.jpg"
           />
           <div style={{ position: "relative" }}>

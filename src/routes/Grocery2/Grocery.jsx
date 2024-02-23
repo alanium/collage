@@ -140,36 +140,49 @@ function Grocery() {
     const container = document.getElementById("magazineContainer");
 
     if (container) {
-      await downloadExternalImages(container);
+        await downloadExternalImages(container);
 
-      const pdfOptions = {
-        filename: "grocery_magazine.pdf",
-        image: { type: "png", quality: 1 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      };
+        const currentDate = new Date();
+        const formattedDate = currentDate.toLocaleString('en-US', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        }).replace(/\//g, '_').replace(/,/g, '').replace(/:/g, '_').replace(/ /g, '_');
 
-      // Get the original top value
-      const originalTop = container.style.top;
+        const filename = `grocery_${formattedDate}.pdf`;
 
-      console.log(originalTop);
+        const pdfOptions = {
+            filename: filename,
+            image: { type: "png", quality: 1 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        };
 
-      // Ensure container's position property is set
-      const computedStyle = window.getComputedStyle(container);
-      const position = computedStyle.getPropertyValue("position");
-      if (position === "static") {
-        container.style.position = "relative"; // or 'absolute' depending on your layout needs
-      }
+        // Get the original top value
+        const originalTop = container.style.top;
 
-      container.style.top = "0";
+        console.log(originalTop);
 
-      // Generate PDF from the container
-      await html2pdf().from(container).set(pdfOptions).save();
+        // Ensure container's position property is set
+        const computedStyle = window.getComputedStyle(container);
+        const position = computedStyle.getPropertyValue('position');
+        if (position === 'static') {
+            container.style.position = 'relative'; // or 'absolute' depending on your layout needs
+        }
 
-      // Reset the top value to the original
-      container.style.top = originalTop;
+        container.style.top = "0";
+
+        // Generate PDF from the container
+        await html2pdf().from(container).set(pdfOptions).save();
+
+        // Reset the top value to the original
+        container.style.top = originalTop;
     }
-  };
+};
 
   const downloadExternalImages = async (container) => {
     const images = container.querySelectorAll("img");
@@ -982,7 +995,7 @@ function Grocery() {
   };
 
   return (
-    <div>
+    <div className={styles.body}>
       {popup ? (
         <TextPopUp
           textBox={selectedImage.cardIndex > 20 ? dynamicColumn : staticColumns}
@@ -1075,16 +1088,25 @@ function Grocery() {
         </div>
       ) : null}
       {popup3 ? (
-        <div
-          className={styles.popUp2}
-          style={{ top: "40%", left: "50%", position: "absolute", zIndex: "1" }}
-        >
-          <div>Do you really wish to go back?</div>
+        <div className={styles.backgroundPopUp2}>
+        <div className={styles.popUp2}>
+          <p>Do you really wish to go back?</p>
           <div>
-            <button onClick={() => navigate("/")}>Yes</button>
-            <button onClick={() => setPopup3(false)}>No</button>
+            <button
+              className={styles.popUp2Button}
+              onClick={() => navigate("/")}
+            >
+              Yes
+            </button>
+            <button
+              className={styles.popUp2Button}
+              onClick={() => setPopup3(false)}
+            >
+              No
+            </button>
           </div>
         </div>
+      </div>
       ) : null}
       {popup4 ? (
         <ManageTemplates

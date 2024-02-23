@@ -33,6 +33,14 @@
     background-color: white;
     
   }
+
+  .body {
+    margin: 0;
+    display: flex;
+    place-items: center;
+    align-items: center;
+    justify-content: center;
+  }
   
   .containerDiv {
     width: 98%; /* Increased by 3% */
@@ -198,7 +206,7 @@
   .popUp2 {
     background-color: #333;
     color: white;
-    position: absolute;
+    position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);

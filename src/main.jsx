@@ -14,7 +14,6 @@ import FrozenAndBeverages from './routes/Frozen&Beverages/Frozen&Beverages.jsx';
 import MeatAndSeafood from './routes/Meats&Seafood/Meat&Seafood.jsx';
 import DelicatessenAndMore from './routes/Delicatessen&Fish&Taqueria/Delicatessen&Fish&Taqueria.jsx';
 import NapervilleFreshMarket from './routes/NapervilleFreshMarket/NapervilleFreshMarket.jsx';
-
 const router = createBrowserRouter([
   {
     path: "/",
@@ -53,7 +52,6 @@ const router = createBrowserRouter([
     element: <NapervilleFreshMarket />
   }
 ]);
-
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <RouterProvider router={router} />

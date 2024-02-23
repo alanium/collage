@@ -1025,7 +1025,7 @@ export default function BakeryLiquor() {
   };
 
   return (
-    <div>
+    <div className={styles.body}>
       {popup ? (
         <TextPopUp
           textBox={selectedImage.cardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
@@ -1098,7 +1098,7 @@ export default function BakeryLiquor() {
       ) : null}
 
       {popup3 ? (
-        <div className={styles.popUp2} style={{top: "40%", left: "50%", position: "absolute", zIndex: "1"}}>
+        <div className={styles.popUp2} style={{top: "40%", left: "50%", zIndex: "1"}}>
           <div>
             Do you really wish to go back?
           </div>  

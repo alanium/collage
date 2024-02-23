@@ -1,60 +1,44 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-
-
+import './Root.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faShoppingCart, faGlobe, faWineBottle, faCheese, faSnowflake, faFish, faUtensils, faBuilding } from '@fortawesome/free-solid-svg-icons';
 export default function Root() {
-
-    const navigate = useNavigate()
-
-    const [mobile, setMobile] = useState(false)
-
-    const esDispositivoMovilOTablet = () => {
-        const anchoDePantalla = window.innerWidth;
-        const esDispositivoMovil = anchoDePantalla <= 1100; // Consider anchos menores o iguales a 1100 as mobile or tablet
-        setMobile(esDispositivoMovil);
-    };
-
-    useEffect(() => {
-        const handleResize = () => {
-            esDispositivoMovilOTablet();
-        };
-
-        // Attach the event listener
-        window.addEventListener("resize", handleResize);
-
-        // Call it initially to set the initial value
-        esDispositivoMovilOTablet();
-
-        // Detach the event listener on component unmount
-        return () => {
-            window.removeEventListener("resize", handleResize);
-        };
-    }, []);
-
+    const navigate = useNavigate();
     return (
-        <>
-            <div>
-            
-                <h1>Ad Magazine Editor</h1>
-            </div>
-            <div>
-                <h2>Choose the page you want to edit</h2>
-            </div>
-            <div>
-                <button onClick={() => navigate("/grocery")} >Grocery</button>
-                <button onClick={() => navigate("/international")}>International</button>
-                <button onClick={() => navigate("/liquor&bakery")}>Bakery & Beverages</button>
-                <button onClick={() => navigate("/Dairy&Snacks")}>Dairy & Snacks</button>
-                <button onClick={() => navigate("/Frozen&Beverages")}>Frozen & Beverages</button>
-                <button onClick={() => navigate("/Meat&Seafood")}>Meat & Seafood</button>
-                <button onClick={() => navigate("/Delicatessen&More")}>Delicatessen & More</button>
-                <button onClick={() => navigate("/NapervilleFreshMarket")}>Naperville Fresh Market</button>
-            </div>
-            {mobile ? (
-            <p>This page doesnt have mobile or tablet compatibility yet</p>
-        ) : (
-            null
-      )}
-        </>
-    )
+        <div className="root-container">
+            <button className="edit-button grocery" onClick={() => navigate("/grocery")}>
+                <FontAwesomeIcon icon={faShoppingCart} className="icon" />
+                <span>Grocery</span>
+            </button>
+            <button className="edit-button international" onClick={() => navigate("/international")}>
+                <FontAwesomeIcon icon={faGlobe} className="icon" />
+                <span>International</span>
+            </button>
+            <button className="edit-button liquor" onClick={() => navigate("/liquor&bakery")}>
+                <FontAwesomeIcon icon={faWineBottle} className="icon" />
+                <span>Bakery & Beverages</span>
+            </button>
+            <button className="edit-button dairy" onClick={() => navigate("/Dairy&Snacks")}>
+                <FontAwesomeIcon icon={faCheese} className="icon" />
+                <span>Dairy & Snacks</span>
+            </button>
+            <button className="edit-button frozen" onClick={() => navigate("/Frozen&Beverages")}>
+                <FontAwesomeIcon icon={faSnowflake} className="icon" />
+                <span>Frozen & Beverages</span>
+            </button>
+            <button className="edit-button meat" onClick={() => navigate("/Meat&Seafood")}>
+                <FontAwesomeIcon icon={faFish} className="icon" />
+                <span>Meat & Seafood</span>
+            </button>
+            <button className="edit-button delicatessen" onClick={() => navigate("/Delicatessen&More")}>
+                <FontAwesomeIcon icon={faUtensils} className="icon" />
+                <span>Delicatessen & More</span>
+            </button>
+            <button className="edit-button market" onClick={() => navigate("/NapervilleFreshMarket")}>
+                <FontAwesomeIcon icon={faBuilding} className="icon" />
+                <span>Naperville Fresh Market</span>
+            </button>
+        </div>
+    );
 }
