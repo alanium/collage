@@ -63,6 +63,50 @@ export default function ManageTemplates({
     }
 };
 
+const handleCreateNewTemplate = async () => {
+  try {
+    // Prompt the user for an ID
+    const templateId = prompt("Enter Name for the template:");
+
+    // Ensure the user entered an ID
+    if (!templateId) {
+      console.error("No template Name provided.");
+      return;
+    }
+
+    // Get a reference to the "Grocery" collection
+    const templatesCollection = collection(db, "Grocery");
+
+    // Add the document with the provided ID
+    const newTemplate = await setDoc(doc(templatesCollection, templateId), {
+      staticColumns: Array(21)
+        .fill()
+        .map((_, index) => ({
+          img: [
+            { src: "", zoom: 100, x: 0, y: 0 },
+            { src: "", zoom: 100, x: 0, y: 0 },
+          ],
+          text: {
+            top: "",
+            left: "",
+            bottom: "",
+            priceBoxType: 0,
+            priceBoxColor: false,
+            renderPriceBox: true,
+            priceBoxBorder: true,
+          },
+          index,
+        })),
+      dynamicColumn: [],
+    });
+
+    console.log("Template added successfully!");
+    downloadTemplateFromFirestore();
+  } catch (error) {
+    console.error("Error uploading template:", error.message);
+  }
+};
+
 const handleDeleteTemplate = async (templateName) => {
   try {
     const templatesCollection = collection(db, "Grocery");
@@ -285,6 +329,7 @@ const handleTemplateNameChange = async (templateName) => {
           </tbody>
         </table>
         <button onClick={loadMoreTemplates}>Show More</button>
+        <button onClick={handleCreateNewTemplate}>Create New Template</button>
 
         <button onClick={uploadTemplateToFirestore}>Upload Current Template</button>
         <button

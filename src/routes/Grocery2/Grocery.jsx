@@ -45,7 +45,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const groceryRef = collection(db, "Grocery");
-const q = query(groceryRef, orderBy("timestamp", "asc"));
+const templatesQuerySnapshot = await getDocs(groceryRef);
+
+
 
 function Grocery() {
   const [staticColumns, setStaticColumns] = useState(
@@ -87,7 +89,7 @@ function Grocery() {
   const [templates, setTemplates] = useState(null);
   const [images, setImages] = useState(null);
   const [imgIndex, setImgIndex] = useState(null);
-  const [templateName, setTemplateName] = useState("test2")
+  const [templateName, setTemplateName] = useState(templatesQuerySnapshot[0])
 
   const storage = getStorage();
   const imagesRef = ref(storage, "images/Grocery");
