@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "./ManageTemplates.module.css";
 import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, setDoc, updateDoc } from "firebase/firestore";
+import { db } from "../../routes/root";
 
 export default function ManageTemplates({
   dynamicColumn,
@@ -11,7 +12,9 @@ export default function ManageTemplates({
   setTemplates,
   setPopup4,
   setCurrentTemplate,
-  db
+ 
+  templateFolder,
+  cardsInStatic
 }) {
  
   const [visibleTemplates, setVisibleTemplates] = useState(8);
@@ -29,7 +32,7 @@ export default function ManageTemplates({
 
     try {
         // Create a reference to the template document
-        const groceryCollectionRef = collection(db, "Grocery");
+        const groceryCollectionRef = collection(db, templateFolder);
 
         // Add the document with the user-inputted template name as the document ID
         await setDoc(doc(groceryCollectionRef, templateName), {
@@ -48,7 +51,7 @@ export default function ManageTemplates({
 
   const downloadTemplateFromFirestore = async () => {
     try {
-        const groceryCollectionRef = collection(db, "Grocery");
+        const groceryCollectionRef = collection(db, templateFolder);
         const templatesQuerySnapshot = await getDocs(groceryCollectionRef);
 
         const templateNames = [];
@@ -63,7 +66,7 @@ export default function ManageTemplates({
     }
 };
 
-const handleCreateNewTemplate = async () => {
+  const handleCreateNewTemplate = async () => {
   try {
     // Prompt the user for a name for the template
     const templateName = prompt("Enter Name for the template:");
@@ -75,11 +78,11 @@ const handleCreateNewTemplate = async () => {
     }
 
     // Get a reference to the "Grocery" collection
-    const templatesCollection = collection(db, "Grocery");
+    const templatesCollection = collection(db, templateFolder);
 
     // Add the document with the provided name
     await setDoc(doc(templatesCollection, templateName), {
-      staticColumns: Array(21)
+      staticColumns: Array(staticColumns.length)
         .fill()
         .map((_, index) => ({
           img: [
@@ -114,7 +117,7 @@ const handleCreateNewTemplate = async () => {
 
 const handleDeleteTemplate = async (templateName) => {
   try {
-    const templatesCollection = collection(db, "Grocery");
+    const templatesCollection = collection(db, templateFolder);
     const querySnapshot = await getDocs(templatesCollection);
 
     console.log("Template Name:", templateName);
@@ -149,7 +152,7 @@ const handleTemplateNameChange = async (templateName) => {
       return;
     }
 
-    const templatesCollection = collection(db, "Grocery");
+    const templatesCollection = collection(db, templateFolder);
     const querySnapshot = await getDocs(templatesCollection);
     let templateDoc;
 
@@ -174,7 +177,7 @@ const handleTemplateNameChange = async (templateName) => {
       });
 
       // Delete the old document
-      await deleteDoc(doc(db, "Grocery", templateDoc.id));
+      await deleteDoc(doc(db, templateFolder, templateDoc.id));
 
       console.log("Template updated successfully");
       downloadTemplateFromFirestore();
@@ -188,7 +191,7 @@ const handleTemplateNameChange = async (templateName) => {
 
   const handleConfirmSelection = async (templateName) => {
     try {
-      const templatesCollection = collection(db, "Grocery");
+      const templatesCollection = collection(db, templateFolder);
       const querySnapshot = await getDocs(templatesCollection);
       let templateDoc;
 
@@ -247,7 +250,7 @@ const handleTemplateNameChange = async (templateName) => {
             }
   
             // Save the template to Firestore
-            const templatesCollection = collection(db, "Grocery");
+            const templatesCollection = collection(db, templateFolder);
             await addDoc(templatesCollection, {
               name: templateName,
               dynamicColumn: parsedResult.dynamicColumn,
@@ -274,7 +277,7 @@ const handleTemplateNameChange = async (templateName) => {
     }
   
     try {
-      const templatesCollection = collection(db, "Grocery");
+      const templatesCollection = collection(db, templateFolder);
       const querySnapshot = await getDocs(templatesCollection);
       const templateDoc = querySnapshot.docs.find(doc => doc.data().name === templateName);
   

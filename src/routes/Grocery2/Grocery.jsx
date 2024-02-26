@@ -31,19 +31,10 @@ import BugReport from "../../components/BugReport/BugReport";
 import AutomaticImageCropper from "../../components/AutomaticImageCropper/AutomaticImageCropper";
 import ImageCropper from "../../components/ImageCropper/ImageCropper";
 import { isEqual } from "lodash";
+import { db } from "../root";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
-  authDomain: "napervillecollageapp.firebaseapp.com",
-  projectId: "napervillecollageapp",
-  storageBucket: "napervillecollageapp.appspot.com",
-  messagingSenderId: "658613882469",
-  appId: "1:658613882469:web:23da7f1eb31c54a021808c",
-  measurementId: "G-DNB21PCJ7T",
-};
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+
 const groceryRef = collection(db, "Grocery");
 const templatesQuerySnapshot = await getDocs(groceryRef);
 
@@ -1125,6 +1116,7 @@ function Grocery() {
           setPopup4={setPopup4}
           db={db}
           setCurrentTemplate={setTemplateName}
+          templateFolder="Grocery"
         />
       ) : null}
       {popup5 ? <BugReport setPopup5={setPopup5} /> : null}

@@ -14,6 +14,9 @@ import ImageFromCloud from "../../components/ImageFromCloud/ImageFromCloud";
 import ResizableImage from "../../components/ResizableImage/ResizableImage";
 import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
 
+
+
+
 function NapervilleFreshMarket() {
   const cardsInStatic = 30;
   const maxStaticIndex = cardsInStatic - 1;
@@ -53,6 +56,7 @@ function NapervilleFreshMarket() {
   const [templates, setTemplates] = useState(null);
   const [images, setImages] = useState(null);
   const [imgIndex, setImgIndex] = useState(null);
+  const [templateName, setTemplateName] = useState(templatesQuerySnapshot[0])
 
   const storage = getStorage();
   const imagesRef = ref(storage, (selectedCardIndex > 15 && selectedCardIndex < 30 ? "images/produce" : "images/produce"));

@@ -16,19 +16,18 @@ import ImageFromCloud from "../../components/ImageFromCloud/ImageFromCloud";
 import ResizableImage from "../../components/ResizableImage/ResizableImage";
 import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
 import ImageCropper from "../../components/ImageCropper/ImageCropper";
+import { db } from "../root";
+import {
+  collection,
+  doc,
+  getDocs,
+  onSnapshot,
+  setDoc,
+} from "firebase/firestore";
+import AutomaticImageCropper from "../../components/AutomaticImageCropper/AutomaticImageCropper";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
-  authDomain: "napervillecollageapp.firebaseapp.com",
-  projectId: "napervillecollageapp",
-  storageBucket: "napervillecollageapp.appspot.com",
-  messagingSenderId: "658613882469",
-  appId: "1:658613882469:web:23da7f1eb31c54a021808c",
-  measurementId: "G-DNB21PCJ7T",
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const groceryRef = collection(db, "Meats&Seafood");
+const templatesQuerySnapshot = await getDocs(groceryRef);
 
 export default function MeatAndSeafood() {
   const cardsInStatic = 18;
@@ -58,8 +57,8 @@ export default function MeatAndSeafood() {
   const [dynamicColumn, setDynamicColumn] = useState([]);
   const [contextMenu, setContextMenu] = useState(null);
   const [isEditingZoom, setIsEditingZoom] = useState(false);
-  const [isCroppingImage, setIsCroppingImage] = useState(false)
-  const [isAutomaticCropping, setIsAutomaticCropping] = useState(false)
+  const [isCroppingImage, setIsCroppingImage] = useState(false);
+  const [isAutomaticCropping, setIsAutomaticCropping] = useState(false);
   const [selectedImage, setSelectedImage] = useState({});
   const [selectedCardIndex, setSelectedCardIndex] = useState({});
   const [info, setInfo] = useState(false);
@@ -72,64 +71,120 @@ export default function MeatAndSeafood() {
   const [images, setImages] = useState(null);
   const [imgIndex, setImgIndex] = useState(null);
   const [selectedTextBox, setSelectedTextBox] = useState({});
+  const [templateName, setTemplateName] = useState(templatesQuerySnapshot[0]);
 
   const storage = getStorage();
-  const imagesRef = ref(storage, (selectedCardIndex > maxStaticIndex ? "images/seafood" : "images/meat" ));
+  const imagesRef = ref(
+    storage,
+    selectedCardIndex > maxStaticIndex ? "images/seafood" : "images/meat"
+  );
   const templatesRef = ref(storage, "templates/");
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
+
+  useEffect(() => {
+    const unsubscribeStaticColumns = onSnapshot(
+      doc(db, `Bakery&Beverages/${templateName}`),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          console.log(
+            "Static Columns Snapshot:",
+            snapshot.data().staticColumns
+          );
+          setStaticColumns(snapshot.data().staticColumns);
+        }
+      }
+    );
+
+    const unsubscribeDynamicColumn = onSnapshot(
+      doc(db, `Bakery&Beverages/${templateName}`),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          console.log(
+            "Dynamic Column Snapshot:",
+            snapshot.data().dynamicColumn
+          );
+          setDynamicColumn(snapshot.data().dynamicColumn);
+        }
+      }
+    );
+
+    return () => {
+      unsubscribeStaticColumns();
+      unsubscribeDynamicColumn();
+    };
+  }, [templateName]);
+
+  const uploadDataToFirebase = async () => {
+    try {
+      // Upload staticColumns to a document in "Grocery" collection
+      await setDoc(doc(db, `Bakery&Beverages/${templateName}`), {
+        staticColumns: staticColumns,
+        dynamicColumn: dynamicColumn,
+      });
+
+      console.log("Data uploaded successfully!");
+    } catch (error) {
+      console.error("Error uploading data:", error);
+    }
+  };
 
   const handleConvertToPDF = async () => {
     const container = document.getElementById("magazineContainer");
 
     if (container) {
+      await downloadExternalImages(container);
 
-        await downloadExternalImages(container);
+      const pdfOptions = {
+        filename: "grocery_magazine.pdf",
+        image: { type: "png", quality: 1 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      };
 
-        const pdfOptions = {
-            filename: "grocery_magazine.pdf",
-            image: { type: "png", quality: 1 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        };
+      container.style.top = "0";
+      // Generar PDF desde el clon
+      await html2pdf().from(container).set(pdfOptions).save();
 
-        container.style.top = "0"
-        // Generar PDF desde el clon
-        await html2pdf().from(container).set(pdfOptions).save()
-
-        container.style.top = "100px"
+      container.style.top = "100px";
     }
   };
 
   const downloadExternalImages = async (container) => {
-      const images = container.querySelectorAll("img");
-      const promises = [];
+    const images = container.querySelectorAll("img");
+    const promises = [];
 
-      images.forEach((img) => {
-          if (img.src && new URL(img.src).host != window.location.host && img.src.startsWith("http")) {
-              promises.push(new Promise((resolve, reject) => {
-                  const xhr = new XMLHttpRequest();
-                  xhr.open("GET", img.src, true);
-                  xhr.responseType = "blob";
-                  xhr.onload = () => {
-                      if (xhr.status === 200) {
-                          const blob = xhr.response;
-                          const urlCreator = window.URL || window.webkitURL;
-                          const imageUrl = urlCreator.createObjectURL(blob);
-                          img.src = imageUrl;
-                          resolve();
-                      } else {
-                          reject(xhr.statusText);
-                      }
-                  };
-                  xhr.onerror = () => {
-                      reject(xhr.statusText);
-                  };
-                  xhr.send();
-              }));
-          }
-      });
-      await Promise.all(promises);
+    images.forEach((img) => {
+      if (
+        img.src &&
+        new URL(img.src).host != window.location.host &&
+        img.src.startsWith("http")
+      ) {
+        promises.push(
+          new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", img.src, true);
+            xhr.responseType = "blob";
+            xhr.onload = () => {
+              if (xhr.status === 200) {
+                const blob = xhr.response;
+                const urlCreator = window.URL || window.webkitURL;
+                const imageUrl = urlCreator.createObjectURL(blob);
+                img.src = imageUrl;
+                resolve();
+              } else {
+                reject(xhr.statusText);
+              }
+            };
+            xhr.onerror = () => {
+              reject(xhr.statusText);
+            };
+            xhr.send();
+          })
+        );
+      }
+    });
+    await Promise.all(promises);
   };
 
   const handleDynamicColumns = (event) => {
@@ -158,7 +213,10 @@ export default function MeatAndSeafood() {
       };
       cards.push(card);
     }
-    setDynamicColumn(cards);
+    setDynamicColumn([...cards]),
+      () => {
+        uploadDataToFirebase();
+      };
   };
 
   const handleImageUpload = (event, cardIndex, img) => {
@@ -354,6 +412,7 @@ export default function MeatAndSeafood() {
         !newStaticColumns[cardIndex].text.renderPriceBox;
       setStaticColumns(newStaticColumns);
     }
+    uploadDataToFirebase();
   };
 
   const switchBoxType = (cardIndex) => {
@@ -377,6 +436,7 @@ export default function MeatAndSeafood() {
       }
       setStaticColumns(newStaticColumns);
     }
+    uploadDataToFirebase();
   };
 
   const changePriceBoxColor = (cardIndex) => {
@@ -393,6 +453,7 @@ export default function MeatAndSeafood() {
         !newStaticColumns[cardIndex].text.priceBoxColor;
       setStaticColumns(newStaticColumns);
     }
+    uploadDataToFirebase();
   };
 
   const changePriceBoxBorder = (cardIndex) => {
@@ -409,11 +470,12 @@ export default function MeatAndSeafood() {
         !newStaticColumns[cardIndex].text.priceBoxBorder;
       setStaticColumns(newStaticColumns);
     }
-  }
+    uploadDataToFirebase();
+  };
 
   const handleCropImage = () => {
-    setIsCroppingImage(true)
-  }
+    setIsCroppingImage(true);
+  };
 
   const ContextMenu = ({ x, y, items, onClose }) => (
     <div
@@ -505,7 +567,10 @@ export default function MeatAndSeafood() {
       // If both images uploaded, allow editing and deleting the second image
       contextMenuItems.push({
         label: "Delete 2",
-        action: () => handleDeleteImage(cardIndex, 1),
+        action: async () => {
+          await handleDeleteImage(cardIndex, 1);
+          await uploadDataToFirebase();
+        },
       });
     }
     if (selectedColumn[index].img[0].src == "") {
@@ -521,21 +586,28 @@ export default function MeatAndSeafood() {
     if (selectedColumn[index].img[0].src != "") {
       contextMenuItems.push({
         label: "Delete 1",
-        action: () => handleDeleteImage(cardIndex, 0),
+        action: async () => {
+          await handleDeleteImage(cardIndex, 0);
+          await uploadDataToFirebase();
+        },
       });
-    } if (selectedColumn[index].img[0].src != "") {
+    }
+    if (selectedColumn[index].img[0].src != "") {
       contextMenuItems.push({
         label: "crop image 1",
         action: () => {
-          setImgIndex(0)
-          handleCropImage(cardIndex, imgIndex)},
+          setImgIndex(0);
+          handleCropImage(cardIndex, imgIndex);
+        },
       });
-    } if (selectedColumn[index].img[1].src != "") {
+    }
+    if (selectedColumn[index].img[1].src != "") {
       contextMenuItems.push({
         label: "crop image 2",
         action: () => {
-          setImgIndex(1)
-          handleCropImage(cardIndex, imgIndex)},
+          setImgIndex(1);
+          handleCropImage(cardIndex, imgIndex);
+        },
       });
     }
 
@@ -605,6 +677,7 @@ export default function MeatAndSeafood() {
         cardIndex={cardIndex}
         maxStaticIndex={maxStaticIndex}
         priceBoxBorder={priceBoxBorder}
+        uploadDataToFirebase={uploadDataToFirebase}
       />,
       <TripleBox
         key={`fixed-box-${cardIndex}`}
@@ -615,6 +688,7 @@ export default function MeatAndSeafood() {
         cardIndex={cardIndex}
         maxStaticIndex={maxStaticIndex}
         priceBoxBorder={priceBoxBorder}
+        uploadDataToFirebase={uploadDataToFirebase}
       />,
       <AmountForPrice
         key={`fixed-box-${cardIndex}`}
@@ -625,6 +699,7 @@ export default function MeatAndSeafood() {
         cardIndex={cardIndex}
         maxStaticIndex={maxStaticIndex}
         priceBoxBorder={priceBoxBorder}
+        uploadDataToFirebase={uploadDataToFirebase}
       />,
     ];
 
@@ -675,8 +750,8 @@ export default function MeatAndSeafood() {
                   className={styles.uploadedImage}
                   style={{
                     transform: `scale(${images.img[0].zoom / 100}) translate(${
-                      images.img[0].x / ( images.img[0].zoom / 100)
-                    }px, ${images.img[0].y / ( images.img[0].zoom / 100)}px)`,
+                      images.img[0].x / (images.img[0].zoom / 100)
+                    }px, ${images.img[0].y / (images.img[0].zoom / 100)}px)`,
                   }}
                 />
               )}
@@ -688,8 +763,8 @@ export default function MeatAndSeafood() {
                   className={styles.uploadedImage}
                   style={{
                     transform: `scale(${images.img[1].zoom / 100}) translate(${
-                      images.img[1].x / ( images.img[1].zoom / 100)
-                    }px, ${images.img[1].y / ( images.img[1].zoom / 100)}px)`,
+                      images.img[1].x / (images.img[1].zoom / 100)
+                    }px, ${images.img[1].y / (images.img[1].zoom / 100)}px)`,
                   }}
                 />
               )}
@@ -748,7 +823,7 @@ export default function MeatAndSeafood() {
 
         column.push(
           <div
-          name={`card-${cardIndex}`}
+            name={`card-${cardIndex}`}
             className={styles.card}
             key={cardIndex}
             onClick={(event) => handleCardClick(cardIndex, event)}
@@ -760,8 +835,8 @@ export default function MeatAndSeafood() {
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[0].zoom / 100}) translate(${
-                    images[0].x / ( images[0].zoom / 100)
-                  }px, ${images[0].y / ( images[0].zoom / 100)}px)`,
+                    images[0].x / (images[0].zoom / 100)
+                  }px, ${images[0].y / (images[0].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -773,8 +848,8 @@ export default function MeatAndSeafood() {
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[1].zoom / 100}) translate(${
-                    images[1].x / ( images[1].zoom / 100)
-                  }px, ${images[1].y / ( images[1].zoom / 100)}px)`,
+                    images[1].x / (images[1].zoom / 100)
+                  }px, ${images[1].y / (images[1].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -812,6 +887,7 @@ export default function MeatAndSeafood() {
               setType={setType}
               setSelectedImage={setSelectedImage}
               index={cardIndex}
+              maxCardPosition={maxStaticIndex}
             />
           </div>
         );
@@ -862,8 +938,8 @@ export default function MeatAndSeafood() {
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[0].zoom / 100}) translate(${
-                    images[0].x / ( images[0].zoom / 100)
-                  }px, ${images[0].y / ( images[0].zoom / 100)}px)`,
+                    images[0].x / (images[0].zoom / 100)
+                  }px, ${images[0].y / (images[0].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -875,8 +951,8 @@ export default function MeatAndSeafood() {
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[1].zoom / 100}) translate(${
-                    images[1].x / ( images[1].zoom / 100)
-                  }px, ${images[1].y / ( images[1].zoom / 100)}px)`,
+                    images[1].x / (images[1].zoom / 100)
+                  }px, ${images[1].y / (images[1].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -914,6 +990,7 @@ export default function MeatAndSeafood() {
               setType={setType}
               setSelectedImage={setSelectedImage}
               index={cardIndex}
+              maxCardPosition={maxStaticIndex}
             />
           </div>
         );
@@ -946,41 +1023,75 @@ export default function MeatAndSeafood() {
           cardIndex={selectedImage}
           maxCardPosition={maxStaticIndex}
           type={type}
+          uploadDataToFirebase={uploadDataToFirebase}
         />
       ) : null}
       {isEditingZoom && (
-        <ResizableImage 
-          cardIndex={selectedImage.cardIndex > maxStaticIndex ? selectedImage.cardIndex - cardsInStatic : selectedImage.cardIndex}
-          selectedColumn={selectedImage.cardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
-          setSelectedColumn={selectedImage.cardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns}
+        <ResizableImage
+          cardIndex={
+            selectedImage.cardIndex > maxStaticIndex
+              ? selectedImage.cardIndex - cardsInStatic
+              : selectedImage.cardIndex
+          }
+          selectedColumn={
+            selectedImage.cardIndex > maxStaticIndex
+              ? dynamicColumn
+              : staticColumns
+          }
+          setSelectedColumn={
+            selectedImage.cardIndex > maxStaticIndex
+              ? setDynamicColumn
+              : setStaticColumns
+          }
           setIsEditingZoom={setIsEditingZoom}
           cardNumber={selectedImage.cardIndex}
           imageFolder={selectedCardIndex > maxStaticIndex ? "meat" : "seafood"}
-          />
+          uploadDataToFirebase={uploadDataToFirebase}
+        />
       )}
       {isCroppingImage && (
-        <ImageCropper src={
-          selectedCardIndex > maxStaticIndex ? dynamicColumn[selectedCardIndex  - cardsInStatic].img[imgIndex].src : staticColumns[selectedCardIndex ].img[imgIndex].src
-        }
-        setIsCroppingImage={
-          setIsCroppingImage
-        }
-        selectedColumn={selectedImage.cardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
-        setSelectedColumn={selectedImage.cardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns}
-        selectedCardIndex={selectedCardIndex}
-        imageIndex={imgIndex}
-        imageFolder={selectedCardIndex > maxStaticIndex ? "meat" : "seafood"}
+        <ImageCropper
+          src={
+            selectedCardIndex > maxStaticIndex
+              ? dynamicColumn[selectedCardIndex - cardsInStatic].img[imgIndex]
+                  .src
+              : staticColumns[selectedCardIndex].img[imgIndex].src
+          }
+          setIsCroppingImage={setIsCroppingImage}
+          selectedColumn={
+            selectedImage.cardIndex > maxStaticIndex
+              ? dynamicColumn
+              : staticColumns
+          }
+          setSelectedColumn={
+            selectedImage.cardIndex > maxStaticIndex
+              ? setDynamicColumn
+              : setStaticColumns
+          }
+          selectedCardIndex={selectedCardIndex}
+          imageIndex={imgIndex}
+          imageFolder={selectedCardIndex > maxStaticIndex ? "meat" : "seafood"}
+          uploadDataToFirebase={uploadDataToFirebase}
         />
       )}
       {isAutomaticCropping && (
         <AutomaticImageCropper
-        selectedColumn={selectedImage.cardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
-        setSelectedColumn={selectedImage.cardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns}
-        selectedCardIndex={selectedCardIndex}
-        imageIndex={imgIndex}
-        setIsAutomaticCropping={setIsAutomaticCropping}
+          selectedColumn={
+            selectedImage.cardIndex > maxStaticIndex
+              ? dynamicColumn
+              : staticColumns
+          }
+          setSelectedColumn={
+            selectedImage.cardIndex > maxStaticIndex
+              ? setDynamicColumn
+              : setStaticColumns
+          }
+          selectedCardIndex={selectedCardIndex}
+          imageIndex={imgIndex}
+          setIsAutomaticCropping={setIsAutomaticCropping}
+          uploadDataToFirebase={uploadDataToFirebase}
         />
-      )}  
+      )}
       {popup2 ? (
         <div className={styles.popUp2} style={{ zIndex: "1" }}>
           <button
@@ -1006,38 +1117,34 @@ export default function MeatAndSeafood() {
         </div>
       ) : null}
 
-        {popup3 ? (
-        <div className={styles.popUp2} style={{top: "40%", left: "50%", zIndex: "1"}}>
+      {popup3 ? (
+        <div
+          className={styles.popUp2}
+          style={{ top: "40%", left: "50%", zIndex: "1" }}
+        >
+          <div>Do you really wish to go back?</div>
           <div>
-            Do you really wish to go back?
-          </div>  
-          <div>
-            <button
-              onClick={() => navigate("/")}
-            >
-              Yes
-            </button>
-            <button
-              onClick={() => setPopup3(false)}
-            >
-              No
-            </button>
+            <button onClick={() => navigate("/")}>Yes</button>
+            <button onClick={() => setPopup3(false)}>No</button>
           </div>
         </div>
       ) : null}
 
       {popup4 ? (
         <ManageTemplates
-        dynamicColumn={dynamicColumn}
-        staticColumns={staticColumns}
-        setDynamicColumn={setDynamicColumn}
-        setStaticColumns={setStaticColumns}
-        templates={templates}
-        setTemplates={setTemplates}
-        setPopup4={setPopup4}
-        templateFolder="Meats&Seafood"
+          dynamicColumn={dynamicColumn}
+          staticColumns={staticColumns}
+          setDynamicColumn={setDynamicColumn}
+          setStaticColumns={setStaticColumns}
+          templates={templates}
+          setTemplates={setTemplates}
+          setPopup4={setPopup4}
+          db={db}
+          setCurrentTemplate={setTemplateName}
+          templateFolder="Meats&Seafood"
+          cardsInStatic={cardsInStatic}
         />
-      ): null}
+      ) : null}
 
       <div className={styles.sidebar} style={{ top: "0px" }}>
         <div
@@ -1101,8 +1208,13 @@ export default function MeatAndSeafood() {
           >
             Open Template Manager
           </button>
-          
-          <ImageUploader imageFolder={selectedCardIndex > maxStaticIndex ? "seafood" : "meat" } />
+
+          <ImageUploader
+            uploadDataToFirebase={uploadDataToFirebase}
+            imageFolder={
+              selectedCardIndex > maxStaticIndex ? "seafood" : "meat"
+            }
+          />
         </div>
       </div>
 
@@ -1153,7 +1265,8 @@ export default function MeatAndSeafood() {
           setImages={setImages}
           imgIndex={imgIndex}
           maxCardPosition={maxStaticIndex}
-          imageFolder={selectedCardIndex > maxStaticIndex ? "seafood" : "meat" }
+          imageFolder={selectedCardIndex > maxStaticIndex ? "seafood" : "meat"}
+          uploadDataToFirebase={uploadDataToFirebase}
         />
       ) : null}
     </div>

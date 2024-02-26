@@ -3,8 +3,17 @@ import { useNavigate } from "react-router-dom";
 import './Root.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart, faGlobe, faWineBottle, faCheese, faSnowflake, faFish, faUtensils, faBuilding } from '@fortawesome/free-solid-svg-icons';
-export default function Root() {
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import config from "../../config.json";
+
+ const firebaseConfig = config;
+ const app = initializeApp(firebaseConfig);
+ const db = getFirestore(app);
+
+  function Root() {
     const navigate = useNavigate();
+    
     return (
         <div className="root-container">
             <button className="edit-button grocery" onClick={() => navigate("/grocery")}>
@@ -42,3 +51,5 @@ export default function Root() {
         </div>
     );
 }
+
+export { Root, db };

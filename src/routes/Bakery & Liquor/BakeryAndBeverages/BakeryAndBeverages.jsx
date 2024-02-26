@@ -17,19 +17,17 @@ import ResizableImage from "../../../components/ResizableImage/ResizableImage";
 import ManageTemplates from "../../../components/ManageTemplates/ManageTemplates";
 import ImageCropper from "../../../components/ImageCropper/ImageCropper";
 import AutomaticImageCropper from "../../../components/AutomaticImageCropper/AutomaticImageCropper";
+import { db } from "../../root";
+import {
+  collection,
+  doc,
+  getDocs,
+  onSnapshot,
+  setDoc,
+} from "firebase/firestore";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
-  authDomain: "napervillecollageapp.firebaseapp.com",
-  projectId: "napervillecollageapp",
-  storageBucket: "napervillecollageapp.appspot.com",
-  messagingSenderId: "658613882469",
-  appId: "1:658613882469:web:23da7f1eb31c54a021808c",
-  measurementId: "G-DNB21PCJ7T",
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const groceryRef = collection(db, "Bakery&Beverages");
+const templatesQuerySnapshot = await getDocs(groceryRef);
 
 export default function BakeryLiquor() {
   const cardsInStatic = 28;
@@ -61,8 +59,8 @@ export default function BakeryLiquor() {
   const [isEditingZoom, setIsEditingZoom] = useState(false);
   const [selectedImage, setSelectedImage] = useState({});
   const [selectedCardIndex, setSelectedCardIndex] = useState({});
-  const [isCroppingImage, setIsCroppingImage] = useState(false)
-  const [isAutomaticCropping, setIsAutomaticCropping] = useState(false)
+  const [isCroppingImage, setIsCroppingImage] = useState(false);
+  const [isAutomaticCropping, setIsAutomaticCropping] = useState(false);
   const [info, setInfo] = useState(false);
   const [popup, setPopup] = useState(false);
   const [type, setType] = useState("");
@@ -73,64 +71,122 @@ export default function BakeryLiquor() {
   const [images, setImages] = useState(null);
   const [imgIndex, setImgIndex] = useState(null);
   const [selectedTextBox, setSelectedTextBox] = useState({});
+  const [templateName, setTemplateName] = useState(templatesQuerySnapshot[0]);
 
   const storage = getStorage();
-  const imagesRef = ref(storage, (selectedCardIndex > 11 && selectedCardIndex < 28 ? "images/liquor" : "images/bakery"));
+  const imagesRef = ref(
+    storage,
+    selectedCardIndex > 11 && selectedCardIndex < 28
+      ? "images/liquor"
+      : "images/bakery"
+  );
   const templatesRef = ref(storage, "templates/");
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
+
+  useEffect(() => {
+    const unsubscribeStaticColumns = onSnapshot(
+      doc(db, `Bakery&Beverages/${templateName}`),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          console.log(
+            "Static Columns Snapshot:",
+            snapshot.data().staticColumns
+          );
+          setStaticColumns(snapshot.data().staticColumns);
+        }
+      }
+    );
+
+    const unsubscribeDynamicColumn = onSnapshot(
+      doc(db, `Bakery&Beverages/${templateName}`),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          console.log(
+            "Dynamic Column Snapshot:",
+            snapshot.data().dynamicColumn
+          );
+          setDynamicColumn(snapshot.data().dynamicColumn);
+        }
+      }
+    );
+
+    return () => {
+      unsubscribeStaticColumns();
+      unsubscribeDynamicColumn();
+    };
+  }, [templateName]);
+
+  const uploadDataToFirebase = async () => {
+    try {
+      // Upload staticColumns to a document in "Grocery" collection
+      await setDoc(doc(db, `Bakery&Beverages/${templateName}`), {
+        staticColumns: staticColumns,
+        dynamicColumn: dynamicColumn,
+      });
+
+      console.log("Data uploaded successfully!");
+    } catch (error) {
+      console.error("Error uploading data:", error);
+    }
+  };
 
   const handleConvertToPDF = async () => {
     const container = document.getElementById("magazineContainer");
 
     if (container) {
+      await downloadExternalImages(container);
 
-        await downloadExternalImages(container);
+      const pdfOptions = {
+        filename: "grocery_magazine.pdf",
+        image: { type: "png", quality: 1 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      };
 
-        const pdfOptions = {
-            filename: "grocery_magazine.pdf",
-            image: { type: "png", quality: 1 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        };
+      container.style.top = "0";
+      // Generar PDF desde el clon
+      await html2pdf().from(container).set(pdfOptions).save();
 
-        container.style.top = "0"
-        // Generar PDF desde el clon
-        await html2pdf().from(container).set(pdfOptions).save()
-
-        container.style.top = "100px"
+      container.style.top = "100px";
     }
   };
 
   const downloadExternalImages = async (container) => {
-      const images = container.querySelectorAll("img");
-      const promises = [];
+    const images = container.querySelectorAll("img");
+    const promises = [];
 
-      images.forEach((img) => {
-          if (img.src && new URL(img.src).host != window.location.host && img.src.startsWith("http")) {
-              promises.push(new Promise((resolve, reject) => {
-                  const xhr = new XMLHttpRequest();
-                  xhr.open("GET", img.src, true);
-                  xhr.responseType = "blob";
-                  xhr.onload = () => {
-                      if (xhr.status === 200) {
-                          const blob = xhr.response;
-                          const urlCreator = window.URL || window.webkitURL;
-                          const imageUrl = urlCreator.createObjectURL(blob);
-                          img.src = imageUrl;
-                          resolve();
-                      } else {
-                          reject(xhr.statusText);
-                      }
-                  };
-                  xhr.onerror = () => {
-                      reject(xhr.statusText);
-                  };
-                  xhr.send();
-              }));
-          }
-      });
-      await Promise.all(promises);
+    images.forEach((img) => {
+      if (
+        img.src &&
+        new URL(img.src).host != window.location.host &&
+        img.src.startsWith("http")
+      ) {
+        promises.push(
+          new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", img.src, true);
+            xhr.responseType = "blob";
+            xhr.onload = () => {
+              if (xhr.status === 200) {
+                const blob = xhr.response;
+                const urlCreator = window.URL || window.webkitURL;
+                const imageUrl = urlCreator.createObjectURL(blob);
+                img.src = imageUrl;
+                resolve();
+              } else {
+                reject(xhr.statusText);
+              }
+            };
+            xhr.onerror = () => {
+              reject(xhr.statusText);
+            };
+            xhr.send();
+          })
+        );
+      }
+    });
+    await Promise.all(promises);
   };
 
   const handleDynamicColumns = (event) => {
@@ -155,11 +211,14 @@ export default function BakeryLiquor() {
           renderPriceBox: false,
           priceBoxBorder: true,
         },
-        index: i + cardsInStatic,
+        index: i + 28,
       };
       cards.push(card);
     }
-    setDynamicColumn(cards);
+    setDynamicColumn([...cards]),
+      () => {
+        uploadDataToFirebase();
+      };
   };
 
   useEffect(() => {
@@ -296,6 +355,7 @@ export default function BakeryLiquor() {
         !newStaticColumns[cardIndex].text.renderPriceBox;
       setStaticColumns(newStaticColumns);
     }
+    uploadDataToFirebase();
   };
 
   const switchBoxType = (cardIndex) => {
@@ -319,6 +379,7 @@ export default function BakeryLiquor() {
       }
       setStaticColumns(newStaticColumns);
     }
+    uploadDataToFirebase();
   };
 
   const changePriceBoxColor = (cardIndex) => {
@@ -335,6 +396,7 @@ export default function BakeryLiquor() {
         !newStaticColumns[cardIndex].text.priceBoxColor;
       setStaticColumns(newStaticColumns);
     }
+    uploadDataToFirebase();
   };
 
   const handleImageUpload = (event, cardIndex, img) => {
@@ -356,7 +418,8 @@ export default function BakeryLiquor() {
               reader.onload = (e) => {
                 const result = e.target.result;
                 const newDynamicColumn = [...dynamicColumn];
-                newDynamicColumn[cardIndex - cardsInStatic].img[img].src = result;
+                newDynamicColumn[cardIndex - cardsInStatic].img[img].src =
+                  result;
                 setDynamicColumn(newDynamicColumn);
               };
 
@@ -409,11 +472,12 @@ export default function BakeryLiquor() {
         !newStaticColumns[cardIndex].text.priceBoxBorder;
       setStaticColumns(newStaticColumns);
     }
-  }
+    uploadDataToFirebase();
+  };
 
   const handleCropImage = () => {
-    setIsCroppingImage(true)
-  }
+    setIsCroppingImage(true);
+  };
 
   const ContextMenu = ({ x, y, items, onClose }) => (
     <div
@@ -459,9 +523,11 @@ export default function BakeryLiquor() {
   const handleContextMenu = (event, cardIndex, column, image) => {
     event.preventDefault();
 
-    const selectedColumn = cardIndex > maxStaticIndex ? dynamicColumn : staticColumns;
+    const selectedColumn =
+      cardIndex > maxStaticIndex ? dynamicColumn : staticColumns;
 
-    const index = cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
+    const index =
+      cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
 
     const contextMenuItems = [
       {
@@ -486,7 +552,7 @@ export default function BakeryLiquor() {
       {
         label: "Change PriceBox Border",
         action: () => changePriceBoxBorder(cardIndex),
-      }
+      },
     ];
 
     if (selectedColumn[index].img[1].src == "") {
@@ -503,7 +569,10 @@ export default function BakeryLiquor() {
       // If both images uploaded, allow editing and deleting the second image
       contextMenuItems.push({
         label: "Delete 2",
-        action: () => handleDeleteImage(cardIndex, 1),
+        action: async () => {
+          await handleDeleteImage(cardIndex, 1);
+          await uploadDataToFirebase();
+        },
       });
     }
     if (selectedColumn[index].img[0].src == "") {
@@ -519,32 +588,45 @@ export default function BakeryLiquor() {
     if (selectedColumn[index].img[0].src != "") {
       contextMenuItems.push({
         label: "Delete 1",
-        action: () => handleDeleteImage(cardIndex, 0),
+        action: async () => {
+          await handleDeleteImage(cardIndex, 0);
+          await uploadDataToFirebase();
+        },
       });
-    } if (selectedColumn[index].img[0].src != "") {
-      contextMenuItems.push({
-        label: "crop image 1",
-        action: () => {
-          setImgIndex(0)
-          handleCropImage(cardIndex, imgIndex)},
-      }, {
-        label: "Delete Background of Image 1",
-        action: () => {
-          setImgIndex(0),
-          setIsAutomaticCropping(true)
-      }});
-    } if (selectedColumn[index].img[1].src != "") {
-      contextMenuItems.push({
-        label: "crop image 2",
-        action: () => {
-          setImgIndex(1)
-          handleCropImage(cardIndex, imgIndex)},
-      }, {
-        label: "Delete Background of Image 2",
-        action: () => {
-          setImgIndex(1),
-          setIsAutomaticCropping(true)
-      }});
+    }
+    if (selectedColumn[index].img[0].src != "") {
+      contextMenuItems.push(
+        {
+          label: "crop image 1",
+          action: () => {
+            setImgIndex(0);
+            handleCropImage(cardIndex, imgIndex);
+          },
+        },
+        {
+          label: "Delete Background of Image 1",
+          action: () => {
+            setImgIndex(0), setIsAutomaticCropping(true);
+          },
+        }
+      );
+    }
+    if (selectedColumn[index].img[1].src != "") {
+      contextMenuItems.push(
+        {
+          label: "crop image 2",
+          action: () => {
+            setImgIndex(1);
+            handleCropImage(cardIndex, imgIndex);
+          },
+        },
+        {
+          label: "Delete Background of Image 2",
+          action: () => {
+            setImgIndex(1), setIsAutomaticCropping(true);
+          },
+        }
+      );
     }
 
     const containerRect = contextMenuRef.current.getBoundingClientRect();
@@ -559,42 +641,21 @@ export default function BakeryLiquor() {
     // Check if the click event target is not the card element
     setImgIndex(0);
 
-    const auxIndex = cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
+    const auxIndex =
+      cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
 
     if (!event.target.classList.contains(styles.card)) {
       return;
     }
-    const image = (cardIndex > maxStaticIndex ? dynamicColumn : staticColumns)[auxIndex];
+    const image = (cardIndex > maxStaticIndex ? dynamicColumn : staticColumns)[
+      auxIndex
+    ];
 
     if (image.img[0].src === "" && image.img[1].src === "") {
       setPopup2(true);
       setSelectedCardIndex(cardIndex);
     } else {
       handleContextMenu(event, cardIndex, image);
-    }
-  };
-
-  const saveTemplate = (event) => {
-    const newText = prompt("Enter template name: ");
-    if (newText) {
-      const blob = new Blob(
-        [
-          JSON.stringify({
-            firstColumn: dynamicColumn,
-            otherColumns: staticColumns,
-          }),
-        ],
-        { type: "application/json" }
-      );
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${newText}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
     }
   };
 
@@ -611,76 +672,6 @@ export default function BakeryLiquor() {
         console.log(names);
       })
       .then(() => setPopup2(false))
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  const loadTemplate = (event) => {
-    event.preventDefault();
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".json"; // Corrected file extension
-    input.onchange = (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target.result;
-          try {
-            const parsedResult = JSON.parse(result);
-            setStaticColumns(parsedResult.otherColumns);
-            setDynamicColumn(parsedResult.firstColumn);
-          } catch (error) {
-            console.error("Error parsing JSON:", error);
-          }
-        };
-        reader.readAsText(file); // Use readAsText to read JSON content
-      }
-    };
-    input.click();
-  };
-
-  const uploadTemplateToCloud = async () => {
-    const fileName = prompt("Enter the name of the file");
-    const fileContent = JSON.stringify({
-      firstColumn: dynamicColumn,
-      otherColumns: staticColumns,
-    });
-
-    // Validate file name and content
-    if (!fileName || fileName.trim() === "") {
-      console.error("File name is required");
-      return;
-    }
-
-    const blob = new Blob([fileContent], { type: "text/plain" });
-
-    if (fileName && blob) {
-      try {
-        const storageRef = ref(storage, `templates/${fileName}`);
-        await uploadBytes(storageRef, blob);
-        console.log("File uploaded successfully");
-      } catch (error) {
-        console.error("Error uploading file:", error.message);
-      }
-    } else {
-      console.error("File name and content are required");
-    }
-  };
-
-  const downloadTemplateFromCloud = (event) => {
-    listAll(templatesRef)
-      .then((result) => {
-        // 'items' is an array that contains references to each item in the list
-        const items = result.items;
-
-        // Extract image names from references
-        const names = items.map((item) => item.name);
-
-        setTemplates(names);
-        console.log(names);
-      })
       .catch((error) => {
         console.log(error);
       });
@@ -703,6 +694,7 @@ export default function BakeryLiquor() {
         i={cardIndex}
         cardIndex={cardIndex}
         priceBoxBorder={priceBoxBorder}
+        uploadDataToFirebase={uploadDataToFirebase}
       />,
       <TripleBox
         key={`fixed-box-${cardIndex}`}
@@ -712,6 +704,7 @@ export default function BakeryLiquor() {
         i={cardIndex}
         cardIndex={cardIndex}
         priceBoxBorder={priceBoxBorder}
+        uploadDataToFirebase={uploadDataToFirebase}
       />,
       <AmountForPrice
         key={`fixed-box-${cardIndex}`}
@@ -721,6 +714,7 @@ export default function BakeryLiquor() {
         i={cardIndex}
         cardIndex={cardIndex}
         priceBoxBorder={priceBoxBorder}
+        uploadDataToFirebase={uploadDataToFirebase}
       />,
     ];
 
@@ -758,7 +752,7 @@ export default function BakeryLiquor() {
 
           cards.push(
             <div
-            name={`card-${cardIndex}`}
+              name={`card-${cardIndex}`}
               className={styles.card}
               style={{}}
               key={cardIndex}
@@ -766,26 +760,26 @@ export default function BakeryLiquor() {
             >
               {images.img[0] && ( // Check if img[0] exists before rendering
                 <img
-                name={`image-${cardIndex}-0`}
+                  name={`image-${cardIndex}-0`}
                   src={images.img[0].src ? images.img[0].src : ""}
                   className={styles.uploadedImage}
                   style={{
                     transform: `scale(${images.img[0].zoom / 100}) translate(${
-                      images.img[0].x / ( images.img[0].zoom / 100)
-                    }px, ${images.img[0].y / ( images.img[0].zoom / 100)}px)`,
+                      images.img[0].x / (images.img[0].zoom / 100)
+                    }px, ${images.img[0].y / (images.img[0].zoom / 100)}px)`,
                   }}
                 />
               )}
 
               {images.img[1] && ( // Check if img[1] exists before rendering
                 <img
-                name={`image-${cardIndex}-1`}
+                  name={`image-${cardIndex}-1`}
                   src={images.img[1] ? images.img[1].src : ""}
                   className={styles.uploadedImage}
                   style={{
                     transform: `scale(${images.img[1].zoom / 100}) translate(${
-                      images.img[1].x / ( images.img[1].zoom / 100)
-                    }px, ${images.img[1].y / ( images.img[1].zoom / 100)}px)`,
+                      images.img[1].x / (images.img[1].zoom / 100)
+                    }px, ${images.img[1].y / (images.img[1].zoom / 100)}px)`,
                   }}
                 />
               )}
@@ -823,7 +817,7 @@ export default function BakeryLiquor() {
 
   const RenderLiquorCards = () => {
     const cards = [];
-   for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 4; i++) {
       const column = [];
 
       for (let j = 0; j < 4; j++) {
@@ -844,33 +838,33 @@ export default function BakeryLiquor() {
 
         column.push(
           <div
-          name={`card-${cardIndex}`}
+            name={`card-${cardIndex}`}
             className={styles.card}
             key={cardIndex}
             onClick={(event) => handleCardClick(cardIndex, event)}
           >
             {images[0] && ( // Check if img[0] exists before rendering
               <img
-              name={`image-${cardIndex}-0`}
+                name={`image-${cardIndex}-0`}
                 src={images[0].src ? images[0].src : ""}
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[0].zoom / 100}) translate(${
-                    images[0].x / ( images[0].zoom / 100)
-                  }px, ${images[0].y / ( images[0].zoom / 100)}px)`,
+                    images[0].x / (images[0].zoom / 100)
+                  }px, ${images[0].y / (images[0].zoom / 100)}px)`,
                 }}
               />
             )}
 
             {images[1] && ( // Check if img[1] exists before rendering
               <img
-              name={`image-${cardIndex}-1`}
+                name={`image-${cardIndex}-1`}
                 src={images[1] ? images[1].src : ""}
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[1].zoom / 100}) translate(${
-                    images[1].x / ( images[1].zoom / 100)
-                  }px, ${images[1].y / ( images[1].zoom / 100)}px)`,
+                    images[1].x / (images[1].zoom / 100)
+                  }px, ${images[1].y / (images[1].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -908,6 +902,7 @@ export default function BakeryLiquor() {
               setType={setType}
               setSelectedImage={setSelectedImage}
               index={cardIndex}
+              maxCardPosition={maxStaticIndex}
             />
           </div>
         );
@@ -920,7 +915,7 @@ export default function BakeryLiquor() {
       );
     }
     return cards;
-  }
+  };
 
   const RenderCards = () => {
     const cards = [<RenderDynamicColumn />];
@@ -946,33 +941,33 @@ export default function BakeryLiquor() {
 
         column.push(
           <div
-          name={`card-${cardIndex}`}
+            name={`card-${cardIndex}`}
             className={styles.card}
             key={cardIndex}
             onClick={(event) => handleCardClick(cardIndex, event)}
           >
             {images[0] && ( // Check if img[0] exists before rendering
               <img
-              name={`image-${cardIndex}-0`}
+                name={`image-${cardIndex}-0`}
                 src={images[0].src ? images[0].src : ""}
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[0].zoom / 100}) translate(${
-                    images[0].x / ( images[0].zoom / 100)
-                  }px, ${images[0].y / ( images[0].zoom / 100)}px)`,
+                    images[0].x / (images[0].zoom / 100)
+                  }px, ${images[0].y / (images[0].zoom / 100)}px)`,
                 }}
               />
             )}
 
             {images[1] && ( // Check if img[1] exists before rendering
               <img
-              name={`image-${cardIndex}-1`}
+                name={`image-${cardIndex}-1`}
                 src={images[1] ? images[1].src : ""}
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[1].zoom / 100}) translate(${
-                    images[1].x / ( images[1].zoom / 100)
-                  }px, ${images[1].y / ( images[1].zoom / 100)}px)`,
+                    images[1].x / (images[1].zoom / 100)
+                  }px, ${images[1].y / (images[1].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -1010,6 +1005,7 @@ export default function BakeryLiquor() {
               setType={setType}
               setSelectedImage={setSelectedImage}
               index={cardIndex}
+              maxCardPosition={maxStaticIndex}
             />
           </div>
         );
@@ -1028,48 +1024,91 @@ export default function BakeryLiquor() {
     <div className={styles.body}>
       {popup ? (
         <TextPopUp
-          textBox={selectedImage.cardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
+          textBox={
+            selectedImage.cardIndex > maxStaticIndex
+              ? dynamicColumn
+              : staticColumns
+          }
           setTextBox={
-            selectedImage.cardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns
+            selectedImage.cardIndex > maxStaticIndex
+              ? setDynamicColumn
+              : setStaticColumns
           }
           setPopup={setPopup}
           cardIndex={selectedImage}
           maxCardPosition={maxStaticIndex}
           type={type}
+          uploadDataToFirebase={uploadDataToFirebase}
         />
       ) : null}
       {isEditingZoom && (
-        <ResizableImage 
-        cardIndex={selectedImage.cardIndex > maxStaticIndex ? selectedImage.cardIndex - cardsInStatic : selectedImage.cardIndex}
-        selectedColumn={selectedImage.cardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
-        setSelectedColumn={selectedImage.cardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns}
-        setIsEditingZoom={setIsEditingZoom}
-        cardNumber={selectedImage.cardIndex}
-        imageFolder={selectedCardIndex > 11 && selectedCardIndex < 28 ? "liquor" : "bakery"}
-          />
-      )}
-{isCroppingImage && (
-        <ImageCropper src={
-          selectedCardIndex > maxStaticIndex ? dynamicColumn[selectedCardIndex  - cardsInStatic].img[imgIndex].src : staticColumns[selectedCardIndex ].img[imgIndex].src
-        }
-        setIsCroppingImage={
-          setIsCroppingImage
-        }
-        selectedColumn={selectedImage.cardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
-        setSelectedColumn={selectedImage.cardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns}
-        
-        selectedCardIndex={selectedCardIndex}
-        imageIndex={imgIndex}
-        imageFolder={selectedCardIndex > 11 && selectedCardIndex < 28 ? "liquor" : "bakery"}
+        <ResizableImage
+          cardIndex={
+            selectedImage.cardIndex > maxStaticIndex
+              ? selectedImage.cardIndex - cardsInStatic
+              : selectedImage.cardIndex
+          }
+          selectedColumn={
+            selectedImage.cardIndex > maxStaticIndex
+              ? dynamicColumn
+              : staticColumns
+          }
+          setSelectedColumn={
+            selectedImage.cardIndex > maxStaticIndex
+              ? setDynamicColumn
+              : setStaticColumns
+          }
+          setIsEditingZoom={setIsEditingZoom}
+          cardNumber={selectedImage.cardIndex}
+          imageFolder={
+            selectedCardIndex > 11 && selectedCardIndex < 28
+              ? "liquor"
+              : "bakery"
+          }
+          uploadDataToFirebase={uploadDataToFirebase}
         />
       )}
-       {isAutomaticCropping && (
+      {isCroppingImage && (
+        <ImageCropper
+          src={
+            selectedCardIndex > maxStaticIndex
+              ? dynamicColumn[selectedCardIndex - cardsInStatic].img[imgIndex]
+                  .src
+              : staticColumns[selectedCardIndex].img[imgIndex].src
+          }
+          setIsCroppingImage={setIsCroppingImage}
+          selectedColumn={
+            selectedImage.cardIndex > maxStaticIndex
+              ? dynamicColumn
+              : staticColumns
+          }
+          setSelectedColumn={
+            selectedImage.cardIndex > maxStaticIndex
+              ? setDynamicColumn
+              : setStaticColumns
+          }
+          selectedCardIndex={selectedCardIndex}
+          imageIndex={imgIndex}
+          imageFolder={
+            selectedCardIndex > 11 && selectedCardIndex < 28
+              ? "liquor"
+              : "bakery"
+          }
+          uploadDataToFirebase={uploadDataToFirebase}
+        />
+      )}
+      {isAutomaticCropping && (
         <AutomaticImageCropper
-        selectedCardColumn={selectedCardIndex > 20 ? dynamicColumn : staticColumns}
-        setSelectedCardColumn={selectedCardIndex > 20 ? setDynamicColumn : setStaticColumns}
-        cardIndex={selectedCardIndex}
-        imageIndex={imgIndex}
-        setIsAutomaticCropping={setIsAutomaticCropping}
+          selectedCardColumn={
+            selectedCardIndex > 20 ? dynamicColumn : staticColumns
+          }
+          setSelectedCardColumn={
+            selectedCardIndex > 20 ? setDynamicColumn : setStaticColumns
+          }
+          cardIndex={selectedCardIndex}
+          imageIndex={imgIndex}
+          setIsAutomaticCropping={setIsAutomaticCropping}
+          uploadDataToFirebase={uploadDataToFirebase}
         />
       )}
       {popup2 ? (
@@ -1098,40 +1137,35 @@ export default function BakeryLiquor() {
       ) : null}
 
       {popup3 ? (
-        <div className={styles.popUp2} style={{top: "40%", left: "50%", zIndex: "1"}}>
+        <div
+          className={styles.popUp2}
+          style={{ top: "40%", left: "50%", zIndex: "1" }}
+        >
+          <div>Do you really wish to go back?</div>
           <div>
-            Do you really wish to go back?
-          </div>  
-          <div>
-            <button
-              onClick={() => navigate("/")}
-            >
-              Yes
-            </button>
-            <button
-              onClick={() => setPopup3(false)}
-            >
-              No
-            </button>
+            <button onClick={() => navigate("/")}>Yes</button>
+            <button onClick={() => setPopup3(false)}>No</button>
           </div>
         </div>
       ) : null}
 
       {popup4 ? (
         <ManageTemplates
-        dynamicColumn={dynamicColumn}
-        staticColumns={staticColumns}
-        setDynamicColumn={setDynamicColumn}
-        setStaticColumns={setStaticColumns}
-        templates={templates}
-        setTemplates={setTemplates}
-        setPopup4={setPopup4}
-        templateFolder="Bakery&Liquor"
+          dynamicColumn={dynamicColumn}
+          staticColumns={staticColumns}
+          setDynamicColumn={setDynamicColumn}
+          setStaticColumns={setStaticColumns}
+          templates={templates}
+          setTemplates={setTemplates}
+          setPopup4={setPopup4}
+          db={db}
+          setCurrentTemplate={setTemplateName}
+          templateFolder="Bakery&Beverages"
+          cardsInStatic={cardsInStatic}
         />
-      ): null}
+      ) : null}
 
       <div className={styles.sidebar} style={{ top: "0px" }}>
-        
         <div
           style={{
             position: "relative",
@@ -1143,31 +1177,31 @@ export default function BakeryLiquor() {
           }}
         >
           <button
-        style={{
-          width: "165px",
+            style={{
+              width: "165px",
               position: "relative",
               backgroundColor: "gray",
               color: "white",
               marginBottom: "10px",
               zIndex: "1",
-        }}
-        onClick={handleConvertToPDF}
-      >
-        Make PDF
-      </button>
-      <button
-        style={{
-          width: "165px",
+            }}
+            onClick={handleConvertToPDF}
+          >
+            Make PDF
+          </button>
+          <button
+            style={{
+              width: "165px",
               position: "relative",
               backgroundColor: "gray",
               color: "white",
               marginBottom: "10px",
               zIndex: "1",
-        }}
-        onClick={() => setPopup3(true)}
-      >
-        Back to Home
-      </button>
+            }}
+            onClick={() => setPopup3(true)}
+          >
+            Back to Home
+          </button>
           <button
             style={{
               width: "165px",
@@ -1193,8 +1227,15 @@ export default function BakeryLiquor() {
           >
             Open Template Manager
           </button>
-          
-          <ImageUploader imageFolder={selectedCardIndex > 11 && selectedCardIndex < 28 ? "liquor" : "bakery"} />
+
+          <ImageUploader
+            uploadDataToFirebase={uploadDataToFirebase}
+            imageFolder={
+              selectedCardIndex > 11 && selectedCardIndex < 28
+                ? "liquor"
+                : "bakery"
+            }
+          />
         </div>
       </div>
 
@@ -1211,14 +1252,11 @@ export default function BakeryLiquor() {
             />
           )}
         </div>
-        
+
         <div className={styles.secondContainerDiv}>
-        <div className={styles.secondOverlay}>LIQUOR & BEVERAGES</div>
-        <RenderLiquorCards /> 
-        
+          <div className={styles.secondOverlay}>LIQUOR & BEVERAGES</div>
+          <RenderLiquorCards />
         </div>
-        
-        
       </div>
       {info ? <RenderInfo /> : null}
       {images != null ? (
@@ -1229,12 +1267,19 @@ export default function BakeryLiquor() {
             selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
           }
           setSelectedColumn={
-            selectedCardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns
+            selectedCardIndex > maxStaticIndex
+              ? setDynamicColumn
+              : setStaticColumns
           }
           setImages={setImages}
           imgIndex={imgIndex}
           maxCardPosition={maxStaticIndex}
-          imageFolder={selectedCardIndex > 11 && selectedCardIndex < 28 ? "liquor" : "bakery"}
+          imageFolder={
+            selectedCardIndex > 11 && selectedCardIndex < 28
+              ? "liquor"
+              : "bakery"
+          }
+          uploadDataToFirebase={uploadDataToFirebase}
         />
       ) : null}
     </div>

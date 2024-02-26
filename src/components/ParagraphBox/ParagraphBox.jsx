@@ -1,7 +1,17 @@
 import React, { useEffect, useState } from "react";
 import styles from "./TextBoxLeft.module.css";
 
-export default function TextBoxLeft({ textBoxes, setTextBoxes, cardIndex, setPopup, setSelectedTextBox, setType, setSelectedImage, index, maxCardPosition }) {
+export default function TextBoxLeft({
+  textBoxes,
+  setTextBoxes,
+  cardIndex,
+  setPopup,
+  setSelectedTextBox,
+  setType,
+  setSelectedImage,
+  index,
+  maxCardPosition,
+}) {
   const calculatedIndex = index;
 
   const [fontSize, setFontSize] = useState(14);
@@ -27,19 +37,30 @@ export default function TextBoxLeft({ textBoxes, setTextBoxes, cardIndex, setPop
     const textBoxElement = document.getElementById(`textBoxLeft-${cardIndex}`);
     const currentTextBox = textBoxes[calculatedIndex];
 
-  if (textBoxElement && currentTextBox && currentTextBox.text && currentTextBox.text.left) {
-    // Rest of your code
+    if (
+      textBoxElement &&
+      currentTextBox &&
+      currentTextBox.text &&
+      currentTextBox.text.left
+    ) {
+      // Rest of your code
       const textContent = textBoxes[calculatedIndex].text.left;
-      const lines = textContent.split('\n');
+      const lines = textContent.split("\n");
       const textHeight = textBoxElement.scrollHeight;
       const boxHeight = textBoxElement.offsetHeight;
       // Ajustar el tamaño de la fuente solo si es necesario
-     
+
       const longestWord = lines.reduce((longest, currentLine) => {
-        const words = currentLine.split(' ');
-        const currentLongest = words.reduce((lineLongest, current) => (current.length > lineLongest.length ? current : lineLongest), '');
-        return currentLongest.length > longest.length ? currentLongest : longest;
-      }, '');
+        const words = currentLine.split(" ");
+        const currentLongest = words.reduce(
+          (lineLongest, current) =>
+            current.length > lineLongest.length ? current : lineLongest,
+          ""
+        );
+        return currentLongest.length > longest.length
+          ? currentLongest
+          : longest;
+      }, "");
 
       // Check if the longest word is more than 10 characters
       if (longestWord.length > 10) {
@@ -53,7 +74,7 @@ export default function TextBoxLeft({ textBoxes, setTextBoxes, cardIndex, setPop
           setFontSize(newFontSize);
         }
       }
-       if (textHeight > boxHeight) {
+      if (textHeight > boxHeight) {
         const newFontSize = (fontSize * boxHeight) / textHeight;
         setFontSize(newFontSize);
       }
@@ -62,11 +83,11 @@ export default function TextBoxLeft({ textBoxes, setTextBoxes, cardIndex, setPop
 
   // Function to calculate the width of a text string
   const getTextWidth = (text, fontSize) => {
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
     context.font = `${fontSize}px sans-serif`;
-    const lines = text.split('\n');
-    return Math.max(...lines.map(line => context.measureText(line).width));
+    const lines = text.split("\n");
+    return Math.max(...lines.map((line) => context.measureText(line).width));
   };
 
   return (
@@ -74,9 +95,18 @@ export default function TextBoxLeft({ textBoxes, setTextBoxes, cardIndex, setPop
       id={`textBoxLeft-${cardIndex}`}
       className={textBoxLeftStyle()}
       onClick={() => handleLeftText()}
-      style={{ fontSize: `${fontSize}px`, width: `${textBoxes[calculatedIndex].text.priceBoxType == 2 ? "65px" : "50%"}` }}
+      style={{
+        fontSize: `${fontSize}px`,
+        width: `${
+          textBoxes[calculatedIndex].text.priceBoxType == 2 ? "65px" : "50%"
+        }`,
+      }}
     >
-      <div dangerouslySetInnerHTML={{ __html: textBoxes[calculatedIndex].text.left }} />
+      <div
+        dangerouslySetInnerHTML={{
+          __html: textBoxes[calculatedIndex].text.left,
+        }}
+      />
     </div>
   );
 }

@@ -11,7 +11,7 @@
   border: 1px solid black;
 }
 
-.title{
+.title {
   color: black;
   font-size: 36px;
 }
@@ -32,7 +32,7 @@
 .gridContainer {
   border-radius: 10px;
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(10, 1fr);
   gap: 5px;
   margin: 20px;
   height: 50vh;
@@ -105,7 +105,7 @@
 
 
 .previewImage {
-  max-width: 80%; 
+  max-width: 80%;
   max-height: 80%;
   display: block;
 }
@@ -114,24 +114,88 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  position: fixed; /* Fija la posición para cubrir toda la ventana */
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.7); /* Ajusta el color de fondo según lo necesites */
-  z-index: 9999; /* Ajusta el índice z según sea necesario */
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 9999;
 }
+
+
+
+
+
+.pageNavigation {
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+  justify-content: center;
+  align-items: center;
+  background-color: rgb(0, 0, 0);
+  padding: 7px;
+  border-radius: 4px;
+}
+
+.pageButton {
+  padding: 3px 16px;
+  background-color: #000000;
+  color: white;
+  border: 1px solid white;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+  width: 100px;
+}
+
+.pageButton:disabled {
+  background-color: lightgray;
+  cursor: not-allowed;
+  color: grey
+}
+
+.pageText {
+  margin: 0 10px;
+  color: lightgray;
+}
+
+.pageInput {
+  width: 50px;
+  padding: 8px;
+  border: none;
+  color: lightgray;
+  background-color: black;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 15px;
+}
+
+
 
 
 .loadingSpinner {
-  font-size: 160px; /* Tamaño del ícono de carga */
-  color: white; /* Color del ícono de carga */
-  animation: spin 2s cubic-bezier(0.42, 0, 0.58, 1) infinite; /* Animación de giro con curva de aceleración personalizada */
+  font-size: 160px;
+  /* Tamaño del ícono de carga */
+  color: white;
+  /* Color del ícono de carga */
+  animation: spin 2s cubic-bezier(0.42, 0, 0.58, 1) infinite;
+  /* Animación de giro con curva de aceleración personalizada */
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  50% { transform: rotate(720deg); } /* Giro rápido a la mitad de la animación */
-  100% { transform: rotate(1440deg); } /* Giro lento para completar la vuelta */
+  0% {
+    transform: rotate(0deg);
+  }
+
+  50% {
+    transform: rotate(720deg);
+  }
+
+  /* Giro rápido a la mitad de la animación */
+  100% {
+    transform: rotate(1440deg);
+  }
+
+  /* Giro lento para completar la vuelta */
 }

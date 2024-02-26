@@ -5,7 +5,7 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import './index.css'
-import Root from './routes/root.jsx';
+import { Root } from './routes/root.jsx';
 import Grocery from './routes/Grocery2/Grocery.jsx';
 import BakeryLiquor from './routes/Bakery & Liquor/BakeryAndBeverages/BakeryAndBeverages.jsx';
 import International from './routes/International/International.jsx';

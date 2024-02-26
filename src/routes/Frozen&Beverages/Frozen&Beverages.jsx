@@ -16,19 +16,18 @@ import ImageFromCloud from "../../components/ImageFromCloud/ImageFromCloud";
 import ResizableImage from "../../components/ResizableImage/ResizableImage";
 import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
 import ImageCropper from "../../components/ImageCropper/ImageCropper";
+import AutomaticImageCropper from "../../components/AutomaticImageCropper/AutomaticImageCropper";
+import { db } from "../root";
+import {
+  collection,
+  doc,
+  getDocs,
+  onSnapshot,
+  setDoc,
+} from "firebase/firestore";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
-  authDomain: "napervillecollageapp.firebaseapp.com",
-  projectId: "napervillecollageapp",
-  storageBucket: "napervillecollageapp.appspot.com",
-  messagingSenderId: "658613882469",
-  appId: "1:658613882469:web:23da7f1eb31c54a021808c",
-  measurementId: "G-DNB21PCJ7T",
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const groceryRef = collection(db, "Frozen&Beverages");
+const templatesQuerySnapshot = await getDocs(groceryRef);
 
 export default function FrozenAndBeverages() {
   const cardsInStatic = 24;
@@ -72,11 +71,59 @@ export default function FrozenAndBeverages() {
   const [images, setImages] = useState(null);
   const [imgIndex, setImgIndex] = useState(null);
   const [selectedTextBox, setSelectedTextBox] = useState({});
+  const [templateName, setTemplateName] = useState(templatesQuerySnapshot[0]);
 
   const storage = getStorage();
   const imagesRef = ref(storage, (selectedCardIndex > 14 && selectedCardIndex < 24 ? "images/beverages" : "images/frozen"));
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
+
+  useEffect(() => {
+    const unsubscribeStaticColumns = onSnapshot(
+      doc(db, `Bakery&Beverages/${templateName}`),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          console.log(
+            "Static Columns Snapshot:",
+            snapshot.data().staticColumns
+          );
+          setStaticColumns(snapshot.data().staticColumns);
+        }
+      }
+    );
+
+    const unsubscribeDynamicColumn = onSnapshot(
+      doc(db, `Bakery&Beverages/${templateName}`),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          console.log(
+            "Dynamic Column Snapshot:",
+            snapshot.data().dynamicColumn
+          );
+          setDynamicColumn(snapshot.data().dynamicColumn);
+        }
+      }
+    );
+
+    return () => {
+      unsubscribeStaticColumns();
+      unsubscribeDynamicColumn();
+    };
+  }, [templateName]);
+
+  const uploadDataToFirebase = async () => {
+    try {
+      // Upload staticColumns to a document in "Grocery" collection
+      await setDoc(doc(db, `Bakery&Beverages/${templateName}`), {
+        staticColumns: staticColumns,
+        dynamicColumn: dynamicColumn,
+      });
+
+      console.log("Data uploaded successfully!");
+    } catch (error) {
+      console.error("Error uploading data:", error);
+    }
+  };
 
   const handleConvertToPDF = async () => {
     const container = document.getElementById("magazineContainer");
@@ -157,7 +204,10 @@ export default function FrozenAndBeverages() {
       };
       cards.push(card);
     }
-    setDynamicColumn(cards);
+    setDynamicColumn(cards),
+    () => {
+      uploadDataToFirebase();
+    };
   };
 
   useEffect(() => {
@@ -294,6 +344,7 @@ export default function FrozenAndBeverages() {
         !newStaticColumns[cardIndex].text.renderPriceBox;
       setStaticColumns(newStaticColumns);
     }
+    uploadDataToFirebase();
   };
 
   const switchBoxType = (cardIndex) => {
@@ -317,6 +368,7 @@ export default function FrozenAndBeverages() {
       }
       setStaticColumns(newStaticColumns);
     }
+    uploadDataToFirebase();
   };
 
   const changePriceBoxColor = (cardIndex) => {
@@ -333,6 +385,7 @@ export default function FrozenAndBeverages() {
         !newStaticColumns[cardIndex].text.priceBoxColor;
       setStaticColumns(newStaticColumns);
     }
+    uploadDataToFirebase();
   };
 
   const changePriceBoxBorder = (cardIndex) => {
@@ -349,6 +402,7 @@ export default function FrozenAndBeverages() {
         !newStaticColumns[cardIndex].text.priceBoxBorder;
       setStaticColumns(newStaticColumns);
     }
+    uploadDataToFirebase();
   };
 
   const handleCropImage = () => {
@@ -445,7 +499,10 @@ export default function FrozenAndBeverages() {
       // If both images uploaded, allow editing and deleting the second image
       contextMenuItems.push({
         label: "Delete 2",
-        action: () => handleDeleteImage(cardIndex, 1),
+        action: async () => {
+          await handleDeleteImage(cardIndex, 1);
+          await uploadDataToFirebase();
+        },
       });
     }
     if (selectedColumn[index].img[0].src == "") {
@@ -461,7 +518,10 @@ export default function FrozenAndBeverages() {
     if (selectedColumn[index].img[0].src != "") {
       contextMenuItems.push({
         label: "Delete 1",
-        action: () => handleDeleteImage(cardIndex, 0),
+        action: async () => {
+          await handleDeleteImage(cardIndex, 0);
+          await uploadDataToFirebase();
+        },
       });
     } if (selectedColumn[index].img[0].src != "") {
       contextMenuItems.push({
@@ -469,6 +529,12 @@ export default function FrozenAndBeverages() {
         action: () => {
           setImgIndex(0)
           handleCropImage(cardIndex, imgIndex)},
+      },
+      {
+        label: "Delete Background of Image 1",
+        action: () => {
+          setImgIndex(0), setIsAutomaticCropping(true);
+        },
       });
     } if (selectedColumn[index].img[1].src != "") {
       contextMenuItems.push({
@@ -476,6 +542,12 @@ export default function FrozenAndBeverages() {
         action: () => {
           setImgIndex(1)
           handleCropImage(cardIndex, imgIndex)},
+      },
+      {
+        label: "Delete Background of Image 2",
+        action: () => {
+          setImgIndex(1), setIsAutomaticCropping(true);
+        },
       });
     }
 
@@ -548,6 +620,7 @@ export default function FrozenAndBeverages() {
         i={cardIndex}
         cardIndex={cardIndex}
         priceBoxBorder={priceBoxBorder}
+        uploadDataToFirebase={uploadDataToFirebase}
       />,
       <TripleBox
         key={`fixed-box-${cardIndex}`}
@@ -557,6 +630,7 @@ export default function FrozenAndBeverages() {
         i={cardIndex}
         cardIndex={cardIndex}
         priceBoxBorder={priceBoxBorder}
+        uploadDataToFirebase={uploadDataToFirebase}
       />,
       <AmountForPrice
         key={`fixed-box-${cardIndex}`}
@@ -566,6 +640,7 @@ export default function FrozenAndBeverages() {
         i={cardIndex}
         cardIndex={cardIndex}
         priceBoxBorder={priceBoxBorder}
+        uploadDataToFirebase={uploadDataToFirebase}
       />,
     ];
 
@@ -753,6 +828,7 @@ export default function FrozenAndBeverages() {
               setType={setType}
               setSelectedImage={setSelectedImage}
               index={cardIndex}
+              maxCardPosition={maxStaticIndex}
             />
           </div>
         );
@@ -841,6 +917,7 @@ export default function FrozenAndBeverages() {
           setType={setType}
           setSelectedImage={setSelectedImage}
           index={cardIndex}
+          maxCardPosition={maxStaticIndex}
         />
       </div>
     );
@@ -935,6 +1012,7 @@ export default function FrozenAndBeverages() {
               setType={setType}
               setSelectedImage={setSelectedImage}
               index={cardIndex}
+              maxCardPosition={maxStaticIndex}
             />
           </div>
         );
@@ -968,6 +1046,7 @@ export default function FrozenAndBeverages() {
           cardIndex={selectedImage}
           maxCardPosition={maxStaticIndex}
           type={type}
+          uploadDataToFirebase={uploadDataToFirebase}
         />
       ) : null}
       {isEditingZoom && (
@@ -990,6 +1069,7 @@ export default function FrozenAndBeverages() {
           setIsEditingZoom={setIsEditingZoom}
           cardNumber={selectedImage.cardIndex}
           imageFolder={selectedCardIndex > 14 && selectedCardIndex < 24 ? "beverages" : "frozen"}
+          uploadDataToFirebase={uploadDataToFirebase}
         />
       )}
       {isCroppingImage && (
@@ -1006,6 +1086,7 @@ export default function FrozenAndBeverages() {
         selectedCardIndex={selectedCardIndex}
         imageIndex={imgIndex}
         imageFolder={selectedCardIndex > 14 && selectedCardIndex < 24 ? "beverages" : "frozen"}
+        uploadDataToFirebase={uploadDataToFirebase}
         />
       )}
       {isAutomaticCropping && (
@@ -1017,6 +1098,7 @@ export default function FrozenAndBeverages() {
         cardIndex={selectedCardIndex}
         imageIndex={imgIndex}
         setIsAutomaticCropping={setIsAutomaticCropping}
+        uploadDataToFirebase={uploadDataToFirebase}
         />
       )} 
       {popup2 ? (
@@ -1064,7 +1146,10 @@ export default function FrozenAndBeverages() {
         templates={templates}
         setTemplates={setTemplates}
         setPopup4={setPopup4}
+        db={db}
+        setCurrentTemplate={setTemplateName}
         templateFolder="Frozen&Beverages"
+        cardsInStatic={cardsInStatic}
         />
       ): null}
       <div className={styles.sidebar} style={{ top: "0px" }}>
@@ -1129,7 +1214,7 @@ export default function FrozenAndBeverages() {
           >
             Open Template Manager
           </button>
-          <ImageUploader imageFolder={selectedCardIndex > 14 && selectedCardIndex < 24 ? "beverages" : "frozen"} />
+          <ImageUploader uploadDataToFirebase={uploadDataToFirebase} imageFolder={selectedCardIndex > 14 && selectedCardIndex < 24 ? "beverages" : "frozen"} />
         </div>
       </div>
 
@@ -1173,6 +1258,7 @@ export default function FrozenAndBeverages() {
           imgIndex={imgIndex}
           maxCardPosition={maxStaticIndex}
           imageFolder={selectedCardIndex > 14 && selectedCardIndex < 24 ? "beverages" : "frozen"}
+          uploadDataToFirebase={uploadDataToFirebase}
         />
       ) : null}
     </div>

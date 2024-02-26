@@ -17,16 +17,21 @@ export default function ImageFromCloud({
   const [selectedImage, setSelectedImage] = useState(null);
   const [downloadedImageUrl, setDownloadedImageUrl] = useState(null);
   const [imagesPreview, setImagesPreview] = useState([]);
-  const [visibleImages, setVisibleImages] = useState(32);
+  const [visibleImages, setVisibleImages] = useState(30);
   const [renderedImages, setRenderedImages] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
   const [containerToLeft, setContainerToLeft] = useState(false);
   const [showLoading, setShowLoading] = useState(true);
-  const [delayedShowContent, setDelayedShowContent] = useState(false); // Estado para controlar el retraso de la visualización del contenido
+  const [currentPage, setCurrentPage] = useState(1);
+  const [inputPage, setInputPage] = useState("");
+  const imagesPerPage = 30;
+  const totalImages = images.length;
+  const totalPages = Math.ceil(totalImages / imagesPerPage);
   const storage = getStorage();
   const containerWithPreviewStyle = {
     width: renderedImages.length > 0 ? "" : "10%",
   };
+  
 
   const handleImageChange = (event, imagePreview) => {
     event.preventDefault();
@@ -51,7 +56,33 @@ export default function ImageFromCloud({
   };
 
   const loadMoreImages = () => {
-    setVisibleImages((prevCount) => prevCount + 32);
+    setVisibleImages((prevCount) => prevCount + 30);
+  };
+
+  const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      setVisibleImages(page * imagesPerPage);
+    }
+  };
+
+  const handleInputChange = (event) => {
+    setInputPage(event.target.value);
+  };
+
+  const goToEnteredPage = () => {
+    const enteredPage = parseInt(inputPage);
+    if (!isNaN(enteredPage) && enteredPage >= 1 && enteredPage <= totalPages) {
+      setCurrentPage(enteredPage);
+      setVisibleImages(enteredPage * imagesPerPage);
+      setInputPage("");
+    }
+  };
+
+  const handleInputKeyPress = (event) => {
+    if (event.key === "Enter") {
+      goToEnteredPage();
+    }
   };
 
   const handleClosePopup = () => {
@@ -69,7 +100,7 @@ export default function ImageFromCloud({
     )
       .then((urls) => {
         setImagesPreview(urls);
-        setShowLoading(false); // Aquí marcamos que la carga ha finalizado y podemos mostrar el contenido
+        setShowLoading(false);
       })
       .catch((error) => {
         console.error("Error fetching images:", error);
@@ -81,18 +112,20 @@ export default function ImageFromCloud({
   }, []);
 
   useEffect(() => {
-    const copiedArray = imagesPreview.slice(0, visibleImages);
+    const copiedArray = imagesPreview.slice((currentPage - 1) * imagesPerPage, currentPage * imagesPerPage);
     setRenderedImages(copiedArray);
-  }, [imagesPreview, visibleImages]);
+  }, [imagesPreview, currentPage]);
 
-  // Mostrar el contenido solo si delayedShowContent es true
+  useEffect(() => {
+    setInputPage(String(currentPage)); // Convertimos el número de página a String para que sea el valor del input
+  }, [currentPage]);
+
   if (showLoading) {
     return (
       <div className={styles.background}>
         <div className={styles.containerWithPreview}>
           <div className={styles.loadingContainer}>
-            <RiLoader5Fill className={styles.loadingSpinner} />{" "}
-            {/* Utiliza el ícono de carga giratorio */}
+            <RiLoader5Fill className={styles.loadingSpinner} />
           </div>
         </div>
       </div>
@@ -105,7 +138,22 @@ export default function ImageFromCloud({
         {renderedImages.length > 0 && (
           <div className={`${styles.container} ${containerToLeft ? styles.containerToLeft : ""}`}>
             <h1 className={styles.title}>Database Explorer</h1>
+            <div className={styles.pageNavigation}>
+              <button className={styles.pageButton} onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>Previous</button>
+              <input
+                type="text"
+                value={inputPage}
+                onChange={handleInputChange}
+                onKeyPress={handleInputKeyPress}
+                className={styles.pageInput}
+                placeholder="Enter Page"
+              />
+              <span className={styles.pageText}>of {totalPages}</span>
+              <button className={styles.pageButton} onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages}>Next</button>
+            </div>
+            
             <hr />
+            
             <div className={styles.gridContainer}>
               {renderedImages.map((imagePreview, index) => (
                 <div
@@ -126,11 +174,7 @@ export default function ImageFromCloud({
                 </div>
               ))}
             </div>
-            {visibleImages < images.length && (
-              <button className={styles.confirmButton} onClick={loadMoreImages}>
-                Show More
-              </button>
-            )}
+
             <button
               className={styles.confirmButton}
               onClick={handleConfirmSelection}
