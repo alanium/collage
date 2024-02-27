@@ -22,10 +22,9 @@
 
 .containerDivBorder {
   display: flex;
-  top: 100px;
-  left: 0%;
   position: relative;
-  justify-content: unsafe;
+  justify-content: center;
+  align-items: center;
   z-index: 0;
   width: 21cm;
   height: 29.6cm;

@@ -68,10 +68,15 @@ function NapervilleFreshMarket() {
   const [templates, setTemplates] = useState(null);
   const [images, setImages] = useState(null);
   const [imgIndex, setImgIndex] = useState(null);
-  const [templateName, setTemplateName] = useState(templatesQuerySnapshot[0])
+  const [templateName, setTemplateName] = useState(templatesQuerySnapshot[0]);
 
   const storage = getStorage();
-  const imagesRef = ref(storage, (selectedCardIndex > 15 && selectedCardIndex < 30 ? "images/produce" : "images/produce"));
+  const imagesRef = ref(
+    storage,
+    selectedCardIndex > 15 && selectedCardIndex < 30
+      ? "images/produce"
+      : "images/produce"
+  );
   const templatesRef = ref(storage, "templates/");
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
@@ -123,58 +128,62 @@ function NapervilleFreshMarket() {
     }
   };
 
-
   const handleConvertToPDF = async () => {
     const container = document.getElementById("magazineContainer");
 
     if (container) {
+      await downloadExternalImages(container);
 
-        await downloadExternalImages(container);
+      const pdfOptions = {
+        filename: "grocery_magazine.pdf",
+        image: { type: "png", quality: 1 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      };
 
-        const pdfOptions = {
-            filename: "grocery_magazine.pdf",
-            image: { type: "png", quality: 1 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        };
+      container.style.top = "-100px";
+      // Generar PDF desde el clon
+      await html2pdf().from(container).set(pdfOptions).save();
 
-        container.style.top = "-100px"
-        // Generar PDF desde el clon
-        await html2pdf().from(container).set(pdfOptions).save()
-
-        container.style.top = "0"
+      container.style.top = "0";
     }
   };
 
   const downloadExternalImages = async (container) => {
-      const images = container.querySelectorAll("img");
-      const promises = [];
+    const images = container.querySelectorAll("img");
+    const promises = [];
 
-      images.forEach((img) => {
-          if (img.src && new URL(img.src).host != window.location.host && img.src.startsWith("http")) {
-              promises.push(new Promise((resolve, reject) => {
-                  const xhr = new XMLHttpRequest();
-                  xhr.open("GET", img.src, true);
-                  xhr.responseType = "blob";
-                  xhr.onload = () => {
-                      if (xhr.status === 200) {
-                          const blob = xhr.response;
-                          const urlCreator = window.URL || window.webkitURL;
-                          const imageUrl = urlCreator.createObjectURL(blob);
-                          img.src = imageUrl;
-                          resolve();
-                      } else {
-                          reject(xhr.statusText);
-                      }
-                  };
-                  xhr.onerror = () => {
-                      reject(xhr.statusText);
-                  };
-                  xhr.send();
-              }));
-          }
-      });
-      await Promise.all(promises);
+    images.forEach((img) => {
+      if (
+        img.src &&
+        new URL(img.src).host != window.location.host &&
+        img.src.startsWith("http")
+      ) {
+        promises.push(
+          new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", img.src, true);
+            xhr.responseType = "blob";
+            xhr.onload = () => {
+              if (xhr.status === 200) {
+                const blob = xhr.response;
+                const urlCreator = window.URL || window.webkitURL;
+                const imageUrl = urlCreator.createObjectURL(blob);
+                img.src = imageUrl;
+                resolve();
+              } else {
+                reject(xhr.statusText);
+              }
+            };
+            xhr.onerror = () => {
+              reject(xhr.statusText);
+            };
+            xhr.send();
+          })
+        );
+      }
+    });
+    await Promise.all(promises);
   };
 
   const handleDynamicColumns = (event) => {
@@ -204,9 +213,9 @@ function NapervilleFreshMarket() {
       cards.push(card);
     }
     setDynamicColumn(cards),
-    () => {
-      uploadDataToFirebase();
-    };
+      () => {
+        uploadDataToFirebase();
+      };
   };
 
   const handleImageUpload = (event, cardIndex, img) => {
@@ -543,26 +552,28 @@ function NapervilleFreshMarket() {
       });
     } else if (selectedColumn[index].img[1].src != "") {
       // If both images uploaded, allow editing and deleting the second image
-      contextMenuItems.push({
-        label: "Delete 2",
-        action: async () => {
-          await handleDeleteImage(cardIndex, 1);
-          await uploadDataToFirebase();
+      contextMenuItems.push(
+        {
+          label: "Delete 2",
+          action: async () => {
+            await handleDeleteImage(cardIndex, 1);
+            await uploadDataToFirebase();
+          },
         },
-      },
-      {
-        label: "crop image 2",
-        action: () => {
-          setImgIndex(1);
-          handleCropImage(cardIndex, imgIndex);
+        {
+          label: "crop image 2",
+          action: () => {
+            setImgIndex(1);
+            handleCropImage(cardIndex, imgIndex);
+          },
         },
-      },
-      {
-        label: "Delete Background of Image 2",
-        action: () => {
-          setImgIndex(1), setIsAutomaticCropping(true);
-        },
-      });
+        {
+          label: "Delete Background of Image 2",
+          action: () => {
+            setImgIndex(1), setIsAutomaticCropping(true);
+          },
+        }
+      );
     }
     if (selectedColumn[index].img[0].src == "") {
       contextMenuItems.push({
@@ -575,26 +586,28 @@ function NapervilleFreshMarket() {
       });
     }
     if (selectedColumn[index].img[0].src != "") {
-      contextMenuItems.push({
-        label: "Delete 1",
-        action: async () => {
-          await handleDeleteImage(cardIndex, 0);
-          await uploadDataToFirebase();
+      contextMenuItems.push(
+        {
+          label: "Delete 1",
+          action: async () => {
+            await handleDeleteImage(cardIndex, 0);
+            await uploadDataToFirebase();
+          },
         },
-      },
-      {
-        label: "crop image 1",
-        action: () => {
-          setImgIndex(0);
-          handleCropImage(cardIndex, imgIndex);
+        {
+          label: "crop image 1",
+          action: () => {
+            setImgIndex(0);
+            handleCropImage(cardIndex, imgIndex);
+          },
         },
-      },
-      {
-        label: "Delete Background of Image 1",
-        action: () => {
-          setImgIndex(0), setIsAutomaticCropping(true);
-        },
-      });
+        {
+          label: "Delete Background of Image 1",
+          action: () => {
+            setImgIndex(0), setIsAutomaticCropping(true);
+          },
+        }
+      );
     }
 
     const containerRect = contextMenuRef.current.getBoundingClientRect();
@@ -627,8 +640,6 @@ function NapervilleFreshMarket() {
       handleContextMenu(event, cardIndex, image);
     }
   };
-
-  
 
   const getImageList = () => {
     listAll(imagesRef)
@@ -694,7 +705,10 @@ function NapervilleFreshMarket() {
 
   const RenderTopCards = () => {
     return (
-      <div style={{ position: "relative", zIndex:"1", width: "98%"}} className={styles.topContainerDiv}>
+      <div
+        style={{ position: "relative", zIndex: "1", width: "98%" }}
+        className={styles.topContainerDiv}
+      >
         <img
           style={{ width: "50%" }}
           src="../src/assets/images/0130__0205__digital-scaled.jpg"
@@ -735,7 +749,7 @@ function NapervilleFreshMarket() {
             <div
               name={`card-${cardIndex}`}
               className={styles.card}
-              style={{border: "none"}}
+              style={{ border: "none" }}
               key={cardIndex}
               onClick={(event) => handleCardClick(cardIndex, event)}
             >
@@ -745,8 +759,8 @@ function NapervilleFreshMarket() {
                   className={styles.uploadedImage}
                   style={{
                     transform: `scale(${images.img[0].zoom / 100}) translate(${
-                      images.img[0].x / ( images.img[0].zoom / 100)
-                    }px, ${images.img[0].y / ( images.img[0].zoom / 100)}px)`,
+                      images.img[0].x / (images.img[0].zoom / 100)
+                    }px, ${images.img[0].y / (images.img[0].zoom / 100)}px)`,
                   }}
                 />
               )}
@@ -757,8 +771,8 @@ function NapervilleFreshMarket() {
                   className={styles.uploadedImage}
                   style={{
                     transform: `scale(${images.img[1].zoom / 100}) translate(${
-                      images.img[1].x / ( images.img[1].zoom / 100)
-                    }px, ${images.img[1].y / ( images.img[1].zoom / 100)}px)`,
+                      images.img[1].x / (images.img[1].zoom / 100)
+                    }px, ${images.img[1].y / (images.img[1].zoom / 100)}px)`,
                   }}
                 />
               )}
@@ -829,8 +843,8 @@ function NapervilleFreshMarket() {
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[0].zoom / 100}) translate(${
-                    images[0].x / ( images[0].zoom / 100)
-                  }px, ${images[0].y / ( images[0].zoom / 100)}px)`,
+                    images[0].x / (images[0].zoom / 100)
+                  }px, ${images[0].y / (images[0].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -841,8 +855,8 @@ function NapervilleFreshMarket() {
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[1].zoom / 100}) translate(${
-                    images[1].x / ( images[1].zoom / 100)
-                  }px, ${images[1].y / ( images[1].zoom / 100)}px)`,
+                    images[1].x / (images[1].zoom / 100)
+                  }px, ${images[1].y / (images[1].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -930,8 +944,8 @@ function NapervilleFreshMarket() {
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[0].zoom / 100}) translate(${
-                    images[0].x / ( images[0].zoom / 100)
-                  }px, ${images[0].y / ( images[0].zoom / 100)}px)`,
+                    images[0].x / (images[0].zoom / 100)
+                  }px, ${images[0].y / (images[0].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -942,8 +956,8 @@ function NapervilleFreshMarket() {
                 className={styles.uploadedImage}
                 style={{
                   transform: `scale(${images[1].zoom / 100}) translate(${
-                    images[1].x / ( images[1].zoom / 100)
-                  }px, ${images[1].y / ( images[1].zoom / 100)}px)`,
+                    images[1].x / (images[1].zoom / 100)
+                  }px, ${images[1].y / (images[1].zoom / 100)}px)`,
                 }}
               />
             )}
@@ -1037,7 +1051,11 @@ function NapervilleFreshMarket() {
           }
           setIsEditingZoom={setIsEditingZoom}
           cardNumber={selectedImage.cardIndex}
-          imageFolder={selectedCardIndex > 15 && selectedCardIndex < 30 ? "produce" : "produce"}
+          imageFolder={
+            selectedCardIndex > 15 && selectedCardIndex < 30
+              ? "produce"
+              : "produce"
+          }
           uploadDataToFirebase={uploadDataToFirebase}
         />
       )}
@@ -1067,16 +1085,16 @@ function NapervilleFreshMarket() {
       ) : null}
       {popup4 ? (
         <ManageTemplates
-        dynamicColumn={dynamicColumn}
-        staticColumns={staticColumns}
-        setDynamicColumn={setDynamicColumn}
-        setStaticColumns={setStaticColumns}
-        templates={templates}
-        setTemplates={setTemplates}
-        setPopup4={setPopup4}
-        templateFolder="NapervilleFreshMarket"
+          dynamicColumn={dynamicColumn}
+          staticColumns={staticColumns}
+          setDynamicColumn={setDynamicColumn}
+          setStaticColumns={setStaticColumns}
+          templates={templates}
+          setTemplates={setTemplates}
+          setPopup4={setPopup4}
+          templateFolder="NapervilleFreshMarket"
         />
-      ): null}
+      ) : null}
       {isCroppingImage && (
         <ImageCropper
           src={
@@ -1099,32 +1117,33 @@ function NapervilleFreshMarket() {
           selectedCardIndex={selectedCardIndex}
           imageIndex={imgIndex}
           imageFolder={
-            selectedCardIndex > 15 && selectedCardIndex < 30 ? "produce" : "produce"
+            selectedCardIndex > 15 && selectedCardIndex < 30
+              ? "produce"
+              : "produce"
           }
           uploadDataToFirebase={uploadDataToFirebase}
         />
       )}
       {isAutomaticCropping && (
         <AutomaticImageCropper
-        selectedColumn={
-          selectedImage.cardIndex > maxStaticIndex
-            ? dynamicColumn
-            : staticColumns
-        }
-        setSelectedColumn={
-          selectedImage.cardIndex > maxStaticIndex
-            ? setDynamicColumn
-            : setStaticColumns
-        }
+          selectedColumn={
+            selectedImage.cardIndex > maxStaticIndex
+              ? dynamicColumn
+              : staticColumns
+          }
+          setSelectedColumn={
+            selectedImage.cardIndex > maxStaticIndex
+              ? setDynamicColumn
+              : setStaticColumns
+          }
           cardIndex={selectedCardIndex}
           imageIndex={imgIndex}
           setIsAutomaticCropping={setIsAutomaticCropping}
           uploadDataToFirebase={uploadDataToFirebase}
         />
       )}
-      
+
       <div className={styles.sidebar} style={{ top: "1maxStaticIndexpx" }}>
-      
         <div
           style={{
             position: "relative",
@@ -1136,31 +1155,31 @@ function NapervilleFreshMarket() {
           }}
         >
           <button
-        style={{
-          width: "165px",
-          position: "relative",
+            style={{
+              width: "165px",
+              position: "relative",
               backgroundColor: "gray",
               color: "white",
               marginBottom: "10px",
               zIndex: "1",
-        }}
-        onClick={handleConvertToPDF}
-      >
-        Make PDF
-      </button>
-      <button
-        style={{
-          width: "165px",
-          position: "relative",
+            }}
+            onClick={handleConvertToPDF}
+          >
+            Make PDF
+          </button>
+          <button
+            style={{
+              width: "165px",
+              position: "relative",
               backgroundColor: "gray",
               color: "white",
               marginBottom: "10px",
               zIndex: "1",
-        }}
-        onClick={() => navigate("/")}
-      >
-        Back to Home
-      </button>
+            }}
+            onClick={() => navigate("/")}
+          >
+            Back to Home
+          </button>
           <button
             style={{
               width: "165px",
@@ -1186,31 +1205,44 @@ function NapervilleFreshMarket() {
           >
             Open Template Manager
           </button>
-          <ImageUploader uploadDataToFirebase={uploadDataToFirebase} imageFolder={selectedCardIndex > 15 && selectedCardIndex < 30 ? "produce" : "produce"} />
+          <ImageUploader
+            uploadDataToFirebase={uploadDataToFirebase}
+            imageFolder={
+              selectedCardIndex > 15 && selectedCardIndex < 30
+                ? "produce"
+                : "produce"
+            }
+          />
         </div>
       </div>
 
-      <div id="magazineContainer" style={{position: "relative"}}>
+      <div
+        id="magazineContainer"
+        style={{ justifyContent: "center", position: "relative" }}
+      >
         <div style={{ display: "grid" }} className={styles.containerDivBorder}>
-          <RenderTopCards />
-          <img
-            style={{ zIndex:"1", width: "100%", top: "150px" }}
-            src="../src/assets/images/naperville.jpg"
-          />
-          <div style={{ position: "relative" }}>
-            <div className={styles.containerDiv} style={{ width: "98%", height: "183%", position: "absolute", top: "-420px" }} ref={contextMenuRef}>
-              <RenderCards />
-              <RenderCardsSecondColumn />
-              {contextMenu && (
-                <ContextMenu
-                  x={contextMenu.x}
-                  y={contextMenu.y}
-                  items={contextMenu.items}
-                  onClose={() => setContextMenu(null)}
-                />
-              )}
-              
-            </div>
+          <div style={{ justifyContent: "center", maxHeight: "40%" }}>
+            <RenderTopCards />
+            <img
+              style={{ zIndex: "1", width: "100%" }}
+              src="../src/assets/images/naperville.jpg"
+            />
+          </div>
+          <div
+            className={styles.containerDiv}
+            style={{ width: "98%", height: "183%" }}
+            ref={contextMenuRef}
+          >
+            <RenderCards />
+            <RenderCardsSecondColumn />
+            {contextMenu && (
+              <ContextMenu
+                x={contextMenu.x}
+                y={contextMenu.y}
+                items={contextMenu.items}
+                onClose={() => setContextMenu(null)}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -1230,7 +1262,11 @@ function NapervilleFreshMarket() {
           setImages={setImages}
           imgIndex={imgIndex}
           maxCardPosition={maxStaticIndex}
-          imageFolder={selectedCardIndex > 15 && selectedCardIndex < 30 ? "produce" : "produce"}
+          imageFolder={
+            selectedCardIndex > 15 && selectedCardIndex < 30
+              ? "produce"
+              : "produce"
+          }
           uploadDataToFirebase={uploadDataToFirebase}
         />
       ) : null}
