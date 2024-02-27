@@ -8,31 +8,29 @@ import AmountForPrice from "../../components/AmountForPrice/AmountForPrice";
 import TextBoxLeft from "../../components/ParagraphBox/ParagraphBox";
 import TopTextBox from "../../components/TopTextBox/TopTextBox";
 import TextPopUp from "../../components/TextPopup/TextPopup";
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore/lite";
 import ImageUploader from "../../components/ImageToCloud/ImageToCloud";
 import { getStorage, ref, listAll, uploadBytes } from "firebase/storage";
 import ImageFromCloud from "../../components/ImageFromCloud/ImageFromCloud";
 import ResizableImage from "../../components/ResizableImage/ResizableImage";
 import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
+import { db } from "../root";
+import AutomaticImageCropper from "../../components/AutomaticImageCropper/AutomaticImageCropper";
+import {
+  collection,
+  doc,
+  getDocs,
+  onSnapshot,
+  setDoc,
+} from "firebase/firestore";
+import ImageCropper from "../../components/ImageCropper/ImageCropper";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
-  authDomain: "napervillecollageapp.firebaseapp.com",
-  projectId: "napervillecollageapp",
-  storageBucket: "napervillecollageapp.appspot.com",
-  messagingSenderId: "658613882469",
-  appId: "1:658613882469:web:23da7f1eb31c54a021808c",
-  measurementId: "G-DNB21PCJ7T",
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const groceryRef = collection(db, "Deli&Taqueria");
+const templatesQuerySnapshot = await getDocs(groceryRef);
 
 export default function DelicatessenAndMore() {
   const cardsInStatic = 26;
   const maxStaticIndex = cardsInStatic - 1;
-
+  
   const [staticColumns, setStaticColumns] = useState(
     Array(cardsInStatic)
       .fill()
@@ -58,7 +56,9 @@ export default function DelicatessenAndMore() {
   const [contextMenu, setContextMenu] = useState(null);
   const [isEditingZoom, setIsEditingZoom] = useState(false);
   const [selectedImage, setSelectedImage] = useState({});
-  const [selectedCardIndex, setSelectedCardIndex] = useState({});
+  const [selectedCardIndex, setSelectedCardIndex] = useState(0);
+  const [isCroppingImage, setIsCroppingImage] = useState(false);
+  const [isAutomaticCropping, setIsAutomaticCropping] = useState(false);
   const [info, setInfo] = useState(false);
   const [popup, setPopup] = useState(false);
   const [type, setType] = useState("");
@@ -69,64 +69,132 @@ export default function DelicatessenAndMore() {
   const [images, setImages] = useState(null);
   const [imgIndex, setImgIndex] = useState(null);
   const [selectedTextBox, setSelectedTextBox] = useState({});
-
+  const [templateName, setTemplateName] = useState(templatesQuerySnapshot[0]);
   const storage = getStorage();
-  const imagesRef = ref(storage, "images/");
-  const templatesRef = ref(storage, "templates/");
+  const imageFolder =
+ ( selectedCardIndex < 12 || selectedCardIndex > maxStaticIndex
+    ? "deli"
+    : (selectedCardIndex > 11 && selectedCardIndex < 20
+    ? "seafood"
+    : "taqueria"));
+  
+  const imagesRef = ref(
+    storage,
+    `images/${
+      imageFolder
+    }`
+  );
+  
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
+
+  useEffect(() => {
+    const unsubscribeStaticColumns = onSnapshot(
+      doc(db, `Deli&Taqueria/${templateName}`),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          console.log(
+            "Static Columns Snapshot:",
+            snapshot.data().staticColumns
+          );
+          setStaticColumns(snapshot.data().staticColumns);
+        }
+      }
+    );
+
+    const unsubscribeDynamicColumn = onSnapshot(
+      doc(db, `Deli&Taqueria/${templateName}`),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          console.log(
+            "Dynamic Column Snapshot:",
+            snapshot.data().dynamicColumn
+          );
+          setDynamicColumn(snapshot.data().dynamicColumn);
+        }
+      }
+    );
+
+    return () => {
+      unsubscribeStaticColumns();
+      unsubscribeDynamicColumn();
+    };
+  }, [templateName]);
+
+  const uploadDataToFirebase = async () => {
+    try {
+      // Upload staticColumns to a document in "Grocery" collection
+      await setDoc(doc(db, `Deli&Taqueria/${templateName}`), {
+        staticColumns: staticColumns,
+        dynamicColumn: dynamicColumn,
+      });
+
+      console.log("Data uploaded successfully!");
+    } catch (error) {
+      console.error("Error uploading data:", error);
+    }
+  };
 
   const handleConvertToPDF = async () => {
     const container = document.getElementById("magazineContainer");
 
     if (container) {
+      await downloadExternalImages(container);
 
-        await downloadExternalImages(container);
+      const pdfOptions = {
+        filename: "grocery_magazine.pdf",
+        image: { type: "png", quality: 1 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      };
 
-        const pdfOptions = {
-            filename: "grocery_magazine.pdf",
-            image: { type: "png", quality: 1 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        };
+      container.style.top = "0";
+      // Generar PDF desde el clon
+      await html2pdf().from(container).set(pdfOptions).save();
 
-        container.style.top = "0"
-        // Generar PDF desde el clon
-        await html2pdf().from(container).set(pdfOptions).save()
-
-        container.style.top = "100px"
+      container.style.top = "100px";
     }
   };
 
-  const downloadExternalImages = async (container) => {
-      const images = container.querySelectorAll("img");
-      const promises = [];
+  const handleCropImage = () => {
+    setIsCroppingImage(true);
+  };
 
-      images.forEach((img) => {
-          if (img.src && new URL(img.src).host != window.location.host && img.src.startsWith("http")) {
-              promises.push(new Promise((resolve, reject) => {
-                  const xhr = new XMLHttpRequest();
-                  xhr.open("GET", img.src, true);
-                  xhr.responseType = "blob";
-                  xhr.onload = () => {
-                      if (xhr.status === 200) {
-                          const blob = xhr.response;
-                          const urlCreator = window.URL || window.webkitURL;
-                          const imageUrl = urlCreator.createObjectURL(blob);
-                          img.src = imageUrl;
-                          resolve();
-                      } else {
-                          reject(xhr.statusText);
-                      }
-                  };
-                  xhr.onerror = () => {
-                      reject(xhr.statusText);
-                  };
-                  xhr.send();
-              }));
-          }
-      });
-      await Promise.all(promises);
+  const downloadExternalImages = async (container) => {
+    const images = container.querySelectorAll("img");
+    const promises = [];
+
+    images.forEach((img) => {
+      if (
+        img.src &&
+        new URL(img.src).host != window.location.host &&
+        img.src.startsWith("http")
+      ) {
+        promises.push(
+          new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", img.src, true);
+            xhr.responseType = "blob";
+            xhr.onload = () => {
+              if (xhr.status === 200) {
+                const blob = xhr.response;
+                const urlCreator = window.URL || window.webkitURL;
+                const imageUrl = urlCreator.createObjectURL(blob);
+                img.src = imageUrl;
+                resolve();
+              } else {
+                reject(xhr.statusText);
+              }
+            };
+            xhr.onerror = () => {
+              reject(xhr.statusText);
+            };
+            xhr.send();
+          })
+        );
+      }
+    });
+    await Promise.all(promises);
   };
 
   const handleDynamicColumns = (event) => {
@@ -156,6 +224,9 @@ export default function DelicatessenAndMore() {
       cards.push(card);
     }
     setDynamicColumn(cards);
+    () => {
+      uploadDataToFirebase();
+    };
   };
 
   useEffect(() => {
@@ -287,6 +358,7 @@ export default function DelicatessenAndMore() {
         !newStaticColumns[cardIndex].text.renderPriceBox;
       setStaticColumns(newStaticColumns);
     }
+    uploadDataToFirebase();
   };
 
   const switchBoxType = (cardIndex) => {
@@ -310,6 +382,7 @@ export default function DelicatessenAndMore() {
       }
       setStaticColumns(newStaticColumns);
     }
+    uploadDataToFirebase();
   };
 
   const changePriceBoxColor = (cardIndex) => {
@@ -326,6 +399,7 @@ export default function DelicatessenAndMore() {
         !newStaticColumns[cardIndex].text.priceBoxColor;
       setStaticColumns(newStaticColumns);
     }
+    uploadDataToFirebase();
   };
 
   const changePriceBoxBorder = (cardIndex) => {
@@ -342,6 +416,7 @@ export default function DelicatessenAndMore() {
         !newStaticColumns[cardIndex].text.priceBoxBorder;
       setStaticColumns(newStaticColumns);
     }
+    uploadDataToFirebase();
   };
 
   const ContextMenu = ({ x, y, items, onClose }) => (
@@ -434,7 +509,23 @@ export default function DelicatessenAndMore() {
       // If both images uploaded, allow editing and deleting the second image
       contextMenuItems.push({
         label: "Delete 2",
-        action: () => handleDeleteImage(cardIndex, 1),
+        action: async () => {
+          await handleDeleteImage(cardIndex, 1);
+          await uploadDataToFirebase();
+        },
+      },
+      {
+        label: "crop image 2",
+        action: () => {
+          setImgIndex(1);
+          handleCropImage(cardIndex, imgIndex);
+        },
+      },
+      {
+        label: "Delete Background of Image 2",
+        action: () => {
+          setImgIndex(1), setIsAutomaticCropping(true);
+        },
       });
     }
     if (selectedColumn[index].img[0].src == "") {
@@ -450,7 +541,22 @@ export default function DelicatessenAndMore() {
     if (selectedColumn[index].img[0].src != "") {
       contextMenuItems.push({
         label: "Delete 1",
-        action: () => handleDeleteImage(cardIndex, 0),
+        action: async () => {
+          await handleDeleteImage(cardIndex, 0);
+          await uploadDataToFirebase();
+        },
+      },{
+        label: "crop image 1",
+        action: () => {
+          setImgIndex(0);
+          handleCropImage(cardIndex, imgIndex);
+        },
+      },
+      {
+        label: "Delete Background of Image 1",
+        action: () => {
+          setImgIndex(0), setIsAutomaticCropping(true);
+        },
       });
     }
 
@@ -484,30 +590,6 @@ export default function DelicatessenAndMore() {
     }
   };
 
-  const saveTemplate = (event) => {
-    const newText = prompt("Enter template name: ");
-    if (newText) {
-      const blob = new Blob(
-        [
-          JSON.stringify({
-            firstColumn: dynamicColumn,
-            otherColumns: staticColumns,
-          }),
-        ],
-        { type: "application/json" }
-      );
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${newText}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-  };
-
   const getImageList = () => {
     listAll(imagesRef)
       .then((result) => {
@@ -521,76 +603,6 @@ export default function DelicatessenAndMore() {
         console.log(names);
       })
       .then(() => setPopup2(false))
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  const loadTemplate = (event) => {
-    event.preventDefault();
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".json"; // Corrected file extension
-    input.onchange = (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target.result;
-          try {
-            const parsedResult = JSON.parse(result);
-            setStaticColumns(parsedResult.otherColumns);
-            setDynamicColumn(parsedResult.firstColumn);
-          } catch (error) {
-            console.error("Error parsing JSON:", error);
-          }
-        };
-        reader.readAsText(file); // Use readAsText to read JSON content
-      }
-    };
-    input.click();
-  };
-
-  const uploadTemplateToCloud = async () => {
-    const fileName = prompt("Enter the name of the file");
-    const fileContent = JSON.stringify({
-      firstColumn: dynamicColumn,
-      otherColumns: staticColumns,
-    });
-
-    // Validate file name and content
-    if (!fileName || fileName.trim() === "") {
-      console.error("File name is required");
-      return;
-    }
-
-    const blob = new Blob([fileContent], { type: "text/plain" });
-
-    if (fileName && blob) {
-      try {
-        const storageRef = ref(storage, `templates/${fileName}`);
-        await uploadBytes(storageRef, blob);
-        console.log("File uploaded successfully");
-      } catch (error) {
-        console.error("Error uploading file:", error.message);
-      }
-    } else {
-      console.error("File name and content are required");
-    }
-  };
-
-  const downloadTemplateFromCloud = (event) => {
-    listAll(templatesRef)
-      .then((result) => {
-        // 'items' is an array that contains references to each item in the list
-        const items = result.items;
-
-        // Extract image names from references
-        const names = items.map((item) => item.name);
-
-        setTemplates(names);
-        console.log(names);
-      })
       .catch((error) => {
         console.log(error);
       });
@@ -614,6 +626,7 @@ export default function DelicatessenAndMore() {
         cardIndex={cardIndex}
         maxStaticIndex={maxStaticIndex}
         priceBoxBorder={priceBoxBorder}
+        uploadDataToFirebase={uploadDataToFirebase}
       />,
       <TripleBox
         key={`fixed-box-${cardIndex}`}
@@ -624,6 +637,7 @@ export default function DelicatessenAndMore() {
         cardIndex={cardIndex}
         maxStaticIndex={maxStaticIndex}
         priceBoxBorder={priceBoxBorder}
+        uploadDataToFirebase={uploadDataToFirebase}
       />,
       <AmountForPrice
         key={`fixed-box-${cardIndex}`}
@@ -634,6 +648,7 @@ export default function DelicatessenAndMore() {
         cardIndex={cardIndex}
         maxStaticIndex={maxStaticIndex}
         priceBoxBorder={priceBoxBorder}
+        uploadDataToFirebase={uploadDataToFirebase}
       />,
     ];
 
@@ -821,6 +836,7 @@ export default function DelicatessenAndMore() {
               setType={setType}
               setSelectedImage={setSelectedImage}
               index={cardIndex}
+              maxCardPosition={maxStaticIndex}
             />
           </div>
         );
@@ -918,6 +934,7 @@ export default function DelicatessenAndMore() {
               setType={setType}
               setSelectedImage={setSelectedImage}
               index={cardIndex}
+              maxCardPosition={maxStaticIndex}
             />
           </div>
         );
@@ -1004,6 +1021,7 @@ export default function DelicatessenAndMore() {
             setType={setType}
             setSelectedImage={setSelectedImage}
             index={25}
+            maxCardPosition={maxStaticIndex}
           />
         </div>
       </div>
@@ -1099,6 +1117,7 @@ export default function DelicatessenAndMore() {
               setType={setType}
               setSelectedImage={setSelectedImage}
               index={cardIndex}
+              maxCardPosition={maxStaticIndex}
             />
           </div>
         );
@@ -1194,17 +1213,60 @@ export default function DelicatessenAndMore() {
 
       {popup4 ? (
         <ManageTemplates
-        dynamicColumn={dynamicColumn}
-        staticColumns={staticColumns}
-        setDynamicColumn={setDynamicColumn}
-        setStaticColumns={setStaticColumns}
-        templates={templates}
-        setTemplates={setTemplates}
-        setPopup4={setPopup4}
-        templateFolder="Delicatessen&Taqueria"
+          dynamicColumn={dynamicColumn}
+          staticColumns={staticColumns}
+          setDynamicColumn={setDynamicColumn}
+          setStaticColumns={setStaticColumns}
+          templates={templates}
+          setTemplates={setTemplates}
+          setPopup4={setPopup4}
+          db={db}
+          setCurrentTemplate={setTemplateName}
+          templateFolder="Deli&Taqueria"
+          cardsInStatic={cardsInStatic}
         />
-      ): null}
-
+      ) : null}
+      {isCroppingImage && (
+        <ImageCropper
+          src={
+            selectedCardIndex > maxStaticIndex
+              ? dynamicColumn[selectedCardIndex - cardsInStatic].img[imgIndex]
+                  .src
+              : staticColumns[selectedCardIndex].img[imgIndex].src
+          }
+          setIsCroppingImage={setIsCroppingImage}
+          selectedColumn={
+            selectedImage.cardIndex > maxStaticIndex
+              ? dynamicColumn
+              : staticColumns
+          }
+          setSelectedColumn={
+            selectedImage.cardIndex > maxStaticIndex
+              ? setDynamicColumn
+              : setStaticColumns
+          }
+          selectedCardIndex={selectedCardIndex}
+          imageIndex={imgIndex}
+          imageFolder={
+            imageFolder
+          }
+          uploadDataToFirebase={uploadDataToFirebase}
+        />
+      )}
+      {isAutomaticCropping && (
+        <AutomaticImageCropper
+          selectedCardColumn={
+            selectedCardIndex > 20 ? dynamicColumn : staticColumns
+          }
+          setSelectedCardColumn={
+            selectedCardIndex > 20 ? setDynamicColumn : setStaticColumns
+          }
+          cardIndex={selectedCardIndex}
+          imageIndex={imgIndex}
+          setIsAutomaticCropping={setIsAutomaticCropping}
+          uploadDataToFirebase={uploadDataToFirebase}
+        />
+      )}
       <div className={styles.sidebar} style={{ top: "0px" }}>
         <div
           style={{
@@ -1267,7 +1329,7 @@ export default function DelicatessenAndMore() {
           >
             Open Template Manager
           </button>
-          <ImageUploader />
+          <ImageUploader uploadDataToFirebase={uploadDataToFirebase} imageFolder={imageFolder} />
         </div>
       </div>
 
@@ -1334,6 +1396,8 @@ export default function DelicatessenAndMore() {
           setImages={setImages}
           imgIndex={imgIndex}
           maxCardPosition={maxStaticIndex}
+          imageFolder={imageFolder}
+          uploadDataToFirebase={uploadDataToFirebase}
         />
       ) : null}
     </div>

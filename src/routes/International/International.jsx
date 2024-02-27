@@ -17,19 +17,18 @@ import ResizableImage from "../../components/ResizableImage/ResizableImage";
 import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
 import ImageCropper from "../../components/ImageCropper/ImageCropper";
 import AutomaticImageCropper from "../../components/AutomaticImageCropper/AutomaticImageCropper";
+import { db } from "../root";
+import {
+  collection,
+  doc,
+  getDocs,
+  onSnapshot,
+  setDoc,
+} from "firebase/firestore";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
-  authDomain: "napervillecollageapp.firebaseapp.com",
-  projectId: "napervillecollageapp",
-  storageBucket: "napervillecollageapp.appspot.com",
-  messagingSenderId: "658613882469",
-  appId: "1:658613882469:web:23da7f1eb31c54a021808c",
-  measurementId: "G-DNB21PCJ7T",
-};
+const groceryRef = collection(db, "International");
+const templatesQuerySnapshot = await getDocs(groceryRef);
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 
 function International() {
   const [staticColumns, setStaticColumns] = useState(
@@ -61,29 +60,69 @@ function International() {
   const [isCroppingImage, setIsCroppingImage] = useState(false)
   const [isAutomaticCropping, setIsAutomaticCropping] = useState(false)
   const [selectedCardIndex, setSelectedCardIndex] = useState({});
-
   const [info, setInfo] = useState(false);
   const [popup, setPopup] = useState(false);
   const [popup3, setPopup3] = useState(false);
   const [popup4, setPopup4] = useState(false);
   const [type, setType] = useState("");
-
   const [popup2, setPopup2] = useState(false);
-
   const [templates, setTemplates] = useState(null);
-
   const [images, setImages] = useState(null);
-
   const [imgIndex, setImgIndex] = useState(null);
+  const [templateName, setTemplateName] = useState(templatesQuerySnapshot[0]);
 
   const storage = getStorage();
-
   const imagesRef = ref(storage, "images/International");
-
   const templatesRef = ref(storage, "templates/");
-
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
+
+  useEffect(() => {
+    const unsubscribeStaticColumns = onSnapshot(
+      doc(db, `International/${templateName}`),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          console.log(
+            "Static Columns Snapshot:",
+            snapshot.data().staticColumns
+          );
+          setStaticColumns(snapshot.data().staticColumns);
+        }
+      }
+    );
+
+    const unsubscribeDynamicColumn = onSnapshot(
+      doc(db, `International/${templateName}`),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          console.log(
+            "Dynamic Column Snapshot:",
+            snapshot.data().dynamicColumn
+          );
+          setDynamicColumn(snapshot.data().dynamicColumn);
+        }
+      }
+    );
+
+    return () => {
+      unsubscribeStaticColumns();
+      unsubscribeDynamicColumn();
+    };
+  }, [templateName]);
+
+  const uploadDataToFirebase = async () => {
+    try {
+      // Upload staticColumns to a document in "Grocery" collection
+      await setDoc(doc(db, `International/${templateName}`), {
+        staticColumns: staticColumns,
+        dynamicColumn: dynamicColumn,
+      });
+
+      console.log("Data uploaded successfully!");
+    } catch (error) {
+      console.error("Error uploading data:", error);
+    }
+  };
 
   const handleConvertToPDF = async () => {
     const container = document.getElementById("magazineContainer");
@@ -164,7 +203,10 @@ function International() {
       };
       cards.push(card);
     }
-    setDynamicColumn(cards);
+    setDynamicColumn(cards),
+    () => {
+      uploadDataToFirebase();
+    };
   };
 
   const handleImageUpload = (event, cardIndex, img) => {
@@ -357,6 +399,7 @@ function International() {
         !newStaticColumns[cardIndex].text.renderPriceBox;
       setStaticColumns(newStaticColumns);
     }
+    uploadDataToFirebase();
   };
 
   const switchBoxType = (cardIndex) => {
@@ -378,6 +421,7 @@ function International() {
       }
       setStaticColumns(newStaticColumns);
     }
+    uploadDataToFirebase();
   };
 
   const changePriceBoxColor = (cardIndex) => {
@@ -392,6 +436,7 @@ function International() {
         !newStaticColumns[cardIndex].text.priceBoxColor;
       setStaticColumns(newStaticColumns);
     }
+    uploadDataToFirebase();
   };
 
   const handleCropImage = () => {
@@ -486,7 +531,22 @@ function International() {
       // If both images uploaded, allow editing and deleting the second image
       contextMenuItems.push({
         label: "Delete 2",
-        action: () => handleDeleteImage(cardIndex, 1),
+        action: async () => {
+          await handleDeleteImage(cardIndex, 1);
+          await uploadDataToFirebase();
+        },
+      },{
+        label: "crop image 2",
+        action: () => {
+          setImgIndex(1);
+          handleCropImage(cardIndex, imgIndex);
+        },
+      },
+      {
+        label: "Delete Background of Image 2",
+        action: () => {
+          setImgIndex(1), setIsAutomaticCropping(true);
+        },
       });
     }
     if (selectedColumn[index].img[0].src == "") {
@@ -503,9 +563,7 @@ function International() {
       contextMenuItems.push({
         label: "Delete 1",
         action: () => handleDeleteImage(cardIndex, 0),
-      });
-    } if (selectedColumn[index].img[0].src != "") {
-      contextMenuItems.push({
+      }, {
         label: "crop image 1",
         action: () => {
           setImgIndex(0)
@@ -514,18 +572,6 @@ function International() {
         label: "Delete Background of Image 1",
         action: () => {
           setImgIndex(0),
-          setIsAutomaticCropping(true)
-      }});
-    } if (selectedColumn[index].img[1].src != "") {
-      contextMenuItems.push({
-        label: "crop image 2",
-        action: () => {
-          setImgIndex(1)
-          handleCropImage(cardIndex, imgIndex)},
-      }, {
-        label: "Delete Background of Image 2",
-        action: () => {
-          setImgIndex(1),
           setIsAutomaticCropping(true)
       }});
     } 
@@ -570,6 +616,7 @@ function International() {
         !newStaticColumns[cardIndex].text.priceBoxBorder;
       setStaticColumns(newStaticColumns);
     }
+    uploadDataToFirebase();
   }
 
   const getImageList = () => {
@@ -609,6 +656,7 @@ function International() {
         i={cardIndex}
         cardIndex={cardIndex}
         priceBoxBorder={priceBoxBorder}
+        uploadDataToFirebase={uploadDataToFirebase}
       />,
       <TripleBox
         key={`fixed-box-${cardIndex}`}
@@ -618,6 +666,7 @@ function International() {
         i={cardIndex}
         cardIndex={cardIndex}
         priceBoxBorder={priceBoxBorder}
+        uploadDataToFirebase={uploadDataToFirebase}
       />,
       <AmountForPrice
         key={`fixed-box-${cardIndex}`}
@@ -627,6 +676,7 @@ function International() {
         i={cardIndex}
         cardIndex={cardIndex}
         priceBoxBorder={priceBoxBorder}
+        uploadDataToFirebase={uploadDataToFirebase}
       />,
     ];
 
@@ -817,6 +867,7 @@ function International() {
               setType={setType}
               setSelectedImage={setSelectedImage}
               index={cardIndex}
+              maxCardPosition={20}
             />
           </div>
         );
@@ -844,6 +895,7 @@ function International() {
           cardIndex={selectedImage}
           type={type}
           maxCardPosition={20}
+          uploadDataToFirebase={uploadDataToFirebase}
         />
       ) : null}
       {isEditingZoom && (
@@ -854,6 +906,7 @@ function International() {
           setIsEditingZoom={setIsEditingZoom}
           cardNumber={selectedImage.cardIndex}
           imageFolder="International"
+          uploadDataToFirebase={uploadDataToFirebase}
           />
       )}
       {isCroppingImage && (
@@ -870,6 +923,7 @@ function International() {
         selectedCardIndex={selectedCardIndex}
         imageIndex={imgIndex}
         imageFolder="International"
+        uploadDataToFirebase={uploadDataToFirebase}
         />
       )}
       {isAutomaticCropping && (
@@ -879,6 +933,7 @@ function International() {
         cardIndex={selectedCardIndex}
         imageIndex={imgIndex}
         setIsAutomaticCropping={setIsAutomaticCropping}
+        uploadDataToFirebase={uploadDataToFirebase}
         />
       )} 
       {popup2 ? (
@@ -934,7 +989,10 @@ function International() {
         templates={templates}
         setTemplates={setTemplates}
         setPopup4={setPopup4}
+        db={db}
+          setCurrentTemplate={setTemplateName}
         templateFolder="International"
+        cardsInStatic={20}
         />
       ): null}
 
@@ -1002,7 +1060,7 @@ function International() {
           </button>
 
           
-          <ImageUploader imageFolder="International" />
+          <ImageUploader uploadDataToFirebase={uploadDataToFirebase} imageFolder="International" />
         </div>
       </div>
 
@@ -1036,6 +1094,7 @@ function International() {
           imgIndex={imgIndex}
           maxCardPosition={20}
           imageFolder="International"
+          uploadDataToFirebase={uploadDataToFirebase}
         />
       ) : null}
 

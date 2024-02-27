@@ -18,19 +18,17 @@ import ResizableImage from "../../components/ResizableImage/ResizableImage";
 import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
 import AutomaticImageCropper from "../../components/AutomaticImageCropper/AutomaticImageCropper";
 import ImageCropper from "../../components/ImageCropper/ImageCropper";
+import { db } from "../root";
+import {
+  collection,
+  doc,
+  getDocs,
+  onSnapshot,
+  setDoc,
+} from "firebase/firestore";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDMKLSUrT76u5rS-lGY8up2ra9Qgo2xLvc",
-  authDomain: "napervillecollageapp.firebaseapp.com",
-  projectId: "napervillecollageapp",
-  storageBucket: "napervillecollageapp.appspot.com",
-  messagingSenderId: "658613882469",
-  appId: "1:658613882469:web:23da7f1eb31c54a021808c",
-  measurementId: "G-DNB21PCJ7T",
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const groceryRef = collection(db, "Dairy&Snacks");
+const templatesQuerySnapshot = await getDocs(groceryRef);
 
 export default function DairyAndSnacks() {
   const cardsInStatic = 25;
@@ -63,7 +61,7 @@ export default function DairyAndSnacks() {
   const [isCroppingImage, setIsCroppingImage] = useState(false)
   const [isAutomaticCropping, setIsAutomaticCropping] = useState(false)
   const [selectedImage, setSelectedImage] = useState({});
-  const [selectedCardIndex, setSelectedCardIndex] = useState({});
+  const [selectedCardIndex, setSelectedCardIndex] = useState(0);
   const [info, setInfo] = useState(false);
   const [popup, setPopup] = useState(false);
   const [type, setType] = useState("");
@@ -74,12 +72,61 @@ export default function DairyAndSnacks() {
   const [images, setImages] = useState(null);
   const [imgIndex, setImgIndex] = useState(null);
   const [selectedTextBox, setSelectedTextBox] = useState({});
+  const [templateName, setTemplateName] = useState(templatesQuerySnapshot[0]);
+  const imageFolder = (selectedCardIndex > 11 && selectedCardIndex < maxStaticIndex ? "snacks" : "dairy")
 
   const storage = getStorage();
   const imagesRef = ref(storage, `images/${(selectedCardIndex > 11 && selectedCardIndex < maxStaticIndex ? "snacks" : "dairy")}`);
   const templatesRef = ref(storage, "templates/");
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
+
+  useEffect(() => {
+    const unsubscribeStaticColumns = onSnapshot(
+      doc(db, `Dairy&Snacks/${templateName}`),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          console.log(
+            "Static Columns Snapshot:",
+            snapshot.data().staticColumns
+          );
+          setStaticColumns(snapshot.data().staticColumns);
+        }
+      }
+    );
+
+    const unsubscribeDynamicColumn = onSnapshot(
+      doc(db, `Dairy&Snacks/${templateName}`),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          console.log(
+            "Dynamic Column Snapshot:",
+            snapshot.data().dynamicColumn
+          );
+          setDynamicColumn(snapshot.data().dynamicColumn);
+        }
+      }
+    );
+
+    return () => {
+      unsubscribeStaticColumns();
+      unsubscribeDynamicColumn();
+    };
+  }, [templateName]);
+
+  const uploadDataToFirebase = async () => {
+    try {
+      // Upload staticColumns to a document in "Grocery" collection
+      await setDoc(doc(db, `Dairy&Snacks/${templateName}`), {
+        staticColumns: staticColumns,
+        dynamicColumn: dynamicColumn,
+      });
+
+      console.log("Data uploaded successfully!");
+    } catch (error) {
+      console.error("Error uploading data:", error);
+    }
+  };
 
   const handleConvertToPDF = async () => {
     const container = document.getElementById("magazineContainer");
@@ -160,7 +207,11 @@ export default function DairyAndSnacks() {
       };
       cards.push(card);
     }
-    setDynamicColumn(cards);
+    setDynamicColumn(cards),
+    () => {
+      uploadDataToFirebase();
+    };
+
   };
 
   useEffect(() => {
@@ -356,6 +407,7 @@ export default function DairyAndSnacks() {
         !newStaticColumns[cardIndex].text.renderPriceBox;
       setStaticColumns(newStaticColumns);
     }
+    uploadDataToFirebase();
   };
 
   const switchBoxType = (cardIndex) => {
@@ -379,6 +431,7 @@ export default function DairyAndSnacks() {
       }
       setStaticColumns(newStaticColumns);
     }
+    uploadDataToFirebase();
   };
 
   const changePriceBoxColor = (cardIndex) => {
@@ -395,6 +448,7 @@ export default function DairyAndSnacks() {
         !newStaticColumns[cardIndex].text.priceBoxColor;
       setStaticColumns(newStaticColumns);
     }
+    uploadDataToFirebase();
   };
 
   const changePriceBoxBorder = (cardIndex) => {
@@ -411,6 +465,7 @@ export default function DairyAndSnacks() {
         !newStaticColumns[cardIndex].text.priceBoxBorder;
       setStaticColumns(newStaticColumns);
     }
+    uploadDataToFirebase();
   };
 
   const handleCropImage = () => {
@@ -507,7 +562,10 @@ export default function DairyAndSnacks() {
       // If both images uploaded, allow editing and deleting the second image
       contextMenuItems.push({
         label: "Delete 2",
-        action: () => handleDeleteImage(cardIndex, 1),
+        action: async () => {
+          await handleDeleteImage(cardIndex, 1);
+          await uploadDataToFirebase();
+        },
       });
     }
     if (selectedColumn[index].img[0].src == "") {
@@ -523,7 +581,10 @@ export default function DairyAndSnacks() {
     if (selectedColumn[index].img[0].src != "") {
       contextMenuItems.push({
         label: "Delete 1",
-        action: () => handleDeleteImage(cardIndex, 0),
+        action: async () => {
+          await handleDeleteImage(cardIndex, 0);
+          await uploadDataToFirebase();
+        },
       });
     } if (selectedColumn[index].img[0].src != "") {
       contextMenuItems.push({
@@ -581,29 +642,7 @@ export default function DairyAndSnacks() {
     }
   };
 
-  const saveTemplate = (event) => {
-    const newText = prompt("Enter template name: ");
-    if (newText) {
-      const blob = new Blob(
-        [
-          JSON.stringify({
-            firstColumn: dynamicColumn,
-            otherColumns: staticColumns,
-          }),
-        ],
-        { type: "application/json" }
-      );
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${newText}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-  };
+  
 
   const getImageList = () => {
     listAll(imagesRef)
@@ -641,6 +680,7 @@ export default function DairyAndSnacks() {
         i={cardIndex}
         cardIndex={cardIndex}
         priceBoxBorder={priceBoxBorder}
+        uploadDataToFirebase={uploadDataToFirebase}
       />,
       <TripleBox
         key={`fixed-box-${cardIndex}`}
@@ -650,6 +690,7 @@ export default function DairyAndSnacks() {
         i={cardIndex}
         cardIndex={cardIndex}
         priceBoxBorder={priceBoxBorder}
+        uploadDataToFirebase={uploadDataToFirebase}
       />,
       <AmountForPrice
         key={`fixed-box-${cardIndex}`}
@@ -659,6 +700,7 @@ export default function DairyAndSnacks() {
         i={cardIndex}
         cardIndex={cardIndex}
         priceBoxBorder={priceBoxBorder}
+        uploadDataToFirebase={uploadDataToFirebase}
       />,
     ];
 
@@ -846,6 +888,7 @@ export default function DairyAndSnacks() {
               setType={setType}
               setSelectedImage={setSelectedImage}
               index={cardIndex}
+              maxCardPosition={maxStaticIndex}
             />
           </div>
         );
@@ -948,6 +991,7 @@ export default function DairyAndSnacks() {
               setType={setType}
               setSelectedImage={setSelectedImage}
               index={cardIndex}
+              maxCardPosition={maxStaticIndex}
             />
           </div>
         );
@@ -980,6 +1024,7 @@ export default function DairyAndSnacks() {
           cardIndex={selectedImage}
           maxCardPosition={maxStaticIndex}
           type={type}
+          uploadDataToFirebase={uploadDataToFirebase}
         />
       ) : null}
       {isEditingZoom && (
@@ -989,6 +1034,8 @@ export default function DairyAndSnacks() {
         setSelectedColumn={selectedImage.cardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns}
         setIsEditingZoom={setIsEditingZoom}
         cardNumber={selectedImage.cardIndex}
+        imageFolder={selectedCardIndex > 11 && selectedCardIndex < maxStaticIndex ? "snacks" : "dairy"}
+        uploadDataToFirebase={uploadDataToFirebase}
           />
       )}
       {isCroppingImage && (
@@ -1009,11 +1056,14 @@ export default function DairyAndSnacks() {
       )}
       {isAutomaticCropping && (
         <AutomaticImageCropper
-        selectedColumn={selectedImage.cardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
-        setSelectedColumn={selectedImage.cardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns}
+        selectedCardColumn={selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
+        setSelectedCardColumn={selectedCardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns}
         cardIndex={selectedCardIndex}
         imageIndex={imgIndex}
         setIsAutomaticCropping={setIsAutomaticCropping}
+        uploadDataToFirebase={uploadDataToFirebase}
+        imageFolder={selectedCardIndex > 11 && selectedCardIndex <= maxStaticIndex ? "snacks" : "dairy"}
+        
         />
       )} 
       {popup2 ? (
@@ -1068,7 +1118,10 @@ export default function DairyAndSnacks() {
         templates={templates}
         setTemplates={setTemplates}
         setPopup4={setPopup4}
+        db={db}
+        setCurrentTemplate={setTemplateName}
         templateFolder="Dairy&Snacks"
+        cardsInStatic={cardsInStatic}
         />
       ): null}
 
@@ -1135,7 +1188,7 @@ export default function DairyAndSnacks() {
             Open Template Manager
           </button>
 
-          <ImageUploader />
+          <ImageUploader  uploadDataToFirebase={uploadDataToFirebase} imageFolder={imageFolder} />
         </div>
       </div>
 
@@ -1179,7 +1232,8 @@ export default function DairyAndSnacks() {
           imgIndex={imgIndex}
           maxCardPosition={maxStaticIndex}
           imageFolder={selectedCardIndex > 11 && selectedCardIndex < maxStaticIndex ? "snacks" : "dairy"}
-        />
+          uploadDataToFirebase={uploadDataToFirebase}
+          />
       ) : null}
     </div>
   );
