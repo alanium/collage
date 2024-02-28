@@ -1063,7 +1063,7 @@ export default function DairyAndSnacks() {
         setIsAutomaticCropping={setIsAutomaticCropping}
         uploadDataToFirebase={uploadDataToFirebase}
         imageFolder={selectedCardIndex > 11 && selectedCardIndex <= maxStaticIndex ? "snacks" : "dairy"}
-        
+        maxStaticIndex={maxStaticIndex}
         />
       )} 
       {popup2 ? (

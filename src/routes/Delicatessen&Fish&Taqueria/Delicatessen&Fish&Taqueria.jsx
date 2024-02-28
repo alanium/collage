@@ -1265,6 +1265,7 @@ export default function DelicatessenAndMore() {
           imageIndex={imgIndex}
           setIsAutomaticCropping={setIsAutomaticCropping}
           uploadDataToFirebase={uploadDataToFirebase}
+          maxStaticIndex={maxStaticIndex}
         />
       )}
       <div className={styles.sidebar} style={{ top: "0px" }}>

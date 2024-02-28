@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import Cropper from "cropperjs";
 import "cropperjs/dist/cropper.min.css";
 import styles from "./ImageCropper.module.css";
-import { getDownloadURL, getStorage, listAll, ref, uploadBytes } from "firebase/storage";
+import { getDownloadURL, getStorage, listAll, ref, uploadBytes } from "firebase/storage"
 
 const ImageCropper = ({
   src,
@@ -12,12 +12,16 @@ const ImageCropper = ({
   imageIndex,
   selectedCardIndex,
   imageFolder,
-  uploadDataToFirebase
+  uploadDataToFirebase,
+  maxStaticIndex
 }) => {
   const imageRef = useRef(null);
   const cropper = useRef(null);
   const storage = getStorage();
   const [rotationValue, setRotationValue] = useState(0);
+
+  const calculatedCardIndex = (selectedCardIndex > maxStaticIndex ? selectedCardIndex - maxStaticIndex - 1 : selectedCardIndex)
+  
 
   useEffect(() => {
     if (!src) return;
@@ -28,10 +32,7 @@ const ImageCropper = ({
       autoCropArea: 1,
       background: false,
       crop(event) {
-        console.log(event.detail.x);
-        console.log(event.detail.y);
-        console.log(event.detail.width);
-        console.log(event.detail.height);
+        
       },
     });
 
@@ -48,8 +49,6 @@ const ImageCropper = ({
       const items = result.items;
       const names = items.map((item) => item.name);
   
-      console.log(names);
-  
       return names.includes(imageName);
     } catch (error) {
       console.log(error);
@@ -62,7 +61,6 @@ const ImageCropper = ({
     if (imageName !== null) {
       const imageExists = await isImageNameIncluded(imageName);
       if (!imageExists) {
-        console.log(imageExists)
         // Upload the image if it doesn't exist
         const imageRef = ref(storage, `images/${imageFolder}/${imageName}`);
         cropper.current.getCroppedCanvas().toBlob(async (blob) => {
@@ -75,7 +73,7 @@ const ImageCropper = ({
             const url = await getDownloadURL(
               ref(storage, `images/${imageFolder}/${imageName}`)
             );
-            newSelectedColumn[selectedCardIndex].img[imageIndex].src = url;
+            newSelectedColumn[calculatedCardIndex].img[imageIndex].src = url;
             setSelectedColumn(newSelectedColumn);
             uploadDataToFirebase();
           } catch (error) {

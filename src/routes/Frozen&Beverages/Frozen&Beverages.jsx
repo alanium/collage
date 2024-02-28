@@ -1099,6 +1099,7 @@ export default function FrozenAndBeverages() {
         imageIndex={imgIndex}
         setIsAutomaticCropping={setIsAutomaticCropping}
         uploadDataToFirebase={uploadDataToFirebase}
+        maxStaticIndex={maxStaticIndex}
         />
       )} 
       {popup2 ? (

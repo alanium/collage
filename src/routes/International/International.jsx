@@ -934,6 +934,7 @@ function International() {
         imageIndex={imgIndex}
         setIsAutomaticCropping={setIsAutomaticCropping}
         uploadDataToFirebase={uploadDataToFirebase}
+        maxStaticIndex={maxStaticIndex}
         />
       )} 
       {popup2 ? (

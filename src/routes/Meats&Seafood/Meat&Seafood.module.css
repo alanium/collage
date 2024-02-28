@@ -12,14 +12,14 @@
 
 .infoTab {
   background-color: gray;
-          color: white;
-          position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-          border: 1px solid #666666;
-          padding: 15px;
-          border-radius: 5px;
+  color: white;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid #666666;
+  padding: 15px;
+  border-radius: 5px;
 }
 
 .popUp2 {
@@ -67,7 +67,6 @@
 
 .containerDivBorder {
     display: grid;
-    top: 100px;
     left: 0%;
     position: relative;
     z-index: 0;

@@ -22,9 +22,9 @@
 
 .containerDivBorder {
   display: flex;
+  left: 0%;
   position: relative;
-  justify-content: center;
-  align-items: center;
+  justify-content: unsafe;
   z-index: 0;
   width: 21cm;
   height: 29.6cm;
@@ -225,7 +225,7 @@
 .popUp2 {
   background-color: #333;
   color: white;
-  position: fixed;
+  position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);

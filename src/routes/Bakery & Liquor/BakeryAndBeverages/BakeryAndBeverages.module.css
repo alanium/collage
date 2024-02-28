@@ -67,7 +67,6 @@
 
 .containerDivBorder {
     display: grid;
-    top: 100px;
     left: 0%;
     position: relative;
     z-index: 0;

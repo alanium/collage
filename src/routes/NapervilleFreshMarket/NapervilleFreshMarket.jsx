@@ -1140,6 +1140,7 @@ function NapervilleFreshMarket() {
           imageIndex={imgIndex}
           setIsAutomaticCropping={setIsAutomaticCropping}
           uploadDataToFirebase={uploadDataToFirebase}
+          maxStaticIndex={maxStaticIndex}
         />
       )}
 
@@ -1216,33 +1217,27 @@ function NapervilleFreshMarket() {
         </div>
       </div>
 
-      <div
-        id="magazineContainer"
-        style={{ justifyContent: "center", position: "relative" }}
-      >
+      <div id="magazineContainer" style={{position: "relative"}}>
         <div style={{ display: "grid" }} className={styles.containerDivBorder}>
-          <div style={{ justifyContent: "center", maxHeight: "40%" }}>
-            <RenderTopCards />
-            <img
-              style={{ zIndex: "1", width: "100%" }}
-              src="../src/assets/images/naperville.jpg"
-            />
-          </div>
-          <div
-            className={styles.containerDiv}
-            style={{ width: "98%", height: "183%" }}
-            ref={contextMenuRef}
-          >
-            <RenderCards />
-            <RenderCardsSecondColumn />
-            {contextMenu && (
-              <ContextMenu
-                x={contextMenu.x}
-                y={contextMenu.y}
-                items={contextMenu.items}
-                onClose={() => setContextMenu(null)}
-              />
-            )}
+          <RenderTopCards />
+          <img
+            style={{ zIndex:"1", width: "100%", position: "absolute", top: "150px" }}
+            src="../src/assets/images/naperville.jpg"
+          />
+          <div style={{ position: "relative" }}>
+            <div className={styles.containerDiv} style={{ width: "98%", height: "183%", position: "absolute", top: "-420px" }} ref={contextMenuRef}>
+              <RenderCards />
+              <RenderCardsSecondColumn />
+              {contextMenu && (
+                <ContextMenu
+                  x={contextMenu.x}
+                  y={contextMenu.y}
+                  items={contextMenu.items}
+                  onClose={() => setContextMenu(null)}
+                />
+              )}
+              
+            </div>
           </div>
         </div>
       </div>

@@ -11,7 +11,13 @@ import TextPopUp from "../../../components/TextPopup/TextPopup";
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore/lite";
 import ImageUploader from "../../../components/ImageToCloud/ImageToCloud";
-import { getStorage, ref, listAll, uploadBytes } from "firebase/storage";
+import {
+  getStorage,
+  ref,
+  listAll,
+  uploadBytes,
+  getDownloadURL,
+} from "firebase/storage";
 import ImageFromCloud from "../../../components/ImageFromCloud/ImageFromCloud";
 import ResizableImage from "../../../components/ResizableImage/ResizableImage";
 import ManageTemplates from "../../../components/ManageTemplates/ManageTemplates";
@@ -72,7 +78,8 @@ export default function BakeryLiquor() {
   const [imgIndex, setImgIndex] = useState(null);
   const [selectedTextBox, setSelectedTextBox] = useState({});
   const [templateName, setTemplateName] = useState(templatesQuerySnapshot[0]);
-
+  const imageFolder =
+    selectedCardIndex > 11 && selectedCardIndex < 28 ? "liquor" : "bakery";
   const storage = getStorage();
   const imagesRef = ref(
     storage,
@@ -402,7 +409,7 @@ export default function BakeryLiquor() {
   const handleImageUpload = (event, cardIndex, img) => {
     // Added 'cardIndex' parameter
     event.preventDefault();
-    if (cardIndex > maxStaticIndex) {
+    if (cardIndex > 20) {
       const dynamicColumnCopy = [...dynamicColumn];
       dynamicColumnCopy.map((card) => {
         if (card.index === cardIndex) {
@@ -414,16 +421,20 @@ export default function BakeryLiquor() {
             const file = event.target.files[0];
 
             if (file) {
-              const reader = new FileReader();
-              reader.onload = (e) => {
-                const result = e.target.result;
-                const newDynamicColumn = [...dynamicColumn];
-                newDynamicColumn[cardIndex - cardsInStatic].img[img].src =
-                  result;
-                setDynamicColumn(newDynamicColumn);
-              };
-
-              reader.readAsDataURL(file);
+              const uploadedImageRef = ref(
+                storage,
+                `images/${imageFolder}/${file.name}`
+              );
+              uploadBytes(uploadedImageRef, file).then((snapshot) => {
+                getDownloadURL(
+                  ref(storage, `images/${imageFolder}/${file.name}`)
+                ).then((url) => {
+                  const newDynamicColumn = [...dynamicColumn];
+                  newDynamicColumn[cardIndex].img[img].src = url;
+                  setDynamicColumn(newDynamicColumn);
+                });
+                console.log("Uploaded a blob or file!");
+              });
             }
           };
           input.click();
@@ -441,21 +452,27 @@ export default function BakeryLiquor() {
             const file = event.target.files[0];
 
             if (file) {
-              const reader = new FileReader();
-              reader.onload = (e) => {
-                const result = e.target.result;
-                const newStaticColumns = [...staticColumns];
-                newStaticColumns[cardIndex].img[img].src = result;
-                setStaticColumns(newStaticColumns);
-              };
-
-              reader.readAsDataURL(file);
+              const uploadedImageRef = ref(
+                storage,
+                `images/${imageFolder}/${file.name}`
+              );
+              uploadBytes(uploadedImageRef, file).then((snapshot) => {
+                getDownloadURL(
+                  ref(storage, `images/${imageFolder}/${file.name}`)
+                ).then((url) => {
+                  const newStaticColumns = [...staticColumns];
+                  newStaticColumns[cardIndex].img[img].src = url;
+                  setStaticColumns(newStaticColumns);
+                });
+              });
             }
           };
           input.click();
         }
       });
     }
+    setPopup2(false);
+    uploadDataToFirebase();
   };
 
   const changePriceBoxBorder = (cardIndex) => {
@@ -1109,6 +1126,7 @@ export default function BakeryLiquor() {
           imageIndex={imgIndex}
           setIsAutomaticCropping={setIsAutomaticCropping}
           uploadDataToFirebase={uploadDataToFirebase}
+          maxStaticIndex={maxStaticIndex}
         />
       )}
       {popup2 ? (

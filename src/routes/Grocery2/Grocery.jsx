@@ -23,7 +23,7 @@ import {
   getDoc,
 } from "firebase/firestore";
 import ImageUploader from "../../components/ImageToCloud/ImageToCloud";
-import { getStorage, ref, listAll, uploadBytes } from "firebase/storage";
+import { getStorage, ref, listAll, uploadBytes, getDownloadURL } from "firebase/storage";
 import ImageFromCloud from "../../components/ImageFromCloud/ImageFromCloud";
 import ResizableImage from "../../components/ResizableImage/ResizableImage";
 import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
@@ -263,15 +263,17 @@ function Grocery() {
             const file = event.target.files[0];
 
             if (file) {
-              const reader = new FileReader();
-              reader.onload = (e) => {
-                const result = e.target.result;
-                const newDynamicColumn = [...dynamicColumn];
-                newDynamicColumn[cardIndex - 21].img[img].src = result;
-                setDynamicColumn(newDynamicColumn);
-              };
-
-              reader.readAsDataURL(file);
+              const uploadedImageRef = ref(storage, `images/Grocery/${file.name}`)
+              uploadBytes(uploadedImageRef, file).then((snapshot) => {
+                getDownloadURL(ref(storage, `images/Grocery/${file.name}` ))
+                .then((url) => {
+                  const newDynamicColumn = [...dynamicColumn];
+                  newDynamicColumn[cardIndex].img[img].src = url;
+                  setDynamicColumn(newDynamicColumn);
+                })
+                console.log('Uploaded a blob or file!');
+              });
+             
             }
           };
           input.click();
@@ -289,15 +291,15 @@ function Grocery() {
             const file = event.target.files[0];
 
             if (file) {
-              const reader = new FileReader();
-              reader.onload = (e) => {
-                const result = e.target.result;
-                const newStaticColumns = [...staticColumns];
-                newStaticColumns[cardIndex].img[img].src = result;
-                setStaticColumns(newStaticColumns);
-              };
-
-              reader.readAsDataURL(file);
+              const uploadedImageRef = ref(storage, `images/Grocery/${file.name}`)
+              uploadBytes(uploadedImageRef, file).then((snapshot) => {
+                getDownloadURL(ref(storage, `images/Grocery/${file.name}` ))
+                .then((url) => {
+                  const newStaticColumns = [...staticColumns];
+                  newStaticColumns[cardIndex].img[img].src = url;
+                  setStaticColumns(newStaticColumns);
+                })
+              });
             }
           };
           input.click();
@@ -305,6 +307,7 @@ function Grocery() {
       });
     }
     setPopup2(false);
+    uploadDataToFirebase()
   };
 
   useEffect(() => {
@@ -1054,6 +1057,7 @@ function Grocery() {
           imageIndex={imgIndex}
           setIsAutomaticCropping={setIsAutomaticCropping}
           uploadDataToFirebase={uploadDataToFirebase}
+          maxStaticIndex={20}
         />
       )}
       {popup2 ? (

@@ -11,7 +11,7 @@ import TextPopUp from "../../components/TextPopup/TextPopup";
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore/lite";
 import ImageUploader from "../../components/ImageToCloud/ImageToCloud";
-import { getStorage, ref, listAll, uploadBytes } from "firebase/storage";
+import { getStorage, ref, listAll, uploadBytes, getDownloadURL } from "firebase/storage";
 import ImageFromCloud from "../../components/ImageFromCloud/ImageFromCloud";
 import ResizableImage from "../../components/ResizableImage/ResizableImage";
 import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
@@ -60,7 +60,7 @@ export default function MeatAndSeafood() {
   const [isCroppingImage, setIsCroppingImage] = useState(false);
   const [isAutomaticCropping, setIsAutomaticCropping] = useState(false);
   const [selectedImage, setSelectedImage] = useState({});
-  const [selectedCardIndex, setSelectedCardIndex] = useState({});
+  const [selectedCardIndex, setSelectedCardIndex] = useState(0);
   const [info, setInfo] = useState(false);
   const [popup, setPopup] = useState(false);
   const [type, setType] = useState("");
@@ -72,7 +72,7 @@ export default function MeatAndSeafood() {
   const [imgIndex, setImgIndex] = useState(null);
   const [selectedTextBox, setSelectedTextBox] = useState({});
   const [templateName, setTemplateName] = useState(templatesQuerySnapshot[0]);
-
+  const imageFolder = (selectedCardIndex > maxStaticIndex ? "seafood" : "meat")
   const storage = getStorage();
   const imagesRef = ref(
     storage,
@@ -84,7 +84,7 @@ export default function MeatAndSeafood() {
 
   useEffect(() => {
     const unsubscribeStaticColumns = onSnapshot(
-      doc(db, `Bakery&Beverages/${templateName}`),
+      doc(db, `Meats&Seafood/${templateName}`),
       (snapshot) => {
         if (snapshot.exists()) {
           console.log(
@@ -97,7 +97,7 @@ export default function MeatAndSeafood() {
     );
 
     const unsubscribeDynamicColumn = onSnapshot(
-      doc(db, `Bakery&Beverages/${templateName}`),
+      doc(db, `Meats&Seafood/${templateName}`),
       (snapshot) => {
         if (snapshot.exists()) {
           console.log(
@@ -118,7 +118,7 @@ export default function MeatAndSeafood() {
   const uploadDataToFirebase = async () => {
     try {
       // Upload staticColumns to a document in "Grocery" collection
-      await setDoc(doc(db, `Bakery&Beverages/${templateName}`), {
+      await setDoc(doc(db, `Meats&Seafood/${templateName}`), {
         staticColumns: staticColumns,
         dynamicColumn: dynamicColumn,
       });
@@ -222,7 +222,7 @@ export default function MeatAndSeafood() {
   const handleImageUpload = (event, cardIndex, img) => {
     // Added 'cardIndex' parameter
     event.preventDefault();
-    if (cardIndex > maxStaticIndex) {
+    if (cardIndex > 20) {
       const dynamicColumnCopy = [...dynamicColumn];
       dynamicColumnCopy.map((card) => {
         if (card.index === cardIndex) {
@@ -234,16 +234,17 @@ export default function MeatAndSeafood() {
             const file = event.target.files[0];
 
             if (file) {
-              const reader = new FileReader();
-              reader.onload = (e) => {
-                const result = e.target.result;
-                const newDynamicColumn = [...dynamicColumn];
-                newDynamicColumn[cardIndex - cardsInStatic].img[img].src =
-                  result;
-                setDynamicColumn(newDynamicColumn);
-              };
-
-              reader.readAsDataURL(file);
+              const uploadedImageRef = ref(storage, `images/${imageFolder}/${file.name}`)
+              uploadBytes(uploadedImageRef, file).then((snapshot) => {
+                getDownloadURL(ref(storage, `images/${imageFolder}/${file.name}` ))
+                .then((url) => {
+                  const newDynamicColumn = [...dynamicColumn];
+                  newDynamicColumn[cardIndex].img[img].src = url;
+                  setDynamicColumn(newDynamicColumn);
+                })
+                console.log('Uploaded a blob or file!');
+              });
+             
             }
           };
           input.click();
@@ -261,21 +262,23 @@ export default function MeatAndSeafood() {
             const file = event.target.files[0];
 
             if (file) {
-              const reader = new FileReader();
-              reader.onload = (e) => {
-                const result = e.target.result;
-                const newStaticColumns = [...staticColumns];
-                newStaticColumns[cardIndex].img[img].src = result;
-                setStaticColumns(newStaticColumns);
-              };
-
-              reader.readAsDataURL(file);
+              const uploadedImageRef = ref(storage, `images/${imageFolder}/${file.name}`)
+              uploadBytes(uploadedImageRef, file).then((snapshot) => {
+                getDownloadURL(ref(storage, `images/${imageFolder}/${file.name}` ))
+                .then((url) => {
+                  const newStaticColumns = [...staticColumns];
+                  newStaticColumns[cardIndex].img[img].src = url;
+                  setStaticColumns(newStaticColumns);
+                })
+              });
             }
           };
           input.click();
         }
       });
     }
+    setPopup2(false);
+    uploadDataToFirebase()
   };
 
   useEffect(() => {
@@ -349,7 +352,7 @@ export default function MeatAndSeafood() {
       "Are you sure you want to delete the image?"
     );
 
-    if (cardIndex > 11) {
+    if (cardIndex > 17) {
       if (confirmDelete) {
         setDynamicColumn((prevDynamicColumn) => {
           const newDynamicColumn = [...prevDynamicColumn];
@@ -597,7 +600,16 @@ export default function MeatAndSeafood() {
         label: "crop image 1",
         action: () => {
           setImgIndex(0);
+          setSelectedCardIndex(cardIndex);
           handleCropImage(cardIndex, imgIndex);
+          console.log(selectedCardIndex)
+        },
+      },
+      {
+        label: "Delete Background of Image 1",
+        action: () => {
+          setImgIndex(0); setIsAutomaticCropping(true);
+          setSelectedCardIndex(cardIndex);
         },
       });
     }
@@ -606,7 +618,16 @@ export default function MeatAndSeafood() {
         label: "crop image 2",
         action: () => {
           setImgIndex(1);
+          setSelectedCardIndex(cardIndex);
           handleCropImage(cardIndex, imgIndex);
+        },
+      },
+      {
+        label: "Delete Background of Image 2",
+        action: () => {
+          setImgIndex(1);
+          setSelectedCardIndex(cardIndex);
+          setIsAutomaticCropping(true);
         },
       });
     }
@@ -622,7 +643,7 @@ export default function MeatAndSeafood() {
   const handleCardClick = (cardIndex, event) => {
     // Check if the click event target is not the card element
     setImgIndex(0);
-
+    setSelectedCardIndex(cardIndex);
     const auxIndex =
       cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
 
@@ -635,7 +656,7 @@ export default function MeatAndSeafood() {
 
     if (image.img[0].src === "" && image.img[1].src === "") {
       setPopup2(true);
-      setSelectedCardIndex(cardIndex);
+      
     } else {
       handleContextMenu(event, cardIndex, image);
     }
@@ -1059,12 +1080,12 @@ export default function MeatAndSeafood() {
           }
           setIsCroppingImage={setIsCroppingImage}
           selectedColumn={
-            selectedImage.cardIndex > maxStaticIndex
+            selectedCardIndex > maxStaticIndex
               ? dynamicColumn
               : staticColumns
           }
           setSelectedColumn={
-            selectedImage.cardIndex > maxStaticIndex
+            selectedCardIndex > maxStaticIndex
               ? setDynamicColumn
               : setStaticColumns
           }
@@ -1072,24 +1093,26 @@ export default function MeatAndSeafood() {
           imageIndex={imgIndex}
           imageFolder={selectedCardIndex > maxStaticIndex ? "meat" : "seafood"}
           uploadDataToFirebase={uploadDataToFirebase}
+          maxStaticIndex={maxStaticIndex}
         />
       )}
       {isAutomaticCropping && (
         <AutomaticImageCropper
-          selectedColumn={
-            selectedImage.cardIndex > maxStaticIndex
+          selectedCardColumn={
+            selectedCardIndex > maxStaticIndex
               ? dynamicColumn
               : staticColumns
           }
-          setSelectedColumn={
-            selectedImage.cardIndex > maxStaticIndex
+          setSelectedCardColumn={
+            selectedCardIndex > maxStaticIndex
               ? setDynamicColumn
               : setStaticColumns
           }
-          selectedCardIndex={selectedCardIndex}
+          cardIndex={selectedCardIndex}
           imageIndex={imgIndex}
           setIsAutomaticCropping={setIsAutomaticCropping}
           uploadDataToFirebase={uploadDataToFirebase}
+          maxStaticIndex={maxStaticIndex}
         />
       )}
       {popup2 ? (

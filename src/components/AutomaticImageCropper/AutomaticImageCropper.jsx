@@ -8,22 +8,23 @@ const AutomaticImageCropper = ({
   cardIndex,
   imageIndex,
   setIsAutomaticCropping,
-  uploadDataToFirebase
+  uploadDataToFirebase,
+  maxStaticIndex
 }) => {
   const canvasRef = useRef(null);
-  const selectedImage = selectedCardColumn[cardIndex].img[imageIndex];
-  const [downloadedSelectedImage, setDownloadedSelectedImage] = useState(null)
   const transparentCanvasRef = useRef(null);
   const previewCanvasRef = useRef(null); // New canvas ref for preview
   const storage = getStorage();
-  const imagenSrc = selectedCardColumn[cardIndex].img[imageIndex].src
-  const tempRef = ref(storage, "images/temp");
+  const calculatedCardIndex = (cardIndex > maxStaticIndex ? cardIndex - maxStaticIndex - 1 : cardIndex)
   const [transparentImageSrc, setTransparentImageSrc] = useState(null);
+
+
+  console.log(cardIndex, calculatedCardIndex, maxStaticIndex)
 
   useEffect(() => {
     const getImageFromFirebase = async () => {
       try {
-        const imageUrl = await getDownloadURL(ref(storage, selectedCardColumn[cardIndex].img[imageIndex].src));
+        const imageUrl = await getDownloadURL(ref(storage, selectedCardColumn[calculatedCardIndex].img[imageIndex].src));
         const response = await fetch(imageUrl);
         const blob = await response.blob(); // Convert response to Blob
         return URL.createObjectURL(blob); // Create a local URL for the blob
@@ -125,7 +126,7 @@ const AutomaticImageCropper = ({
         await getDownloadURL(ref(storage, `images/temp/${file.name}`)).then(
           (url) => {
             const newCardColumn = [...selectedCardColumn];
-            newCardColumn[cardIndex].img[imageIndex].src = url;
+            newCardColumn[calculatedCardIndex].img[imageIndex].src = url;
             setSelectedCardColumn(newCardColumn);
             uploadDataToFirebase()
           },
