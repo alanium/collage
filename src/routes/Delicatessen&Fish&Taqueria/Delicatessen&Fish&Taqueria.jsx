@@ -70,6 +70,8 @@ export default function DelicatessenAndMore() {
   const [imgIndex, setImgIndex] = useState(null);
   const [selectedTextBox, setSelectedTextBox] = useState({});
   const [templateName, setTemplateName] = useState(templatesQuerySnapshot[0]);
+  
+  const maintenance = false;
   const storage = getStorage();
   const imageFolder =
  ( selectedCardIndex < 12 || selectedCardIndex > maxStaticIndex
@@ -1134,6 +1136,8 @@ export default function DelicatessenAndMore() {
 
   return (
     <div className={styles.body}>
+      { maintenance ? (
+          <>
       {popup ? (
         <TextPopUp
           textBox={
@@ -1400,7 +1404,9 @@ export default function DelicatessenAndMore() {
           imageFolder={imageFolder}
           uploadDataToFirebase={uploadDataToFirebase}
         />
-      ) : null}
+      ) : null}</>) : (
+        <h1>In maintenance..</h1>
+      )}
     </div>
   );
 }

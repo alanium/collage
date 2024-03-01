@@ -32,7 +32,7 @@ const templatesQuerySnapshot = await getDocs(groceryRef);
 export default function FrozenAndBeverages() {
   const cardsInStatic = 24;
   const maxStaticIndex = cardsInStatic - 1;
-
+  const maintenance = false
   const [staticColumns, setStaticColumns] = useState(
     Array(cardsInStatic)
       .fill()
@@ -1030,6 +1030,8 @@ export default function FrozenAndBeverages() {
 
   return (
     <div className={styles.body}>
+      { maintenance ? (
+          <>
       {popup ? (
         <TextPopUp
           textBox={
@@ -1261,7 +1263,9 @@ export default function FrozenAndBeverages() {
           imageFolder={selectedCardIndex > 14 && selectedCardIndex < 24 ? "beverages" : "frozen"}
           uploadDataToFirebase={uploadDataToFirebase}
         />
-      ) : null}
+      ) : null}</>) : (
+        <h1>In maintenance..</h1>
+      )}
     </div>
   );
 }

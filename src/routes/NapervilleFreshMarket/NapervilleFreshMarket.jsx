@@ -69,6 +69,7 @@ function NapervilleFreshMarket() {
   const [images, setImages] = useState(null);
   const [imgIndex, setImgIndex] = useState(null);
   const [templateName, setTemplateName] = useState(templatesQuerySnapshot[0]);
+  const maintenance = false
 
   const storage = getStorage();
   const imagesRef = ref(
@@ -1012,6 +1013,8 @@ function NapervilleFreshMarket() {
 
   return (
     <div className={styles.body}>
+      { maintenance ? (
+          <>
       {popup ? (
         <TextPopUp
           textBox={
@@ -1264,7 +1267,9 @@ function NapervilleFreshMarket() {
           }
           uploadDataToFirebase={uploadDataToFirebase}
         />
-      ) : null}
+      ) : null}  </>) : (
+        <h1>In maintenance..</h1>
+      )}
     </div>
   );
 }

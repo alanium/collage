@@ -71,7 +71,7 @@ export default function DairyAndSnacks({
   const [templateName, setTemplateName] = useState(templatesQuerySnapshot[0]);
   const [popupState, setPopupState] = useState(3);
 
-
+  const maintenance = false;
   const imageFolder = (selectedCardIndex > 11 && selectedCardIndex < maxStaticIndex ? "snacks" : "dairy")
   const storage = getStorage();
   const imagesRef = ref(storage, `images/${(selectedCardIndex > 11 && selectedCardIndex < maxStaticIndex ? "snacks" : "dairy")}`);
@@ -1038,6 +1038,8 @@ export default function DairyAndSnacks({
 
   return (
     <div className={styles.body}>
+      { maintenance ? (
+          <>
       {popup ? (
         <TextPopUp
           textBox={
@@ -1264,7 +1266,9 @@ export default function DairyAndSnacks({
           imageFolder={selectedCardIndex > 11 && selectedCardIndex < maxStaticIndex ? "snacks" : "dairy"}
           uploadDataToFirebase={uploadDataToFirebase}
           />
-      ) : null}
+      ) : null} </>) : (
+        <h1>In maintenance..</h1>
+      )}
     </div>
   );
 }

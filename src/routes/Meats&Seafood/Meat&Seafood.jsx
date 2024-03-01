@@ -72,6 +72,8 @@ export default function MeatAndSeafood() {
   const [imgIndex, setImgIndex] = useState(null);
   const [selectedTextBox, setSelectedTextBox] = useState({});
   const [templateName, setTemplateName] = useState(templatesQuerySnapshot[0]);
+
+  const maintenance = false
   const imageFolder = (selectedCardIndex > maxStaticIndex ? "seafood" : "meat")
   const storage = getStorage();
   const imagesRef = ref(
@@ -1028,6 +1030,8 @@ export default function MeatAndSeafood() {
 
   return (
     <div className={styles.body}>
+      { maintenance ? (
+          <>
       {popup ? (
         <TextPopUp
           textBox={
@@ -1291,7 +1295,9 @@ export default function MeatAndSeafood() {
           imageFolder={selectedCardIndex > maxStaticIndex ? "seafood" : "meat"}
           uploadDataToFirebase={uploadDataToFirebase}
         />
-      ) : null}
+      ) : null}</>) : (
+        <h1>In maintenance..</h1>
+      )}
     </div>
   );
 }

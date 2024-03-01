@@ -49,7 +49,7 @@ export default function BakeryLiquor({
   const cardsInStatic = 28;
   const maxStaticIndex = cardsInStatic - 1;
   const templateCollection = "Bakery&Beverages";
-
+  const maintenance = false
   const [staticColumns, setStaticColumns] = useState(
     Array(cardsInStatic)
       .fill()
@@ -1048,6 +1048,8 @@ export default function BakeryLiquor({
   6;
   return (
     <div className={styles.body}>
+      { maintenance ? (
+          <>
       {renderPopup(popupState)}
       <Sidebar
         handleConvertToPDF={handleConvertToPDF}
@@ -1071,7 +1073,9 @@ export default function BakeryLiquor({
           <div className={styles.secondOverlay}>LIQUOR & BEVERAGES</div>
           <RenderLiquorCards />
         </div>
-      </div>
+      </div></>) : (
+        <h1>In maintenance..</h1>
+      )}
     </div>
   );
 }
