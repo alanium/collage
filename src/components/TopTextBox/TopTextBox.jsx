@@ -5,7 +5,7 @@ export default function TopTextBox({ textBoxes, setTextBoxes, cardIndex, setPopu
   const [fontSize, setFontSize] = useState(14);
 
   const handleTopText = () => {
-    setPopup(true);
+    setPopup(1);
     setSelectedImage({ cardIndex });
     setSelectedTextBox(textBoxes[cardIndex]);
     setType("top");

@@ -1,29 +1,49 @@
 import React, { useState } from "react";
-import styles from "./TextPopup.module.css"
+import styles from "./TextPopup.module.css";
 
-export default function TextPopUp({textBox, setTextBox, setPopup, cardIndex, type, setSelectedImage, maxCardPosition, uploadDataToFirebase}) {
+export default function TextPopUp({
+  textBox,
+  setTextBox,
+  setPopup,
+  cardIndex,
+  type,
+  setSelectedImage,
+  maxCardPosition,
+  uploadDataToFirebase,
+  templateCollection,
+  templateName,
+  staticColumns,
+  dynamicColumn,
+}) {
   const [text, setText] = useState("");
 
-  const calculatedIndex = ( cardIndex.cardIndex  > maxCardPosition ? cardIndex.cardIndex  - (maxCardPosition + 1) : cardIndex.cardIndex )
+  const calculatedIndex =
+    cardIndex.cardIndex > maxCardPosition
+      ? cardIndex.cardIndex - (maxCardPosition + 1)
+      : cardIndex.cardIndex;
 
   const handleChange = (event) => {
     setText(event.target.value);
   };
 
   const handleConfirm = (event) => {
-    
     const newTextBox = [...textBox];
-    console.log(textBox)
-    console.log(calculatedIndex)
-    newTextBox[calculatedIndex].text[type] = text
-    
+    console.log(textBox);
+    console.log(calculatedIndex);
+    newTextBox[calculatedIndex].text[type] = text;
+
     setTextBox(newTextBox);
-    uploadDataToFirebase()
+    uploadDataToFirebase(
+      templateCollection,
+      templateName,
+      staticColumns,
+      dynamicColumn
+    );
     setPopup(false);
   };
 
   const handleCancel = (event) => {
-    setPopup(false);
+    setPopup(0);
   };
 
   return (
@@ -38,8 +58,12 @@ export default function TextPopUp({textBox, setTextBox, setPopup, cardIndex, typ
           placeholder="Type your text here..."
         />
         <div>
-          <button className={styles.button} onClick={handleConfirm}>Confirm</button>
-          <button className={styles.button} onClick={handleCancel}>Cancel</button>
+          <button className={styles.button} onClick={handleConfirm}>
+            Confirm
+          </button>
+          <button className={styles.button} onClick={handleCancel}>
+            Cancel
+          </button>
         </div>
       </div>
     </div>

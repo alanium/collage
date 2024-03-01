@@ -18,9 +18,8 @@ export default function ManageTemplates({
   setDynamicColumn,
   setStaticColumns,
   setTemplates,
-  setPopup4,
+  setPopup,
   setCurrentTemplate,
-
   templateFolder,
   cardsInStatic,
 }) {
@@ -52,7 +51,7 @@ export default function ManageTemplates({
     } catch (error) {
       console.error("Error uploading template:", error.message);
     } finally {
-      setPopup4(false);
+      setPopup(0);
     }
   };
 
@@ -116,7 +115,7 @@ export default function ManageTemplates({
       await handleConfirmSelection(templateName);
 
       // Close the ManageTemplates component
-      setPopup4(false);
+      setPopup(0);
     } catch (error) {
       console.error("Error uploading template:", error.message);
     }
@@ -225,14 +224,14 @@ export default function ManageTemplates({
         setStaticColumns(templateData.staticColumns);
         setSelectedTemplate(null);
         setTemplates(null);
-        setPopup4(false);
+        setPopup(0);
       } else {
         console.error("Template not found");
       }
     } catch (error) {
       console.error("Error loading template:", error.message);
     } finally {
-      setPopup4(false);
+      setPopup(0);
     }
   };
 
@@ -333,15 +332,14 @@ export default function ManageTemplates({
   return (
     <div className={styles.background}>
       <div className={styles.container}>
-
         <table >
           <thead>
-            <tr>
-              <th>Name</th>
-              <th>Actions</th>
+            <tr >
+              <th >Name</th>
+              <th >Actions</th>
             </tr>
           </thead>
-          <div style={{ overflowY: "auto", maxHeight: "150px" }}>
+          <div style={{ overflowY: "auto", maxHeight: "400px" }}>
           <tbody >
             {renderedTemplates.map((template) => (
               <tr key={template}>
@@ -377,7 +375,7 @@ export default function ManageTemplates({
         <button onClick={(event) => saveTemplate(event)}>
           Download Template To Computer
         </button>
-        <button onClick={() => setPopup4(false)}>Cancel</button>
+        <button onClick={() => setPopup(0)}>Cancel</button>
       </div>
     </div>
   );

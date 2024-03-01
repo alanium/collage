@@ -1,14 +1,11 @@
 import React from "react";
 import styles from "./Sidebar.module.css"
+import ImageUploader from "../ImageToCloud/ImageToCloud";
 
 export default function Sidebar({
   handleConvertToPDF,
-  setPopup3,
-  setInfo,
-  setPopup5,
-  setPopup4,
+  setPopup,
   uploadDataToFirebase,
-  info
 }) {
   return (
     <div>
@@ -34,7 +31,7 @@ export default function Sidebar({
           backgroundColor: "gray",
           color: "white",
         }}
-        onClick={() => setPopup3(true)}
+        onClick={() => setPopup(6)}
       >
         Back to Home
       </button>
@@ -58,7 +55,7 @@ export default function Sidebar({
               marginBottom: "10px",
               zIndex: "1",
             }}
-            onClick={() => setInfo(!info)}
+            onClick={() => setPopup(10)}
           >
             Info
           </button>
@@ -71,7 +68,7 @@ export default function Sidebar({
               marginBottom: "10px",
               zIndex: "1",
             }}
-            onClick={() => setPopup5(true)}
+            onClick={() => setPopup(4)}
           >
             Report a Bug
           </button>
@@ -83,7 +80,7 @@ export default function Sidebar({
               color: "white",
               marginBottom: "10px",
             }}
-            onClick={() => setPopup4(true)}
+            onClick={() => setPopup(3)}
           >
             Open Template Manager
           </button>

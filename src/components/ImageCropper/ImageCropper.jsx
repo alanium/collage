@@ -6,14 +6,15 @@ import { getDownloadURL, getStorage, listAll, ref, uploadBytes } from "firebase/
 
 const ImageCropper = ({
   src,
-  setIsCroppingImage,
+  setPopup,
   selectedColumn,
   setSelectedColumn,
   imageIndex,
   selectedCardIndex,
   imageFolder,
   uploadDataToFirebase,
-  maxStaticIndex
+  maxStaticIndex,
+  templateCollection, templateName, staticColumns, dynamicColumn
 }) => {
   const imageRef = useRef(null);
   const cropper = useRef(null);
@@ -67,7 +68,7 @@ const ImageCropper = ({
           try {
             await uploadBytes(imageRef, blob);
             console.log("Blob uploaded successfully");
-            setIsCroppingImage(false);
+            setPopup(0);
   
             const newSelectedColumn = [...selectedColumn];
             const url = await getDownloadURL(
@@ -75,7 +76,7 @@ const ImageCropper = ({
             );
             newSelectedColumn[calculatedCardIndex].img[imageIndex].src = url;
             setSelectedColumn(newSelectedColumn);
-            uploadDataToFirebase();
+            uploadDataToFirebase(templateCollection, templateName, staticColumns, dynamicColumn );
           } catch (error) {
             console.log("Error uploading image:", error);
           }
@@ -95,7 +96,7 @@ const ImageCropper = ({
   };
 
   const handleCancel = () => {
-    setIsCroppingImage(false);
+    setPopup(0)
   };
 
   return (

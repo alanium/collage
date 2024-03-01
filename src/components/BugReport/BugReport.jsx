@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import emailjs from "emailjs-com";
 import styles from "./BugReport.module.css";
 
-function BugReport({ setPopup5 }) {
+function BugReport({ setPopup }) {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
 
@@ -38,11 +38,11 @@ function BugReport({ setPopup5 }) {
     // Limpiar el formulario después del envío
     setEmail("");
     setMessage("");
-    setPopup5(false)
+    setPopup(0);
   };
 
   const handleClose = (e) => {
-    setPopup5(false)
+    setPopup(0);
   }
 
   return (

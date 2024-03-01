@@ -1,26 +1,28 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom";
-import './index.css'
-import { Root } from './routes/root.jsx';
-import Grocery from './routes/Grocery2/Grocery.jsx';
-import BakeryLiquor from './routes/Bakery & Liquor/BakeryAndBeverages/BakeryAndBeverages.jsx';
-import International from './routes/International/International.jsx';
-import DairyAndSnacks from './routes/Dairy&Snacks/Dairy&Snacks.jsx';
-import FrozenAndBeverages from './routes/Frozen&Beverages/Frozen&Beverages.jsx';
-import MeatAndSeafood from './routes/Meats&Seafood/Meat&Seafood.jsx';
-import DelicatessenAndMore from './routes/Delicatessen&Fish&Taqueria/Delicatessen&Fish&Taqueria.jsx';
-import NapervilleFreshMarket from './routes/NapervilleFreshMarket/NapervilleFreshMarket.jsx';
-import  html2pdf  from 'html2pdf.js';
-import AmountForPrice from './components/AmountForPrice/AmountForPrice.jsx';
-import TripleBox from './components/TripleBoxWithText/TripleBoxWithText.jsx';
-import FixedBox from './components/BoxWithText/BoxWithText.jsx';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import "./index.css";
+import { db, Root } from "./routes/root.jsx";
+import Grocery from "./routes/Grocery2/Grocery.jsx";
+import BakeryLiquor from "./routes/Bakery & Liquor/BakeryAndBeverages/BakeryAndBeverages.jsx";
+import International from "./routes/International/International.jsx";
+import DairyAndSnacks from "./routes/Dairy&Snacks/Dairy&Snacks.jsx";
+import FrozenAndBeverages from "./routes/Frozen&Beverages/Frozen&Beverages.jsx";
+import MeatAndSeafood from "./routes/Meats&Seafood/Meat&Seafood.jsx";
+import DelicatessenAndMore from "./routes/Delicatessen&Fish&Taqueria/Delicatessen&Fish&Taqueria.jsx";
+import NapervilleFreshMarket from "./routes/NapervilleFreshMarket/NapervilleFreshMarket.jsx";
+import html2pdf from "html2pdf.js";
+import AmountForPrice from "./components/AmountForPrice/AmountForPrice.jsx";
+import TripleBox from "./components/TripleBoxWithText/TripleBoxWithText.jsx";
+import FixedBox from "./components/BoxWithText/BoxWithText.jsx";
+import { doc, setDoc } from "firebase/firestore";
 
-
-const uploadDataToFirebase = async (folderName) => {
+const uploadDataToFirebase = async (
+  folderName,
+  templateName,
+  staticColumns,
+  dynamicColumn
+) => {
   try {
     // Upload staticColumns to a document in "Grocery" collection
     await setDoc(doc(db, `${folderName}/${templateName}`), {
@@ -38,47 +40,52 @@ const handleConvertToPDF = async () => {
   const container = document.getElementById("magazineContainer");
 
   if (container) {
-      await downloadExternalImages(container);
+    await downloadExternalImages(container);
 
-      const currentDate = new Date();
-      const formattedDate = currentDate.toLocaleString('en-US', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          hour12: false
-      }).replace(/\//g, '_').replace(/,/g, '').replace(/:/g, '_').replace(/ /g, '_');
+    const currentDate = new Date();
+    const formattedDate = currentDate
+      .toLocaleString("en-US", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      })
+      .replace(/\//g, "_")
+      .replace(/,/g, "")
+      .replace(/:/g, "_")
+      .replace(/ /g, "_");
 
-      const filename = `grocery_${formattedDate}.pdf`;
+    const filename = `grocery_${formattedDate}.pdf`;
 
-      const pdfOptions = {
-          filename: filename,
-          image: { type: "png", quality: 1 },
-          html2canvas: { scale: 2 },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      };
+    const pdfOptions = {
+      filename: filename,
+      image: { type: "png", quality: 1 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    };
 
-      // Get the original top value
-      const originalTop = container.style.top;
+    // Get the original top value
+    const originalTop = container.style.top;
 
-      console.log(originalTop);
+    console.log(originalTop);
 
-      // Ensure container's position property is set
-      const computedStyle = window.getComputedStyle(container);
-      const position = computedStyle.getPropertyValue('position');
-      if (position === 'static') {
-          container.style.position = 'relative'; // or 'absolute' depending on your layout needs
-      }
+    // Ensure container's position property is set
+    const computedStyle = window.getComputedStyle(container);
+    const position = computedStyle.getPropertyValue("position");
+    if (position === "static") {
+      container.style.position = "relative"; // or 'absolute' depending on your layout needs
+    }
 
-      container.style.top = "0";
+    container.style.top = "0";
 
-      // Generate PDF from the container
-      await html2pdf().from(container).set(pdfOptions).save();
+    // Generate PDF from the container
+    await html2pdf().from(container).set(pdfOptions).save();
 
-      // Reset the top value to the original
-      container.style.top = originalTop;
+    // Reset the top value to the original
+    container.style.top = originalTop;
   }
 };
 
@@ -171,37 +178,49 @@ const router = createBrowserRouter([
     element: <Root />,
   },
   {
-    path:"/grocery",
-    element: <Grocery handleConvertToPDF={handleConvertToPDF} uploadDataToFirebase={uploadDataToFirebase} renderPriceBox={renderPriceBox} />
+    path: "/grocery",
+    element: (
+      <Grocery
+        handleConvertToPDF={handleConvertToPDF}
+        uploadDataToFirebase={uploadDataToFirebase}
+        renderPriceBox={renderPriceBox}
+      />
+    ),
   },
   {
-    path:"/liquor&bakery",
-    element: <BakeryLiquor />
+    path: "/liquor&bakery",
+    element: <BakeryLiquor handleConvertToPDF={handleConvertToPDF}
+    uploadDataToFirebase={uploadDataToFirebase}
+    renderPriceBox={renderPriceBox} />,
   },
   {
-    path:"/international",
-    element: <International />
+    path: "/international",
+    element: <International handleConvertToPDF={handleConvertToPDF}
+    uploadDataToFirebase={uploadDataToFirebase}
+    renderPriceBox={renderPriceBox} />,
   },
   {
-    path:"/Dairy&Snacks",
-    element: <DairyAndSnacks />
+    path: "/Dairy&Snacks",
+    element: <DairyAndSnacks handleConvertToPDF={handleConvertToPDF}
+    uploadDataToFirebase={uploadDataToFirebase}
+    renderPriceBox={renderPriceBox} />,
   },
   {
-    path:"/Frozen&Beverages",
-    element: <FrozenAndBeverages />
+    path: "/Frozen&Beverages",
+    element: <FrozenAndBeverages />,
   },
   {
-    path:"/Meat&Seafood",
-    element: <MeatAndSeafood />
+    path: "/Meat&Seafood",
+    element: <MeatAndSeafood />,
   },
   {
-    path:"/Delicatessen&More",
-    element: <DelicatessenAndMore />
+    path: "/Delicatessen&More",
+    element: <DelicatessenAndMore />,
   },
   {
-    path:"/NapervilleFreshMarket",
-    element: <NapervilleFreshMarket />
-  }
+    path: "/NapervilleFreshMarket",
+    element: <NapervilleFreshMarket />,
+  },
 ]);
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

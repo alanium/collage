@@ -1,13 +1,14 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styles from "./ImportPopup.module.css"
 
 export default function ImportPopup({
-  setPopup2,
+  setPopup,
   getImageList,
   handleImageUpload,
   selectedCardIndex,
   imgIndex,
 }) {
+
   return (
     <div className={styles.background}>
       <div className={styles.popUp2} style={{ zIndex: "1" }}>
@@ -29,7 +30,7 @@ export default function ImportPopup({
         </button>
         <button
           className={styles.actionButton}
-          onClick={() => setPopup2(false)}
+          onClick={() => setPopup(0)}
         >
           Close
         </button>

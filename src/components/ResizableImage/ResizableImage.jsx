@@ -6,9 +6,10 @@ const ResizableImage = ({
   cardIndex,
   selectedColumn,
   setSelectedColumn,
-  setIsEditingZoom,
+  setPopup,
   cardNumber,
-  uploadDataToFirebase
+  uploadDataToFirebase,
+  templateCollection, templateName, staticColumns, dynamicColumn
 }) => {
   const imageRefs = useRef([useRef(null), useRef(null)]);
   const [imageCoords, setImageCoords] = useState([
@@ -69,8 +70,8 @@ const ResizableImage = ({
     tempImageCoords.forEach((coords, index) => {
       updateImageProperties(cardIndex, index, coords); // Call updateImageProperties
     });
-    uploadDataToFirebase()
-    setIsEditingZoom(false);
+    uploadDataToFirebase(templateCollection, templateName, staticColumns, dynamicColumn);
+   setPopup(0);
   };
 
   const updateImageProperties = (cardIndex, imageIndex, properties) => {
@@ -148,7 +149,7 @@ const ResizableImage = ({
           </button>
           <button
             className={styles.cancelButton}
-            onClick={() => setIsEditingZoom(false)}
+            onClick={() => setPopup(0)}
           >
             Back
           </button>

@@ -17,7 +17,7 @@ export default function TextBoxLeft({
   const [fontSize, setFontSize] = useState(14);
 
   const handleLeftText = () => {
-    setPopup(true);
+    setPopup(1);
     setSelectedImage({ cardIndex });
     setSelectedTextBox(textBoxes[cardIndex]);
     setType("left");

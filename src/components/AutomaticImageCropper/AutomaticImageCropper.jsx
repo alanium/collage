@@ -7,9 +7,14 @@ const AutomaticImageCropper = ({
   setSelectedCardColumn,
   cardIndex,
   imageIndex,
-  setIsAutomaticCropping,
+  setPopup,
   uploadDataToFirebase,
-  maxStaticIndex
+  maxStaticIndex,
+  templateName,
+  staticColumns,
+  dynamicColumn,
+  imageFolder,
+  templateCollection
 }) => {
   const canvasRef = useRef(null);
   const transparentCanvasRef = useRef(null);
@@ -19,7 +24,7 @@ const AutomaticImageCropper = ({
   const [transparentImageSrc, setTransparentImageSrc] = useState(null);
 
 
-  console.log(cardIndex, calculatedCardIndex, maxStaticIndex)
+  console.log(selectedCardColumn)
 
   useEffect(() => {
     const getImageFromFirebase = async () => {
@@ -128,7 +133,7 @@ const AutomaticImageCropper = ({
             const newCardColumn = [...selectedCardColumn];
             newCardColumn[calculatedCardIndex].img[imageIndex].src = url;
             setSelectedCardColumn(newCardColumn);
-            uploadDataToFirebase()
+            uploadDataToFirebase(templateCollection, templateName, staticColumns, dynamicColumn)
           },
           
         );
@@ -143,7 +148,7 @@ const AutomaticImageCropper = ({
   };
 
   const handleCancel = () => {
-    setIsAutomaticCropping(false)
+    setPopup(0);
   }
 
   return (

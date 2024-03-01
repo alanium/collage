@@ -12,10 +12,14 @@ export default function ImageFromCloud({
   imgIndex,
   maxCardPosition,
   imageFolder,
-  uploadDataToFirebase
+  templateName,
+  staticColumns,
+  dynamicColumn,
+  setPopup,
+  uploadDataToFirebase,
+  templateCollection,
 }) {
   const [selectedImage, setSelectedImage] = useState(null);
-  const [downloadedImageUrl, setDownloadedImageUrl] = useState(null);
   const [imagesPreview, setImagesPreview] = useState([]);
   const [visibleImages, setVisibleImages] = useState(30);
   const [renderedImages, setRenderedImages] = useState([]);
@@ -28,10 +32,8 @@ export default function ImageFromCloud({
   const totalImages = images.length;
   const totalPages = Math.ceil(totalImages / imagesPerPage);
   const storage = getStorage();
-  const containerWithPreviewStyle = {
-    width: renderedImages.length > 0 ? "" : "10%",
-  };
-  
+
+  console.log(images)
 
   const handleImageChange = (event, imagePreview) => {
     event.preventDefault();
@@ -52,7 +54,8 @@ export default function ImageFromCloud({
     setImages(null);
     setPreviewImage(null);
     setContainerToLeft(false);
-    uploadDataToFirebase()
+    setPopup(0)
+    uploadDataToFirebase(templateCollection, templateName, staticColumns, dynamicColumn)
   };
 
   const loadMoreImages = () => {
@@ -90,6 +93,7 @@ export default function ImageFromCloud({
     setSelectedImage(null);
     setPreviewImage(null);
     setContainerToLeft(false);
+    setPopup(0)
   };
 
   const renderImages = () => {
@@ -132,7 +136,7 @@ export default function ImageFromCloud({
     );
   }
 
-  return (
+ return (
     <div className={styles.background}>
       <div className={styles.containerWithPreview}>
         {renderedImages.length > 0 && (

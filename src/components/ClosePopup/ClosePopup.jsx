@@ -2,9 +2,11 @@ import React from "react";
 import styles from "./ClosePopup.module.css"
 import {  useNavigate } from "react-router-dom";
 
-const navigate = useNavigate()
+export default function ClosePopup ({setPopup}) {
 
-export default function ClosePopup ({setPopup3}) {
+  
+const navigate = useNavigate();
+
     return (
         <div className={styles.backgroundPopUp2}>
         <div className={styles.popUp2}>
@@ -18,7 +20,7 @@ export default function ClosePopup ({setPopup3}) {
             </button>
             <button
               className={styles.popUp2Button}
-              onClick={() => setPopup3(false)}
+              onClick={() => setPopup(0)}
             >
               No
             </button>
