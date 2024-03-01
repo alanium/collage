@@ -39,6 +39,8 @@ import ImportPopup from "../../../components/ImportPopup/ImportPopup";
 const groceryRef = collection(db, "Bakery&Beverages");
 const templatesQuerySnapshot = await getDocs(groceryRef);
 
+
+
 export default function BakeryLiquor({
   uploadDataToFirebase,
   handleConvertToPDF,

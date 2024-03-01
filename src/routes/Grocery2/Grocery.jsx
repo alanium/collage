@@ -25,7 +25,7 @@ const templatesQuerySnapshot = await getDocs(groceryRef);
 function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
   const maxStaticIndex = 20;
   const cardsInStatic = 21;
-
+  const templateCollection = "Grocery"
   const [staticColumns, setStaticColumns] = useState(
     Array(cardsInStatic)
       .fill()
