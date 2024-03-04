@@ -585,7 +585,7 @@ export default function DelicatessenAndMore({
       {
         label: "Edit ",
         action: () => {
-          setIsEditingZoom(true);
+          setPopupState(9);
           setSelectedImage({ cardIndex });
         },
       },
