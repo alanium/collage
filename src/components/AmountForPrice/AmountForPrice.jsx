@@ -1,93 +1,120 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import styles from "./AmountForPrice.module.css";
 
-const AmountForPrice = ({ textBoxes, setTextBoxes, i, j, cardIndex, backgroundColor, maxStaticIndex, priceBoxBorder, uploadDataToFirebase }) => {
-    const [middleBoxFontSize, setMiddleBoxFontSize] = useState(50);
-    const [rightBoxFontSize, setRightBoxFontSize] = useState(10);
-    const [leftBoxFontSize, setLeftBoxFontSize] = useState(60);
-    const [isEditing, setIsEditing] = useState(false);
-    const containerRef = useRef(null);
-    const middleBoxRef = useRef(null);
-    const rightBoxRef = useRef(null);
-    const leftBoxRef = useRef(null);
-  
-    const auxIndex = (cardIndex > maxStaticIndex ? cardIndex - (maxStaticIndex + 1) : cardIndex)
-  
-    useEffect(() => {
-      adjustTextSize(leftBoxRef, setLeftBoxFontSize);
-    }, textBoxes);
-  
-    useEffect(() => {
-      adjustTextSize(rightBoxRef, setRightBoxFontSize);
-    }, textBoxes);
+const AmountForPrice = ({
+  textBoxes,
+  setTextBoxes,
+  i,
+  j,
+  cardIndex,
+  backgroundColor,
+  maxStaticIndex,
+  priceBoxBorder,
+  uploadDataToFirebase,
+  templateCollection,
+  templateName,
+  staticColumns,
+  dynamicColumn,
+}) => {
+  const [middleBoxFontSize, setMiddleBoxFontSize] = useState(50);
+  const [rightBoxFontSize, setRightBoxFontSize] = useState(10);
+  const [leftBoxFontSize, setLeftBoxFontSize] = useState(60);
+  const [isEditing, setIsEditing] = useState(false);
+  const containerRef = useRef(null);
+  const middleBoxRef = useRef(null);
+  const rightBoxRef = useRef(null);
+  const leftBoxRef = useRef(null);
 
-    const handlePriceBoxClick = () => {
-        const newText = prompt("Enter new amount: ");
-        if (newText != null) {
-          const newTextBoxes = [...textBoxes];
-          newTextBoxes[auxIndex].text.bottom = newText;
-          if (newText.includes("/")) {
-            newTextBoxes[auxIndex].text.priceBoxType = 0
-          } else if (newText.includes("each") || newText.includes("lb") || newText.includes("pk") || newText.includes("oz")) {
-            newTextBoxes[auxIndex].text.priceBoxType = 1
-          }
-          setTextBoxes(newTextBoxes);
-          uploadDataToFirebase()
-        }
-      };
+  const auxIndex =
+    cardIndex > maxStaticIndex ? cardIndex - (maxStaticIndex + 1) : cardIndex;
 
-      const handleMouseEnter = () => {
-        setIsEditing(true);
-      };
-    
-      const handleMouseLeave = () => {
-        setIsEditing(false);
-      };
-  
-      const adjustTextSize = (boxRef, setFontSize) => {
-        const box = boxRef.current;
-      
-        if (!box) return;
-      
-        const boxWidth = box.clientWidth;
-        const boxHeight = box.clientHeight;
-      
-        let fontSize = 44;
-      
-        while ((box.scrollWidth !== box.clientWidth && box.scrollHeight !== box.clientHeight)) {
-          if (box.scrollWidth > box.clientWidth) {
-            fontSize--;
-          }
-          if (box.scrollWidth < box.clientWidth) {
-            fontSize++;
-          }
-          box.style.fontSize = `${fontSize}px`;
-        }
-        // Ensure font size does not exceed the maximum
-        setFontSize(fontSize);
-        // Adjust font size for left box dynamically based on overflow
-      };
+  useEffect(() => {
+    adjustTextSize(leftBoxRef, setLeftBoxFontSize);
+  }, textBoxes);
 
+  useEffect(() => {
+    adjustTextSize(rightBoxRef, setRightBoxFontSize);
+  }, textBoxes);
 
-      const setBorder = () => {
-        return priceBoxBorder ? '1px solid black' : '0px solid black'
+  const handlePriceBoxClick = () => {
+    const newText = prompt("Enter new amount: ");
+    if (newText != null) {
+      const newTextBoxes = [...textBoxes];
+      newTextBoxes[auxIndex].text.bottom = newText;
+      if (newText.includes("/")) {
+        newTextBoxes[auxIndex].text.priceBoxType = 0;
+      } else if (
+        newText.includes("each") ||
+        newText.includes("lb") ||
+        newText.includes("pk") ||
+        newText.includes("oz")
+      ) {
+        newTextBoxes[auxIndex].text.priceBoxType = 1;
       }
+      setTextBoxes(newTextBoxes);
+      uploadDataToFirebase(
+        templateCollection,
+        templateName,
+        staticColumns,
+        dynamicColumn
+      );
+    }
+  };
 
-      const setBackgroundColor = () => {
-        const color = backgroundColor ? 'red' : 'white';
-      return color;
-      };
-    
-      const setTextColor = () => {
-        return backgroundColor ? 'white' : 'red';
-      };
-    
+  const handleMouseEnter = () => {
+    setIsEditing(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsEditing(false);
+  };
+
+  const adjustTextSize = (boxRef, setFontSize) => {
+    const box = boxRef.current;
+
+    if (!box) return;
+
+    const boxWidth = box.clientWidth;
+    const boxHeight = box.clientHeight;
+
+    let fontSize = 44;
+
+    while (
+      box.scrollWidth !== box.clientWidth &&
+      box.scrollHeight !== box.clientHeight
+    ) {
+      if (box.scrollWidth > box.clientWidth) {
+        fontSize--;
+      }
+      if (box.scrollWidth < box.clientWidth) {
+        fontSize++;
+      }
+      box.style.fontSize = `${fontSize}px`;
+    }
+    // Ensure font size does not exceed the maximum
+    setFontSize(fontSize);
+    // Adjust font size for left box dynamically based on overflow
+  };
+
+  const setBorder = () => {
+    return priceBoxBorder ? "1px solid black" : "0px solid black";
+  };
+
+  const setBackgroundColor = () => {
+    const color = backgroundColor ? "red" : "white";
+    return color;
+  };
+
+  const setTextColor = () => {
+    return backgroundColor ? "white" : "red";
+  };
+
   return (
     <div
       ref={containerRef}
       id={`triple-box-${i}-${j}`}
-      className={`${styles.containerBox} ${isEditing ? styles.editing : ''}`}
-      style={{ 
+      className={`${styles.containerBox} ${isEditing ? styles.editing : ""}`}
+      style={{
         border: setBorder(),
         display: textBoxes[auxIndex].text.bottom != null ? "flex" : "none",
         backgroundColor: setBackgroundColor(), // Use setBackgroundColor directly here
@@ -102,23 +129,27 @@ const AmountForPrice = ({ textBoxes, setTextBoxes, i, j, cardIndex, backgroundCo
         ref={leftBoxRef}
         style={{ fontSize: `${leftBoxFontSize}px` }}
       >
-        {textBoxes[auxIndex].text.bottom && textBoxes[auxIndex].text.bottom.split(" ")[0]}
+        {textBoxes[auxIndex].text.bottom &&
+          textBoxes[auxIndex].text.bottom.split(" ")[0]}
       </div>
-        <div
-          className={styles.middleBox}
-          ref={middleBoxRef}
-          style={{ fontSize: `10px` }}
-        >
-          {textBoxes[auxIndex].text.bottom && textBoxes[auxIndex].text.bottom.split(" ")[1] &&  textBoxes[auxIndex].text.bottom.split(" ")[1].toUpperCase()}
-        </div>
-        <div
-          className={styles.rightBox}
-          ref={rightBoxRef}
-          style={{ fontSize: `${rightBoxFontSize}px` }}
-        >
-          {textBoxes[auxIndex].text.bottom && textBoxes[auxIndex].text.bottom.split(" ")[2]}
-        </div>
+      <div
+        className={styles.middleBox}
+        ref={middleBoxRef}
+        style={{ fontSize: `10px` }}
+      >
+        {textBoxes[auxIndex].text.bottom &&
+          textBoxes[auxIndex].text.bottom.split(" ")[1] &&
+          textBoxes[auxIndex].text.bottom.split(" ")[1].toUpperCase()}
       </div>
+      <div
+        className={styles.rightBox}
+        ref={rightBoxRef}
+        style={{ fontSize: `${rightBoxFontSize}px` }}
+      >
+        {textBoxes[auxIndex].text.bottom &&
+          textBoxes[auxIndex].text.bottom.split(" ")[2]}
+      </div>
+    </div>
   );
 };
 

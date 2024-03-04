@@ -1,22 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import styles from "./Frozen&Beverages.module.css";
-import html2pdf from "html2pdf.js"; // Importa la biblioteca html2pdf
-import FixedBox from "../../components/BoxWithText/BoxWithText";
-import TripleBox from "../../components/TripleBoxWithText/TripleBoxWithText";
 import { useNavigate } from "react-router-dom";
-import AmountForPrice from "../../components/AmountForPrice/AmountForPrice";
 import TextBoxLeft from "../../components/ParagraphBox/ParagraphBox";
 import TopTextBox from "../../components/TopTextBox/TopTextBox";
-import TextPopUp from "../../components/TextPopup/TextPopup";
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore/lite";
-import ImageUploader from "../../components/ImageToCloud/ImageToCloud";
 import { getStorage, ref, listAll, uploadBytes } from "firebase/storage";
-import ImageFromCloud from "../../components/ImageFromCloud/ImageFromCloud";
-import ResizableImage from "../../components/ResizableImage/ResizableImage";
-import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
-import ImageCropper from "../../components/ImageCropper/ImageCropper";
-import AutomaticImageCropper from "../../components/AutomaticImageCropper/AutomaticImageCropper";
 import { db } from "../root";
 import {
   collection,
@@ -25,14 +12,31 @@ import {
   onSnapshot,
   setDoc,
 } from "firebase/firestore";
+import ContextMenu from "../../components/ContextMenu/ContextMenu";
+import Sidebar from "../../components/Sidebar/Sidebar";
+import TextPopUp from "../../components/TextPopup/TextPopup";
+import ImportPopup from "../../components/ImportPopup/ImportPopup";
+import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
+import BugReport from "../../components/BugReport/BugReport";
+import ClosePopup from "../../components/ClosePopup/ClosePopup";
+import AutomaticImageCropper from "../../components/AutomaticImageCropper/AutomaticImageCropper";
+import ImageCropper from "../../components/ImageCropper/ImageCropper";
+import ResizableImage from "../../components/ResizableImage/ResizableImage";
+import RenderInfo from "../../components/RenderInfo/RenderInfo";
+import ImageFromCloud from "../../components/ImageFromCloud/ImageFromCloud";
 
 const groceryRef = collection(db, "Frozen&Beverages");
 const templatesQuerySnapshot = await getDocs(groceryRef);
 
-export default function FrozenAndBeverages() {
+export default function FrozenAndBeverages(
+  {uploadDataToFirebase,
+  handleConvertToPDF,
+  renderPriceBox,}
+) {
   const cardsInStatic = 24;
   const maxStaticIndex = cardsInStatic - 1;
   const maintenance = false
+  const templateCollection = "Frozen&Beverages"
   const [staticColumns, setStaticColumns] = useState(
     Array(cardsInStatic)
       .fill()
@@ -56,23 +60,16 @@ export default function FrozenAndBeverages() {
 
   const [dynamicColumn, setDynamicColumn] = useState([]);
   const [contextMenu, setContextMenu] = useState(null);
-  const [isEditingZoom, setIsEditingZoom] = useState(false);
   const [selectedImage, setSelectedImage] = useState({});
   const [selectedCardIndex, setSelectedCardIndex] = useState({});
-  const [info, setInfo] = useState(false);
-  const [popup, setPopup] = useState(false);
   const [type, setType] = useState("");
-  const [popup2, setPopup2] = useState(false);
-  const [popup3, setPopup3] = useState(false);
-  const [popup4, setPopup4] = useState(false);
-  const [isCroppingImage, setIsCroppingImage] = useState(false)
-  const [isAutomaticCropping, setIsAutomaticCropping] = useState(false)
   const [templates, setTemplates] = useState(null);
   const [images, setImages] = useState(null);
   const [imgIndex, setImgIndex] = useState(null);
   const [selectedTextBox, setSelectedTextBox] = useState({});
   const [templateName, setTemplateName] = useState(templatesQuerySnapshot[0]);
-
+  const [popupState, setPopupState] = useState(0)
+  const imageFolder = (selectedCardIndex > 14 && selectedCardIndex < 24 ? "beverages" : "frozen")
   const storage = getStorage();
   const imagesRef = ref(storage, (selectedCardIndex > 14 && selectedCardIndex < 24 ? "images/beverages" : "images/frozen"));
   const navigate = useNavigate();
@@ -80,7 +77,7 @@ export default function FrozenAndBeverages() {
 
   useEffect(() => {
     const unsubscribeStaticColumns = onSnapshot(
-      doc(db, `Bakery&Beverages/${templateName}`),
+      doc(db, `Frozen&Beverages/${templateName}`),
       (snapshot) => {
         if (snapshot.exists()) {
           console.log(
@@ -93,7 +90,7 @@ export default function FrozenAndBeverages() {
     );
 
     const unsubscribeDynamicColumn = onSnapshot(
-      doc(db, `Bakery&Beverages/${templateName}`),
+      doc(db, `Frozen&Beverages/${templateName}`),
       (snapshot) => {
         if (snapshot.exists()) {
           console.log(
@@ -111,71 +108,274 @@ export default function FrozenAndBeverages() {
     };
   }, [templateName]);
 
-  const uploadDataToFirebase = async () => {
-    try {
-      // Upload staticColumns to a document in "Grocery" collection
-      await setDoc(doc(db, `Bakery&Beverages/${templateName}`), {
-        staticColumns: staticColumns,
-        dynamicColumn: dynamicColumn,
-      });
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        contextMenuRef.current &&
+        !contextMenuRef.current.contains(event.target)
+      ) {
+        // Cerrar el menú contextual si se hace clic fuera de él
+        setContextMenu(null);
+      }
+    };
 
-      console.log("Data uploaded successfully!");
-    } catch (error) {
-      console.error("Error uploading data:", error);
+    // Agregar el event listener al documento
+    document.addEventListener("mousedown", handleClickOutside);
+
+    // Limpiar el event listener al desmontar el componente
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const renderPopup = (popupNumber) => {
+    switch (popupNumber) {
+      case 0:
+        return null;
+      case 1:
+        return (
+          <TextPopUp
+            textBox={
+              selectedImage.cardIndex > maxStaticIndex
+                ? dynamicColumn
+                : staticColumns
+            }
+            setTextBox={
+              selectedImage.cardIndex > maxStaticIndex
+                ? setDynamicColumn
+                : setStaticColumns
+            }
+            setPopup={setPopupState}
+            cardIndex={selectedImage}
+            type={type}
+            maxCardPosition={maxStaticIndex}
+            uploadDataToFirebase={uploadDataToFirebase}
+            templateName={templateName}
+            staticColumns={staticColumns}
+            dynamicColumn={dynamicColumn}
+            templateCollection={templateCollection}
+          />
+        );
+      case 2:
+        return (
+          <ImportPopup
+            getImageList={getImageList}
+            setPopup={setPopupState}
+            handleImageUpload={handleImageUpload}
+            selectedCardIndex={selectedCardIndex}
+            imgIndex={imgIndex}
+          />
+        );
+      case 3:
+        return (
+          <ManageTemplates
+            dynamicColumn={dynamicColumn}
+            staticColumns={staticColumns}
+            setDynamicColumn={setDynamicColumn}
+            setStaticColumns={setStaticColumns}
+            templates={templates}
+            setTemplates={setTemplates}
+            setPopup={setPopupState}
+            db={db}
+            setCurrentTemplate={setTemplateName}
+            templateFolder={templateCollection}
+            templateName={templateName}
+          />
+        );
+      case 4:
+        return <BugReport  setPopup={setPopupState} />;
+      case 6:
+        return <ClosePopup setPopup={setPopupState} />;
+      case 7:
+        return (
+          <AutomaticImageCropper
+            selectedCardColumn={
+              selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
+            }
+            setSelectedCardColumn={
+              selectedCardIndex > maxStaticIndex
+                ? setDynamicColumn
+                : setStaticColumns
+            }
+            cardIndex={selectedCardIndex}
+            imageIndex={imgIndex}
+            setPopup={setPopupState}
+            uploadDataToFirebase={uploadDataToFirebase}
+            maxStaticIndex={maxStaticIndex}
+            templateName={templateName}
+            staticColumns={staticColumns}
+            dynamicColumn={dynamicColumn}
+            templateCollection={templateCollection}
+            imageFolder={imageFolder}
+          />
+        );
+      case 8:
+        return (
+          <ImageCropper
+            src={
+              selectedCardIndex > maxStaticIndex
+                ? dynamicColumn[selectedCardIndex - cardsInStatic].img[imgIndex]
+                    .src
+                : staticColumns[selectedCardIndex].img[imgIndex].src
+            }
+            setPopup={setPopupState}
+            selectedColumn={
+              selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
+            }
+            setSelectedColumn={
+              selectedCardIndex > maxStaticIndex
+                ? setDynamicColumn
+                : setStaticColumns
+            }
+            selectedCardIndex={selectedCardIndex}
+            maxStaticIndex={maxStaticIndex}
+            imageIndex={imgIndex}
+            imageFolder={imageFolder}
+            templateCollection={templateCollection}
+            uploadDataToFirebase={uploadDataToFirebase}
+            templateName={templateName}
+            staticColumns={staticColumns}
+            dynamicColumn={dynamicColumn}
+          />
+        );
+      case 9:
+        return (
+          <ResizableImage
+            cardIndex={
+              selectedImage.cardIndex > maxStaticIndex
+                ? selectedImage.cardIndex - cardsInStatic
+                : selectedImage.cardIndex
+            }
+            selectedColumn={
+              selectedImage.cardIndex > maxStaticIndex
+                ? dynamicColumn
+                : staticColumns
+            }
+            setSelectedColumn={
+              selectedImage.cardIndex > maxStaticIndex
+                ? setDynamicColumn
+                : setStaticColumns
+            }
+            setPopup={setPopupState}
+            cardNumber={selectedImage.cardIndex}
+            imageFolder={imageFolder}
+            uploadDataToFirebase={uploadDataToFirebase}
+            templateCollection={templateCollection}
+            templateName={templateName}
+            staticColumns={staticColumns}
+            dynamicColumn={dynamicColumn}
+          />
+        );
+      case 10:
+        return <RenderInfo />;
+      case 11:
+        return (
+          <ImageFromCloud
+            images={images}
+            cardIndex={selectedCardIndex}
+            selectedColumn={
+              selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
+            }
+            setSelectedColumn={
+              selectedCardIndex > maxStaticIndex
+                ? setDynamicColumn
+                : setStaticColumns
+            }
+            setImages={setImages}
+            staticColumns={staticColumns}
+            dynamicColumn={dynamicColumn}
+            templateName={templateName}
+            imgIndex={imgIndex}
+            maxCardPosition={maxStaticIndex}
+            templateCollection={templateCollection}
+            imageFolder={imageFolder}
+            setPopup={setPopupState}
+            uploadDataToFirebase={uploadDataToFirebase}
+          />
+        );
     }
   };
 
-  const handleConvertToPDF = async () => {
-    const container = document.getElementById("magazineContainer");
+  const handleImageUpload = (event, cardIndex, img) => {
+    // Added 'cardIndex' parameter
+    event.preventDefault();
+    if (cardIndex > maxStaticIndex) {
+      const dynamicColumnCopy = [...dynamicColumn];
+      dynamicColumnCopy.map((card) => {
+        if (card.index === cardIndex) {
+          // Changed 'event.target.key' to 'cardIndex'
+          const input = document.createElement("input");
+          input.type = "file";
+          input.accept = "image/*";
+          input.onchange = (event) => {
+            const file = event.target.files[0];
 
-    if (container) {
-
-        await downloadExternalImages(container);
-
-        const pdfOptions = {
-            filename: "grocery_magazine.pdf",
-            image: { type: "png", quality: 1 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        };
-
-        container.style.top = "0"
-        // Generar PDF desde el clon
-        await html2pdf().from(container).set(pdfOptions).save()
-
-        container.style.top = "100px"
-    }
-  };
-
-  const downloadExternalImages = async (container) => {
-      const images = container.querySelectorAll("img");
-      const promises = [];
-
-      images.forEach((img) => {
-          if (img.src && new URL(img.src).host != window.location.host && img.src.startsWith("http")) {
-              promises.push(new Promise((resolve, reject) => {
-                  const xhr = new XMLHttpRequest();
-                  xhr.open("GET", img.src, true);
-                  xhr.responseType = "blob";
-                  xhr.onload = () => {
-                      if (xhr.status === 200) {
-                          const blob = xhr.response;
-                          const urlCreator = window.URL || window.webkitURL;
-                          const imageUrl = urlCreator.createObjectURL(blob);
-                          img.src = imageUrl;
-                          resolve();
-                      } else {
-                          reject(xhr.statusText);
-                      }
-                  };
-                  xhr.onerror = () => {
-                      reject(xhr.statusText);
-                  };
-                  xhr.send();
-              }));
-          }
+            if (file) {
+              const uploadedImageRef = ref(
+                storage,
+                `images/Grocery/${file.name}`
+              );
+              uploadBytes(uploadedImageRef, file).then((snapshot) => {
+                getDownloadURL(ref(storage, `images/Grocery/${file.name}`))
+                  .then((url) => {
+                    const newDynamicColumn = [...dynamicColumn];
+                    newDynamicColumn[cardIndex].img[img].src = url;
+                    setDynamicColumn(newDynamicColumn);
+                  })
+                  .then(() => {
+                    uploadDataToFirebase(
+                      "Grocery",
+                      templateName,
+                      staticColumns,
+                      dynamicColumn
+                    );
+                  });
+                console.log("Uploaded a blob or file!");
+              });
+            }
+          };
+          input.click();
+        }
       });
-      await Promise.all(promises);
+    } else {
+      const staticColumnsCopy = [...staticColumns];
+      staticColumnsCopy.map((card) => {
+        if (card.index === cardIndex) {
+          // Changed 'event.target.key' to 'cardIndex'
+          const input = document.createElement("input");
+          input.type = "file";
+          input.accept = "image/*";
+          input.onchange = (event) => {
+            const file = event.target.files[0];
+
+            if (file) {
+              const uploadedImageRef = ref(
+                storage,
+                `images/Grocery/${file.name}`
+              );
+              uploadBytes(uploadedImageRef, file).then((snapshot) => {
+                getDownloadURL(ref(storage, `images/Grocery/${file.name}`))
+                  .then((url) => {
+                    const newStaticColumns = [...staticColumns];
+                    newStaticColumns[cardIndex].img[img].src = url;
+                    setStaticColumns(newStaticColumns);
+                  })
+                  .then(() => {
+                    uploadDataToFirebase(
+                      "Grocery",
+                      templateName,
+                      staticColumns,
+                      dynamicColumn
+                    );
+                  });
+              });
+            }
+          };
+          input.click();
+        }
+      });
+    }
+    setPopupState(0);
   };
 
   const handleDynamicColumns = (event) => {
@@ -206,82 +406,23 @@ export default function FrozenAndBeverages() {
     }
     setDynamicColumn(cards),
     () => {
-      uploadDataToFirebase();
+      uploadDataToFirebase(
+        templateCollection,
+          templateName,
+          staticColumns,
+          dynamicColumn
+      );
     };
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        contextMenuRef.current &&
-        !contextMenuRef.current.contains(event.target)
-      ) {
-        // Cerrar el menú contextual si se hace clic fuera de él
-        setContextMenu(null);
-      }
-    };
-
-    // Agregar el event listener al documento
-    document.addEventListener("mousedown", handleClickOutside);
-
-    // Limpiar el event listener al desmontar el componente
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  const RenderInfo = () => {
-    return (
-      <div className={styles.infoTab}>
-        <div>Info:</div>
-        <div>
-          <label>
-            This tab explains how to use the functionalities of the page
-          </label>
-        </div>
-        <div>
-          Click on the plus sign to the left column to input the number of cards
-          you want to have in the first column
-        </div>
-        <div>Click on a card to upload an image</div>
-        <div>
-          Click again on the uploaded image to open the context menu, where you
-          can:
-          <div>1- Edit the size and position of the image</div>
-          <div>2- Show or hide the Price Box</div>
-          <div>
-            3- Manually change the Price Box Type (not recommended since it can
-            lead to unwanted behaviour)
-          </div>
-          <div>4- Change the price box color</div>
-          <div>5- upload a second image</div>
-          <div>6- Cancel</div>
-        </div>
-        <div>
-          Click on the Price Box, to write the content of the pricebox:
-          <div>
-            1. If you write "Number / $Number" the price box type 1 is
-            automatically selected
-          </div>
-          <div>
-            2. If you write "Number . Number + each/oz/lb/pk" the price box type
-            2 is automatically selected
-          </div>
-          <div>
-            3. If you write "Number for $ Number" the price box type 3 is
-            automatically selected
-          </div>
-        </div>
-      </div>
-    );
-  };
+  
 
   const handleDeleteImage = (cardIndex, index) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete the image?"
     );
 
-    if (cardIndex > 11) {
+    if (cardIndex > maxStaticIndex) {
       if (confirmDelete) {
         setDynamicColumn((prevDynamicColumn) => {
           const newDynamicColumn = [...prevDynamicColumn];
@@ -298,7 +439,7 @@ export default function FrozenAndBeverages() {
             imageToUpdate.img[0].src == "" &&
             imageToUpdate.img[1].src == ""
           ) {
-            setIsEditingZoom(false);
+            setPopupState(0);
           }
 
           return newDynamicColumn;
@@ -321,7 +462,7 @@ export default function FrozenAndBeverages() {
             imageToUpdate.img[0].src == "" &&
             imageToUpdate.img[1].src == ""
           ) {
-            setIsEditingZoom(false);
+            setPopupState(0);
           }
 
           return newStaticColumns;
@@ -344,7 +485,10 @@ export default function FrozenAndBeverages() {
         !newStaticColumns[cardIndex].text.renderPriceBox;
       setStaticColumns(newStaticColumns);
     }
-    uploadDataToFirebase();
+    uploadDataToFirebase(templateCollection,
+      templateName,
+      staticColumns,
+      dynamicColumn);
   };
 
   const switchBoxType = (cardIndex) => {
@@ -368,7 +512,10 @@ export default function FrozenAndBeverages() {
       }
       setStaticColumns(newStaticColumns);
     }
-    uploadDataToFirebase();
+    uploadDataToFirebase(templateCollection,
+      templateName,
+      staticColumns,
+      dynamicColumn);
   };
 
   const changePriceBoxColor = (cardIndex) => {
@@ -385,7 +532,10 @@ export default function FrozenAndBeverages() {
         !newStaticColumns[cardIndex].text.priceBoxColor;
       setStaticColumns(newStaticColumns);
     }
-    uploadDataToFirebase();
+    uploadDataToFirebase(templateCollection,
+      templateName,
+      staticColumns,
+      dynamicColumn);
   };
 
   const changePriceBoxBorder = (cardIndex) => {
@@ -402,53 +552,16 @@ export default function FrozenAndBeverages() {
         !newStaticColumns[cardIndex].text.priceBoxBorder;
       setStaticColumns(newStaticColumns);
     }
-    uploadDataToFirebase();
+    uploadDataToFirebase(templateCollection,
+      templateName,
+      staticColumns,
+      dynamicColumn);
   };
 
   const handleCropImage = () => {
-    setIsCroppingImage(true)
+    setPopupState(8);
   }
 
-  const ContextMenu = ({ x, y, items, onClose }) => (
-    <div
-      style={{
-        position: "absolute",
-        top: `${y}px`,
-        left: `${x}px`,
-        border: "1px solid #ccc",
-        background: "#fff",
-        boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-        borderRadius: "4px",
-        padding: "5px",
-        zIndex: "1000",
-        color: "gray",
-      }}
-    >
-      {items.map((item, index) => (
-        <div
-          key={index}
-          style={{ cursor: "pointer", padding: "5px" }}
-          onClick={() => {
-            item.action();
-            onClose(); // Cierra el menú contextual al hacer clic en una opción
-          }}
-        >
-          {item.label}
-        </div>
-      ))}
-      <div
-        style={{
-          cursor: "pointer",
-          padding: "5px",
-          borderTop: "1px solid #ccc",
-          marginTop: "5px",
-        }}
-        onClick={() => onClose()} // Agrega una opción para cancelar y cerrar el menú contextual
-      >
-        Cancel
-      </div>
-    </div>
-  );
 
   const handleContextMenu = (event, cardIndex, column, image) => {
     event.preventDefault();
@@ -463,7 +576,7 @@ export default function FrozenAndBeverages() {
       {
         label: "Edit ",
         action: () => {
-          setIsEditingZoom(true);
+          setPopupState(9);
           setSelectedImage({ cardIndex });
         },
       },
@@ -491,7 +604,7 @@ export default function FrozenAndBeverages() {
         label: "Upload Image 2",
         action: () => {
           setImgIndex(1);
-          setPopup2(true);
+          setPopupState(2);
           setSelectedCardIndex(cardIndex);
         },
       });
@@ -501,7 +614,10 @@ export default function FrozenAndBeverages() {
         label: "Delete 2",
         action: async () => {
           await handleDeleteImage(cardIndex, 1);
-          await uploadDataToFirebase();
+          await uploadDataToFirebase(templateCollection,
+            templateName,
+            staticColumns,
+            dynamicColumn);
         },
       });
     }
@@ -510,7 +626,7 @@ export default function FrozenAndBeverages() {
         label: "Upload 1",
         action: () => {
           setImgIndex(0);
-          setPopup2(true);
+          setPopupState(2);
           setSelectedCardIndex(cardIndex);
         },
       });
@@ -533,7 +649,7 @@ export default function FrozenAndBeverages() {
       {
         label: "Delete Background of Image 1",
         action: () => {
-          setImgIndex(0), setIsAutomaticCropping(true);
+          setImgIndex(0), setPopupState(7);
         },
       });
     } if (selectedColumn[index].img[1].src != "") {
@@ -546,7 +662,7 @@ export default function FrozenAndBeverages() {
       {
         label: "Delete Background of Image 2",
         action: () => {
-          setImgIndex(1), setIsAutomaticCropping(true);
+          setImgIndex(1), setPopupState(7);
         },
       });
     }
@@ -574,14 +690,13 @@ export default function FrozenAndBeverages() {
     ];
 
     if (image.img[0].src === "" && image.img[1].src === "") {
-      setPopup2(true);
+      setPopupState(2);
       setSelectedCardIndex(cardIndex);
     } else {
       handleContextMenu(event, cardIndex, image);
+      setSelectedCardIndex(cardIndex);
     }
   };
-
- 
 
   const getImageList = () => {
     listAll(imagesRef)
@@ -595,56 +710,10 @@ export default function FrozenAndBeverages() {
         setImages(names);
         console.log(names);
       })
-      .then(() => setPopup2(false))
+      .then(() => setPopupState(11))
       .catch((error) => {
         console.log(error);
       });
-  };
-
-
-
-  const renderPriceBox = (
-    number,
-    column,
-    setColumn,
-    cardIndex,
-    backgroundColor,
-    priceBoxBorder
-  ) => {
-    const priceBoxes = [
-      <FixedBox
-        key={`fixed-box-${cardIndex}`}
-        textBoxes={column}
-        setTextBoxes={setColumn}
-        backgroundColor={backgroundColor}
-        i={cardIndex}
-        cardIndex={cardIndex}
-        priceBoxBorder={priceBoxBorder}
-        uploadDataToFirebase={uploadDataToFirebase}
-      />,
-      <TripleBox
-        key={`fixed-box-${cardIndex}`}
-        textBoxes={column}
-        setTextBoxes={setColumn}
-        backgroundColor={backgroundColor}
-        i={cardIndex}
-        cardIndex={cardIndex}
-        priceBoxBorder={priceBoxBorder}
-        uploadDataToFirebase={uploadDataToFirebase}
-      />,
-      <AmountForPrice
-        key={`fixed-box-${cardIndex}`}
-        textBoxes={column}
-        setTextBoxes={setColumn}
-        backgroundColor={backgroundColor}
-        i={cardIndex}
-        cardIndex={cardIndex}
-        priceBoxBorder={priceBoxBorder}
-        uploadDataToFirebase={uploadDataToFirebase}
-      />,
-    ];
-
-    return priceBoxes[number];
   };
 
   const RenderDynamicColumn = () => {
@@ -668,11 +737,6 @@ export default function FrozenAndBeverages() {
           const cardIndex = card.index;
 
           const calculatedCardIndex = cardIndex - cardsInStatic;
-          const isEditingThisZoom =
-            isEditingZoom &&
-            selectedImage &&
-            selectedImage.cardIndex !== undefined &&
-            selectedImage.cardIndex === cardIndex;
 
           let images = { ...card };
 
@@ -718,7 +782,11 @@ export default function FrozenAndBeverages() {
                     setDynamicColumn,
                     calculatedCardIndex,
                     dynamicColumn[calculatedCardIndex].text.priceBoxColor,
-                    dynamicColumn[calculatedCardIndex].text.priceBoxBorder
+                    dynamicColumn[calculatedCardIndex].text.priceBoxBorder,
+                    templateCollection,
+                    templateName,
+                    staticColumns,
+                    dynamicColumn
                   )}
                 </div>
               ) : null}
@@ -726,7 +794,7 @@ export default function FrozenAndBeverages() {
                 textBoxes={dynamicColumn}
                 setTextBoxes={setDynamicColumn}
                 cardIndex={cardIndex}
-                setPopup={setPopup}
+                setPopup={setPopupState}
                 setSelectedTextBox={setSelectedTextBox}
                 setType={setType}
                 setSelectedImage={setSelectedImage}
@@ -748,11 +816,6 @@ export default function FrozenAndBeverages() {
 
       for (let j = 0; j < 2; j++) {
         const cardIndex = j + i * 2 + 14;
-
-        const isEditingThisZoom =
-          isEditingZoom &&
-          selectedImage &&
-          selectedImage.cardIndex === cardIndex;
 
         let images = staticColumns[cardIndex].img;
 
@@ -803,7 +866,11 @@ export default function FrozenAndBeverages() {
                   setStaticColumns,
                   cardIndex,
                   staticColumns[cardIndex].text.priceBoxColor,
-                  staticColumns[cardIndex].text.priceBoxBorder
+                  staticColumns[cardIndex].text.priceBoxBorder,
+                  templateCollection,
+                  templateName,
+                  staticColumns,
+                  dynamicColumn
                 )}
               </div>
             ) : null}
@@ -812,7 +879,7 @@ export default function FrozenAndBeverages() {
               textBoxes={staticColumns}
               setTextBoxes={setStaticColumns}
               cardIndex={cardIndex}
-              setPopup={setPopup}
+              setPopup={setPopupState}
               setSelectedTextBox={setSelectedTextBox}
               setType={setType}
               setSelectedImage={setSelectedImage}
@@ -823,7 +890,7 @@ export default function FrozenAndBeverages() {
               textBoxes={staticColumns}
               setTextBoxes={setStaticColumns}
               cardIndex={cardIndex}
-              setPopup={setPopup}
+              setPopup={setPopupState}
               setSelectedTextBox={setSelectedTextBox}
               setType={setType}
               setSelectedImage={setSelectedImage}
@@ -842,9 +909,7 @@ export default function FrozenAndBeverages() {
     }
 
     const cardIndex = 23;
-    const isEditingThisZoom =
-      isEditingZoom && selectedImage && selectedImage.cardIndex === cardIndex;
-
+  
     let images = staticColumns[cardIndex].img;
 
     const textBoxes = [];
@@ -892,7 +957,11 @@ export default function FrozenAndBeverages() {
               setStaticColumns,
               cardIndex,
               staticColumns[cardIndex].text.priceBoxColor,
-              staticColumns[cardIndex].text.priceBoxBorder
+              staticColumns[cardIndex].text.priceBoxBorder,
+              templateCollection,
+              templateName,
+              staticColumns,
+              dynamicColumn
             )}
           </div>
         ) : null}
@@ -901,7 +970,7 @@ export default function FrozenAndBeverages() {
           textBoxes={staticColumns}
           setTextBoxes={setStaticColumns}
           cardIndex={cardIndex}
-          setPopup={setPopup}
+          setPopup={setPopupState}
           setSelectedTextBox={setSelectedTextBox}
           setType={setType}
           setSelectedImage={setSelectedImage}
@@ -912,7 +981,7 @@ export default function FrozenAndBeverages() {
           textBoxes={staticColumns}
           setTextBoxes={setStaticColumns}
           cardIndex={cardIndex}
-          setPopup={setPopup}
+          setPopup={setPopupState}
           setSelectedTextBox={setSelectedTextBox}
           setType={setType}
           setSelectedImage={setSelectedImage}
@@ -932,11 +1001,6 @@ export default function FrozenAndBeverages() {
 
       for (let j = 0; j < 5; j++) {
         const cardIndex = j + i * 5;
-
-        const isEditingThisZoom =
-          isEditingZoom &&
-          selectedImage &&
-          selectedImage.cardIndex === cardIndex;
 
         let images = staticColumns[cardIndex].img;
 
@@ -987,7 +1051,11 @@ export default function FrozenAndBeverages() {
                   setStaticColumns,
                   cardIndex,
                   staticColumns[cardIndex].text.priceBoxColor,
-                  staticColumns[cardIndex].text.priceBoxBorder
+                  staticColumns[cardIndex].text.priceBoxBorder,
+                  templateCollection,
+                      templateName,
+                      staticColumns,
+                      dynamicColumn
                 )}
               </div>
             ) : null}
@@ -996,7 +1064,7 @@ export default function FrozenAndBeverages() {
               textBoxes={staticColumns}
               setTextBoxes={setStaticColumns}
               cardIndex={cardIndex}
-              setPopup={setPopup}
+              setPopup={setPopupState}
               setSelectedTextBox={setSelectedTextBox}
               setType={setType}
               setSelectedImage={setSelectedImage}
@@ -1007,7 +1075,7 @@ export default function FrozenAndBeverages() {
               textBoxes={staticColumns}
               setTextBoxes={setStaticColumns}
               cardIndex={cardIndex}
-              setPopup={setPopup}
+              setPopup={setPopupState}
               setSelectedTextBox={setSelectedTextBox}
               setType={setType}
               setSelectedImage={setSelectedImage}
@@ -1030,197 +1098,13 @@ export default function FrozenAndBeverages() {
 
   return (
     <div className={styles.body}>
-      { maintenance ? (
+      { !maintenance ? (
           <>
-      {popup ? (
-        <TextPopUp
-          textBox={
-            selectedImage.cardIndex > maxStaticIndex
-              ? dynamicColumn
-              : staticColumns
-          }
-          setTextBox={
-            selectedImage.cardIndex > maxStaticIndex
-              ? setDynamicColumn
-              : setStaticColumns
-          }
-          setPopup={setPopup}
-          cardIndex={selectedImage}
-          maxCardPosition={maxStaticIndex}
-          type={type}
-          uploadDataToFirebase={uploadDataToFirebase}
-        />
-      ) : null}
-      {isEditingZoom && (
-        <ResizableImage
-          cardIndex={
-            selectedImage.cardIndex > maxStaticIndex
-              ? selectedImage.cardIndex - cardsInStatic
-              : selectedImage.cardIndex
-          }
-          selectedColumn={
-            selectedImage.cardIndex > maxStaticIndex
-              ? dynamicColumn
-              : staticColumns
-          }
-          setSelectedColumn={
-            selectedImage.cardIndex > maxStaticIndex
-              ? setDynamicColumn
-              : setStaticColumns
-          }
-          setIsEditingZoom={setIsEditingZoom}
-          cardNumber={selectedImage.cardIndex}
-          imageFolder={selectedCardIndex > 14 && selectedCardIndex < 24 ? "beverages" : "frozen"}
-          uploadDataToFirebase={uploadDataToFirebase}
-        />
-      )}
-      {isCroppingImage && (
-        <ImageCropper src={
-          selectedCardIndex > maxStaticIndex ? dynamicColumn[selectedCardIndex  - cardsInStatic].img[imgIndex].src : staticColumns[selectedCardIndex ].img[imgIndex].src
-        }
-        setIsCroppingImage={
-          setIsCroppingImage
-        }
-        selectedColumn={selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
-        setSelectedColumn={
-          selectedCardIndex > 20 ? setDynamicColumn : setStaticColumns
-        }
-        selectedCardIndex={selectedCardIndex}
-        imageIndex={imgIndex}
-        imageFolder={selectedCardIndex > 14 && selectedCardIndex < 24 ? "beverages" : "frozen"}
-        uploadDataToFirebase={uploadDataToFirebase}
-        />
-      )}
-      {isAutomaticCropping && (
-        <AutomaticImageCropper
-        selectedColumn={selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
-        setSelectedColumn={
-          selectedCardIndex > 20 ? setDynamicColumn : setStaticColumns
-        }
-        cardIndex={selectedCardIndex}
-        imageIndex={imgIndex}
-        setIsAutomaticCropping={setIsAutomaticCropping}
-        uploadDataToFirebase={uploadDataToFirebase}
-        maxStaticIndex={maxStaticIndex}
-        />
-      )} 
-      {popup2 ? (
-        <div className={styles.popUp2} style={{ zIndex: "1" }}>
-          <button
-            className={styles.actionButton}
-            onClick={(event) =>
-              handleImageUpload(event, selectedCardIndex, imgIndex)
-            }
-          >
-            Import from Device
-          </button>
-          <button
-            className={styles.actionButton}
-            onClick={(event) => getImageList(event)}
-          >
-            Import from Database
-          </button>
-          <button
-            className={styles.closeButton}
-            onClick={() => setPopup2(false)}
-          >
-            Close
-          </button>
-        </div>
-      ) : null}
-      {popup3 ? (
-        <div
-          className={styles.popUp2}
-          style={{ top: "40%", left: "50%", zIndex: "1" }}
-        >
-          <div>Do you really wish to go back?</div>
-          <div>
-            <button onClick={() => navigate("/")}>Yes</button>
-            <button onClick={() => setPopup3(false)}>No</button>
-          </div>
-        </div>
-      ) : null}
-      {popup4 ? (
-        <ManageTemplates
-        dynamicColumn={dynamicColumn}
-        staticColumns={staticColumns}
-        setDynamicColumn={setDynamicColumn}
-        setStaticColumns={setStaticColumns}
-        templates={templates}
-        setTemplates={setTemplates}
-        setPopup4={setPopup4}
-        db={db}
-        setCurrentTemplate={setTemplateName}
-        templateFolder="Frozen&Beverages"
-        cardsInStatic={cardsInStatic}
-        />
-      ): null}
-      <div className={styles.sidebar} style={{ top: "0px" }}>
-        <div
-          style={{
-            position: "relative",
-            left: "px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-start",
-            padding: "3px",
-          }}
-        >
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-              zIndex: "1",
-            }}
-            onClick={handleConvertToPDF}
-          >
-            Make PDF
-          </button>
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-              zIndex: "1",
-            }}
-            onClick={() => setPopup3(true)}
-          >
-            Back to Home
-          </button>
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-              zIndex: "1",
-            }}
-            onClick={() => setInfo(!info)}
-          >
-            Info
-          </button>
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-            }}
-            onClick={() => setPopup4(true)}
-          >
-            Open Template Manager
-          </button>
-          <ImageUploader uploadDataToFirebase={uploadDataToFirebase} imageFolder={selectedCardIndex > 14 && selectedCardIndex < 24 ? "beverages" : "frozen"} />
-        </div>
-      </div>
-
+      {renderPopup(popupState)}
+          <Sidebar
+            handleConvertToPDF={handleConvertToPDF}
+            setPopup={setPopupState}
+          />
       <div id="magazineContainer" className={styles.containerDivBorder}>
         <div
           className={styles.containerDiv}
@@ -1244,26 +1128,7 @@ export default function FrozenAndBeverages() {
           <RenderLiquorCards />
         </div>
       </div>
-      {info ? <RenderInfo /> : null}
-      {images != null ? (
-        <ImageFromCloud
-          images={images}
-          cardIndex={selectedCardIndex}
-          selectedColumn={
-            selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
-          }
-          setSelectedColumn={
-            selectedCardIndex > maxStaticIndex
-              ? setDynamicColumn
-              : setStaticColumns
-          }
-          setImages={setImages}
-          imgIndex={imgIndex}
-          maxCardPosition={maxStaticIndex}
-          imageFolder={selectedCardIndex > 14 && selectedCardIndex < 24 ? "beverages" : "frozen"}
-          uploadDataToFirebase={uploadDataToFirebase}
-        />
-      ) : null}</>) : (
+      </>) : (
         <h1>In maintenance..</h1>
       )}
     </div>

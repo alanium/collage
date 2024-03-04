@@ -1,10 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import styles from "./International.module.css";
-import html2pdf from "html2pdf.js"; // Importa la biblioteca html2pdf
-import FixedBox from "../../components/BoxWithText/BoxWithText";
-import TripleBox from "../../components/TripleBoxWithText/TripleBoxWithText";
 import { useNavigate } from "react-router-dom";
-import AmountForPrice from "../../components/AmountForPrice/AmountForPrice";
 import TextBoxLeft from "../../components/ParagraphBox/ParagraphBox";
 import TopTextBox from "../../components/TopTextBox/TopTextBox";
 import TextPopUp from "../../components/TextPopup/TextPopup";
@@ -783,7 +779,11 @@ function International({ uploadDataToFirebase, handleConvertToPDF, renderPriceBo
                     setDynamicColumn,
                     cardIndex - 21,
                     dynamicColumn[cardIndex - 21].text.priceBoxColor,
-                    staticColumns[cardIndex - 21].text.priceBoxBorder
+                    staticColumns[cardIndex - 21].text.priceBoxBorder,
+                    templateCollection,
+      templateName,
+      staticColumns,
+      dynamicColumn
                   )}
                 </div>
               ) : null}
@@ -864,7 +864,11 @@ function International({ uploadDataToFirebase, handleConvertToPDF, renderPriceBo
                   setStaticColumns,
                   cardIndex,
                   staticColumns[cardIndex].text.priceBoxColor,
-                  staticColumns[cardIndex].text.priceBoxBorder
+                  staticColumns[cardIndex].text.priceBoxBorder,
+                  templateCollection,
+      templateName,
+      staticColumns,
+      dynamicColumn
                 )}
               </div>
             ) : null}

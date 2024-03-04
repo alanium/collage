@@ -134,7 +134,11 @@ const renderPriceBox = (
   setColumn,
   cardIndex,
   backgroundColor,
-  priceBoxBorder
+  priceBoxBorder,
+  templateCollection,
+  templateName,
+  staticColumns,
+  dynamicColumn
 ) => {
   const priceBoxes = [
     <FixedBox
@@ -146,6 +150,10 @@ const renderPriceBox = (
       cardIndex={cardIndex}
       priceBoxBorder={priceBoxBorder}
       uploadDataToFirebase={uploadDataToFirebase}
+      templateCollection={templateCollection}
+      templateName={templateName}
+      staticColumns={staticColumns}
+      dynamicColumn={dynamicColumn}
     />,
     <TripleBox
       key={`fixed-box-${cardIndex}`}
@@ -156,6 +164,10 @@ const renderPriceBox = (
       cardIndex={cardIndex}
       priceBoxBorder={priceBoxBorder}
       uploadDataToFirebase={uploadDataToFirebase}
+      templateCollection={templateCollection}
+      templateName={templateName}
+      staticColumns={staticColumns}
+      dynamicColumn={dynamicColumn}
     />,
     <AmountForPrice
       key={`fixed-box-${cardIndex}`}
@@ -166,6 +178,10 @@ const renderPriceBox = (
       cardIndex={cardIndex}
       priceBoxBorder={priceBoxBorder}
       uploadDataToFirebase={uploadDataToFirebase}
+      templateCollection={templateCollection}
+      templateName={templateName}
+      staticColumns={staticColumns}
+      dynamicColumn={dynamicColumn}
     />,
   ];
 
@@ -207,19 +223,25 @@ const router = createBrowserRouter([
   },
   {
     path: "/Frozen&Beverages",
-    element: <FrozenAndBeverages />,
+    element: <FrozenAndBeverages handleConvertToPDF={handleConvertToPDF}
+    uploadDataToFirebase={uploadDataToFirebase}
+    renderPriceBox={renderPriceBox} />,
   },
   {
     path: "/Meat&Seafood",
-    element: <MeatAndSeafood />,
+    element: <MeatAndSeafood handleConvertToPDF={handleConvertToPDF}
+    uploadDataToFirebase={uploadDataToFirebase}
+    renderPriceBox={renderPriceBox} />,
   },
   {
     path: "/Delicatessen&More",
-    element: <DelicatessenAndMore />,
+    element: <DelicatessenAndMore handleConvertToPDF={handleConvertToPDF}
+    uploadDataToFirebase={uploadDataToFirebase}
+    renderPriceBox={renderPriceBox} />,
   },
   {
     path: "/NapervilleFreshMarket",
-    element: <NapervilleFreshMarket />,
+    element: <NapervilleFreshMarket  />,
   },
 ]);
 ReactDOM.createRoot(document.getElementById("root")).render(

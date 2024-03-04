@@ -5,7 +5,13 @@ import TextBoxLeft from "../../components/ParagraphBox/ParagraphBox";
 import TopTextBox from "../../components/TopTextBox/TopTextBox";
 import TextPopUp from "../../components/TextPopup/TextPopup";
 import { collection, onSnapshot, doc, getDocs } from "firebase/firestore";
-import { getStorage, ref, listAll, uploadBytes, getDownloadURL } from "firebase/storage";
+import {
+  getStorage,
+  ref,
+  listAll,
+  uploadBytes,
+  getDownloadURL,
+} from "firebase/storage";
 import ImageFromCloud from "../../components/ImageFromCloud/ImageFromCloud";
 import ResizableImage from "../../components/ResizableImage/ResizableImage";
 import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
@@ -25,7 +31,7 @@ const templatesQuerySnapshot = await getDocs(groceryRef);
 function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
   const maxStaticIndex = 20;
   const cardsInStatic = 21;
-  const templateCollection = "Grocery"
+  const templateCollection = "Grocery";
   const [staticColumns, setStaticColumns] = useState(
     Array(cardsInStatic)
       .fill()
@@ -240,6 +246,7 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
             imageFolder="Grocery"
             uploadDataToFirebase={uploadDataToFirebase}
             templateName={templateName}
+            maxStaticIndex={maxStaticIndex}
             staticColumns={staticColumns}
             dynamicColumn={dynamicColumn}
             templateCollection={templateCollection}
@@ -323,15 +330,20 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
                 `images/Grocery/${file.name}`
               );
               uploadBytes(uploadedImageRef, file).then((snapshot) => {
-                getDownloadURL(
-                  ref(storage, `images/Grocery/${file.name}`)
-                ).then((url) => {
-                  const newDynamicColumn = [...dynamicColumn];
-                  newDynamicColumn[cardIndex].img[img].src = url;
-                  setDynamicColumn(newDynamicColumn);
-                }).then(() => {
-                  uploadDataToFirebase("Grocery", templateName, staticColumns, dynamicColumn);
-                });
+                getDownloadURL(ref(storage, `images/Grocery/${file.name}`))
+                  .then((url) => {
+                    const newDynamicColumn = [...dynamicColumn];
+                    newDynamicColumn[cardIndex].img[img].src = url;
+                    setDynamicColumn(newDynamicColumn);
+                  })
+                  .then(() => {
+                    uploadDataToFirebase(
+                      "Grocery",
+                      templateName,
+                      staticColumns,
+                      dynamicColumn
+                    );
+                  });
                 console.log("Uploaded a blob or file!");
               });
             }
@@ -356,16 +368,20 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
                 `images/Grocery/${file.name}`
               );
               uploadBytes(uploadedImageRef, file).then((snapshot) => {
-                
-                getDownloadURL(
-                  ref(storage, `images/Grocery/${file.name}`)
-                ).then((url) => {
-                  const newStaticColumns = [...staticColumns];
-                  newStaticColumns[cardIndex].img[img].src = url;
-                  setStaticColumns(newStaticColumns);
-                }).then(() => {
-                  uploadDataToFirebase("Grocery", templateName, staticColumns, dynamicColumn);
-                });
+                getDownloadURL(ref(storage, `images/Grocery/${file.name}`))
+                  .then((url) => {
+                    const newStaticColumns = [...staticColumns];
+                    newStaticColumns[cardIndex].img[img].src = url;
+                    setStaticColumns(newStaticColumns);
+                  })
+                  .then(() => {
+                    uploadDataToFirebase(
+                      "Grocery",
+                      templateName,
+                      staticColumns,
+                      dynamicColumn
+                    );
+                  });
               });
             }
           };
@@ -769,7 +785,12 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
                     setDynamicColumn,
                     cardIndex - cardsInStatic,
                     dynamicColumn[cardIndex - cardsInStatic].text.priceBoxColor,
-                    dynamicColumn[cardIndex - cardsInStatic].text.priceBoxBorder
+                    dynamicColumn[cardIndex - cardsInStatic].text
+                      .priceBoxBorder,
+                    templateCollection,
+                    templateName,
+                    staticColumns,
+                    dynamicColumn
                   )}
                 </div>
               ) : null}
@@ -859,7 +880,11 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
                   setStaticColumns,
                   cardIndex,
                   staticColumns[cardIndex].text.priceBoxColor,
-                  staticColumns[cardIndex].text.priceBoxBorder
+                  staticColumns[cardIndex].text.priceBoxBorder,
+                  templateCollection,
+                  templateName,
+                  staticColumns,
+                  dynamicColumn
                 )}
               </div>
             ) : null}

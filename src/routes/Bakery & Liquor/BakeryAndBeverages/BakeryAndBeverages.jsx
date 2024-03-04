@@ -232,6 +232,7 @@ export default function BakeryLiquor({
                 ? setDynamicColumn
                 : setStaticColumns
             }
+            maxStaticIndex={maxStaticIndex}
             selectedCardIndex={selectedCardIndex}
             imageIndex={imgIndex}
             imageFolder={
@@ -239,11 +240,11 @@ export default function BakeryLiquor({
                 ? "liquor"
                 : "bakery"
             }
-            templateCollection={templateCollection}
             uploadDataToFirebase={uploadDataToFirebase}
             templateName={templateName}
             staticColumns={staticColumns}
             dynamicColumn={dynamicColumn}
+            templateCollection={templateCollection}
           />
         );
       case 9:
@@ -391,7 +392,7 @@ export default function BakeryLiquor({
             imageToUpdate.img[0].src == "" &&
             imageToUpdate.img[1].src == ""
           ) {
-            setIsEditingZoom(false);
+            setPopupState(0)
           }
 
           return newDynamicColumn;
@@ -414,7 +415,7 @@ export default function BakeryLiquor({
             imageToUpdate.img[0].src == "" &&
             imageToUpdate.img[1].src == ""
           ) {
-            setIsEditingZoom(false);
+            setPopupState(0)
           }
 
           return newStaticColumns;
@@ -778,11 +779,6 @@ export default function BakeryLiquor({
           const cardIndex = card.index;
 
           const calculatedCardIndex = cardIndex - cardsInStatic;
-          const isEditingThisZoom =
-            isEditingZoom &&
-            selectedImage &&
-            selectedImage.cardIndex !== undefined &&
-            selectedImage.cardIndex === cardIndex;
 
           let images = { ...card };
 
@@ -828,7 +824,11 @@ export default function BakeryLiquor({
                     setDynamicColumn,
                     calculatedCardIndex,
                     dynamicColumn[calculatedCardIndex].text.priceBoxColor,
-                    dynamicColumn[calculatedCardIndex].text.priceBoxBorder
+                    dynamicColumn[calculatedCardIndex].text.priceBoxBorder,
+                    templateCollection,
+      templateName,
+      staticColumns,
+      dynamicColumn
                   )}
                 </div>
               ) : null}
@@ -908,7 +908,11 @@ export default function BakeryLiquor({
                   setStaticColumns,
                   cardIndex,
                   staticColumns[cardIndex].text.priceBoxColor,
-                  staticColumns[cardIndex].text.priceBoxBorder
+                  staticColumns[cardIndex].text.priceBoxBorder,
+                  templateCollection,
+      templateName,
+      staticColumns,
+      dynamicColumn
                 )}
               </div>
             ) : null}
@@ -1006,7 +1010,11 @@ export default function BakeryLiquor({
                   setStaticColumns,
                   cardIndex,
                   staticColumns[cardIndex].text.priceBoxColor,
-                  staticColumns[cardIndex].text.priceBoxBorder
+                  staticColumns[cardIndex].text.priceBoxBorder,
+                  templateCollection,
+      templateName,
+      staticColumns,
+      dynamicColumn
                 )}
               </div>
             ) : null}
@@ -1048,7 +1056,7 @@ export default function BakeryLiquor({
   6;
   return (
     <div className={styles.body}>
-      { maintenance ? (
+      { !maintenance ? (
           <>
       {renderPopup(popupState)}
       <Sidebar

@@ -24,6 +24,8 @@ const ImageCropper = ({
   const calculatedCardIndex = (selectedCardIndex > maxStaticIndex ? selectedCardIndex - maxStaticIndex - 1 : selectedCardIndex)
   
 
+  console.log(selectedCardIndex, maxStaticIndex)
+
   useEffect(() => {
     if (!src) return;
 

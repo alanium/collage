@@ -1,23 +1,21 @@
 import React, { useEffect, useRef, useState } from "react";
 import styles from "./Dairy&Snacks.module.css";
-import html2pdf from "html2pdf.js"; // Importa la biblioteca html2pdf
-import FixedBox from "../../components/BoxWithText/BoxWithText";
-import TripleBox from "../../components/TripleBoxWithText/TripleBoxWithText";
 import { useNavigate } from "react-router-dom";
-import AmountForPrice from "../../components/AmountForPrice/AmountForPrice";
 import TextBoxLeft from "../../components/ParagraphBox/ParagraphBox";
 import TopTextBox from "../../components/TopTextBox/TopTextBox";
 import TextPopUp from "../../components/TextPopup/TextPopup";
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore/lite";
-import ImageUploader from "../../components/ImageToCloud/ImageToCloud";
-import { getStorage, ref, listAll, uploadBytes } from "firebase/storage";
+import {
+  getStorage,
+  ref,
+  listAll,
+  uploadBytes,
+  getDownloadURL,
+} from "firebase/storage";
 import ImageFromCloud from "../../components/ImageFromCloud/ImageFromCloud";
-
 import ResizableImage from "../../components/ResizableImage/ResizableImage";
 import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
-import AutomaticImageCropper from "../../components/AutomaticImageCropper/AutomaticImageCropper";
 import ImageCropper from "../../components/ImageCropper/ImageCropper";
+import AutomaticImageCropper from "../../components/AutomaticImageCropper/AutomaticImageCropper";
 import { db } from "../root";
 import {
   collection,
@@ -26,6 +24,12 @@ import {
   onSnapshot,
   setDoc,
 } from "firebase/firestore";
+import Sidebar from "../../components/Sidebar/Sidebar";
+import ContextMenu from "../../components/ContextMenu/ContextMenu";
+import RenderInfo from "../../components/RenderInfo/RenderInfo";
+import ClosePopup from "../../components/ClosePopup/ClosePopup";
+import BugReport from "../../components/BugReport/BugReport";
+import ImportPopup from "../../components/ImportPopup/ImportPopup";
 
 const groceryRef = collection(db, "Dairy&Snacks");
 const templatesQuerySnapshot = await getDocs(groceryRef);
@@ -72,9 +76,20 @@ export default function DairyAndSnacks({
   const [popupState, setPopupState] = useState(3);
 
   const maintenance = false;
-  const imageFolder = (selectedCardIndex > 11 && selectedCardIndex < maxStaticIndex ? "snacks" : "dairy")
+  const templateCollection = "Dairy&Snacks";
+  const imageFolder =
+    selectedCardIndex > 11 && selectedCardIndex < maxStaticIndex
+      ? "snacks"
+      : "dairy";
   const storage = getStorage();
-  const imagesRef = ref(storage, `images/${(selectedCardIndex > 11 && selectedCardIndex < maxStaticIndex ? "snacks" : "dairy")}`);
+  const imagesRef = ref(
+    storage,
+    `images/${
+      selectedCardIndex > 11 && selectedCardIndex < maxStaticIndex
+        ? "snacks"
+        : "dairy"
+    }`
+  );
   const templatesRef = ref(storage, "templates/");
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
@@ -112,7 +127,6 @@ export default function DairyAndSnacks({
     };
   }, [templateName]);
 
-
   const handleDynamicColumns = (event) => {
     const cardAmount = prompt(
       "Enter the amount of cards you want on the first column: "
@@ -140,15 +154,14 @@ export default function DairyAndSnacks({
       cards.push(card);
     }
     setDynamicColumn(cards),
-    () => {
-      uploadDataToFirebase(
-        templateCollection,
-        templateName,
-        staticColumns,
-        dynamicColumn
-      );
-    };
-
+      () => {
+        uploadDataToFirebase(
+          templateCollection,
+          templateName,
+          staticColumns,
+          dynamicColumn
+        );
+      };
   };
 
   const renderPopup = (popupNumber) => {
@@ -229,9 +242,7 @@ export default function DairyAndSnacks({
             staticColumns={staticColumns}
             dynamicColumn={dynamicColumn}
             templateCollection={templateCollection}
-            imageFolder={
-              imageFolder
-            }
+            imageFolder={imageFolder}
           />
         );
       case 8:
@@ -254,9 +265,7 @@ export default function DairyAndSnacks({
             }
             selectedCardIndex={selectedCardIndex}
             imageIndex={imgIndex}
-            imageFolder={
-              imageFolder
-            }
+            imageFolder={imageFolder}
             templateCollection={templateCollection}
             uploadDataToFirebase={uploadDataToFirebase}
             templateName={templateName}
@@ -284,9 +293,7 @@ export default function DairyAndSnacks({
             }
             setPopup={setPopupState}
             cardNumber={selectedImage.cardIndex}
-            imageFolder={
-              imageFolder
-            }
+            imageFolder={imageFolder}
             uploadDataToFirebase={uploadDataToFirebase}
             templateCollection={templateCollection}
             templateName={templateName}
@@ -316,9 +323,7 @@ export default function DairyAndSnacks({
             imgIndex={imgIndex}
             maxCardPosition={maxStaticIndex}
             templateCollection={templateCollection}
-            imageFolder={
-              imageFolder
-            }
+            imageFolder={imageFolder}
             setPopup={setPopupState}
             uploadDataToFirebase={uploadDataToFirebase}
           />
@@ -434,7 +439,6 @@ export default function DairyAndSnacks({
     setPopupState(0);
   };
 
-
   const handleDeleteImage = (cardIndex, index) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete the image?"
@@ -457,7 +461,7 @@ export default function DairyAndSnacks({
             imageToUpdate.img[0].src == "" &&
             imageToUpdate.img[1].src == ""
           ) {
-            setIsEditingZoom(false);
+            setPopupState(0);
           }
 
           return newDynamicColumn;
@@ -480,7 +484,7 @@ export default function DairyAndSnacks({
             imageToUpdate.img[0].src == "" &&
             imageToUpdate.img[1].src == ""
           ) {
-            setIsEditingZoom(false);
+            setPopupState(0);
           }
 
           return newStaticColumns;
@@ -586,7 +590,7 @@ export default function DairyAndSnacks({
 
   const handleCropImage = () => {
     setPopupState(8);
-  }
+  };
 
   const handleContextMenu = (event, cardIndex, column, image) => {
     event.preventDefault();
@@ -639,7 +643,12 @@ export default function DairyAndSnacks({
         label: "Delete 2",
         action: async () => {
           await handleDeleteImage(cardIndex, 1);
-          await uploadDataToFirebase();
+          await uploadDataToFirebase(
+            templateCollection,
+            templateName,
+            staticColumns,
+            dynamicColumn
+          );
         },
       });
     }
@@ -648,7 +657,7 @@ export default function DairyAndSnacks({
         label: "Upload 1",
         action: () => {
           setImgIndex(0);
-          setPopup2(true);
+          setPopupState(2);
           setSelectedCardIndex(cardIndex);
         },
       });
@@ -658,33 +667,48 @@ export default function DairyAndSnacks({
         label: "Delete 1",
         action: async () => {
           await handleDeleteImage(cardIndex, 0);
-          await uploadDataToFirebase();
+          await uploadDataToFirebase(
+            templateCollection,
+            templateName,
+            staticColumns,
+            dynamicColumn
+          );
         },
       });
-    } if (selectedColumn[index].img[0].src != "") {
-      contextMenuItems.push({
-        label: "Crop Image 1",
-        action: () => {
-          setImgIndex(0)
-          handleCropImage(cardIndex, imgIndex)},
-      }, {
-        label: "Delete Background of Image 1",
-        action: () => {
-          setImgIndex(0),
-          setIsAutomaticCropping(true)
-      }});
-    } if (selectedColumn[index].img[1].src != "") {
-      contextMenuItems.push({
-        label: "Crop Image 2",
-        action: () => {
-          setImgIndex(1)
-          handleCropImage(cardIndex, imgIndex)},
-      }, {
-        label: "Delete Background of Image 2",
-        action: () => {
-          setImgIndex(1),
-          setIsAutomaticCropping(true)
-      }});
+    }
+    if (selectedColumn[index].img[0].src != "") {
+      contextMenuItems.push(
+        {
+          label: "Crop Image 1",
+          action: () => {
+            setImgIndex(0);
+            handleCropImage(cardIndex, imgIndex);
+          },
+        },
+        {
+          label: "Delete Background of Image 1",
+          action: () => {
+            setImgIndex(0), setPopupState(7);
+          },
+        }
+      );
+    }
+    if (selectedColumn[index].img[1].src != "") {
+      contextMenuItems.push(
+        {
+          label: "Crop Image 2",
+          action: () => {
+            setImgIndex(1);
+            handleCropImage(cardIndex, imgIndex);
+          },
+        },
+        {
+          label: "Delete Background of Image 2",
+          action: () => {
+            setImgIndex(1), setPopupState(7);
+          },
+        }
+      );
     }
 
     const containerRect = contextMenuRef.current.getBoundingClientRect();
@@ -710,14 +734,13 @@ export default function DairyAndSnacks({
     ];
 
     if (image.img[0].src === "" && image.img[1].src === "") {
-      setPopup2(true);
+      setPopupState(2);
       setSelectedCardIndex(cardIndex);
     } else {
       handleContextMenu(event, cardIndex, image);
+      setSelectedCardIndex(cardIndex);
     }
   };
-
-  
 
   const getImageList = () => {
     listAll(imagesRef)
@@ -731,7 +754,7 @@ export default function DairyAndSnacks({
         setImages(names);
         console.log(names);
       })
-      .then(() => setPopup2(false))
+      .then(() => setPopupState(11))
       .catch((error) => {
         console.log(error);
       });
@@ -758,17 +781,12 @@ export default function DairyAndSnacks({
           const cardIndex = card.index;
 
           const calculatedCardIndex = cardIndex - cardsInStatic;
-          const isEditingThisZoom =
-            isEditingZoom &&
-            selectedImage &&
-            selectedImage.cardIndex !== undefined &&
-            selectedImage.cardIndex === cardIndex;
 
           let images = { ...card };
 
           cards.push(
             <div
-            name={`card-${cardIndex}`}
+              name={`card-${cardIndex}`}
               className={styles.card}
               style={{}}
               key={cardIndex}
@@ -776,26 +794,26 @@ export default function DairyAndSnacks({
             >
               {images.img[0] && ( // Check if img[0] exists before rendering
                 <img
-                name={`image-${cardIndex}-0`}
+                  name={`image-${cardIndex}-0`}
                   src={images.img[0].src ? images.img[0].src : ""}
                   className={styles.uploadedImage}
                   style={{
                     transform: `scale(${images.img[0].zoom / 100}) translate(${
-                      images.img[0].x / ( images.img[0].zoom / 100)
-                    }px, ${images.img[0].y / ( images.img[0].zoom / 100)}px)`,
+                      images.img[0].x / (images.img[0].zoom / 100)
+                    }px, ${images.img[0].y / (images.img[0].zoom / 100)}px)`,
                   }}
                 />
               )}
 
               {images.img[1] && ( // Check if img[1] exists before rendering
                 <img
-                name={`image-${cardIndex}-1`}
+                  name={`image-${cardIndex}-1`}
                   src={images.img[1] ? images.img[1].src : ""}
                   className={styles.uploadedImage}
                   style={{
                     transform: `scale(${images.img[1].zoom / 100}) translate(${
-                      images.img[1].x / ( images.img[1].zoom / 100)
-                    }px, ${images.img[1].y / ( images.img[1].zoom / 100)}px)`,
+                      images.img[1].x / (images.img[1].zoom / 100)
+                    }px, ${images.img[1].y / (images.img[1].zoom / 100)}px)`,
                   }}
                 />
               )}
@@ -808,7 +826,11 @@ export default function DairyAndSnacks({
                     setDynamicColumn,
                     calculatedCardIndex,
                     dynamicColumn[calculatedCardIndex].text.priceBoxColor,
-                    dynamicColumn[calculatedCardIndex].text.priceBoxBorder
+                    dynamicColumn[calculatedCardIndex].text.priceBoxBorder,
+                    templateCollection,
+                    templateName,
+                    staticColumns,
+                    dynamicColumn
                   )}
                 </div>
               ) : null}
@@ -816,7 +838,7 @@ export default function DairyAndSnacks({
                 textBoxes={dynamicColumn}
                 setTextBoxes={setDynamicColumn}
                 cardIndex={cardIndex}
-                setPopup={setPopup}
+                setPopup={setPopupState}
                 setSelectedTextBox={setSelectedTextBox}
                 setType={setType}
                 setSelectedImage={setSelectedImage}
@@ -839,11 +861,6 @@ export default function DairyAndSnacks({
       for (let j = 0; j < 2; j++) {
         const cardIndex = j + i * 2 + 15;
 
-        const isEditingThisZoom =
-          isEditingZoom &&
-          selectedImage &&
-          selectedImage.cardIndex === cardIndex;
-
         let images = staticColumns[cardIndex].img;
 
         const textBoxes = [];
@@ -854,14 +871,14 @@ export default function DairyAndSnacks({
 
         column.push(
           <div
-          name={`card-${cardIndex}`}
+            name={`card-${cardIndex}`}
             className={styles.card}
             key={cardIndex}
             onClick={(event) => handleCardClick(cardIndex, event)}
           >
             {images[0] && ( // Check if img[0] exists before rendering
               <img
-              name={`image-${cardIndex}-0`}
+                name={`image-${cardIndex}-0`}
                 src={images[0].src ? images[0].src : ""}
                 className={styles.uploadedImage}
                 style={{
@@ -874,7 +891,7 @@ export default function DairyAndSnacks({
 
             {images[1] && ( // Check if img[1] exists before rendering
               <img
-              name={`image-${cardIndex}-1`}
+                name={`image-${cardIndex}-1`}
                 src={images[1] ? images[1].src : ""}
                 className={styles.uploadedImage}
                 style={{
@@ -893,7 +910,11 @@ export default function DairyAndSnacks({
                   setStaticColumns,
                   cardIndex,
                   staticColumns[cardIndex].text.priceBoxColor,
-                  staticColumns[cardIndex].text.priceBoxBorder
+                  staticColumns[cardIndex].text.priceBoxBorder,
+                  templateCollection,
+                  templateName,
+                  staticColumns,
+                  dynamicColumn
                 )}
               </div>
             ) : null}
@@ -902,18 +923,19 @@ export default function DairyAndSnacks({
               textBoxes={staticColumns}
               setTextBoxes={setStaticColumns}
               cardIndex={cardIndex}
-              setPopup={setPopup}
+              setPopup={setPopupState}
               setSelectedTextBox={setSelectedTextBox}
               setType={setType}
               setSelectedImage={setSelectedImage}
               index={cardIndex}
+              maxCardPosition={maxStaticIndex}
             />
 
             <TextBoxLeft
               textBoxes={staticColumns}
               setTextBoxes={setStaticColumns}
               cardIndex={cardIndex}
-              setPopup={setPopup}
+              setPopup={setPopupState}
               setSelectedTextBox={setSelectedTextBox}
               setType={setType}
               setSelectedImage={setSelectedImage}
@@ -942,11 +964,6 @@ export default function DairyAndSnacks({
       for (let j = 0; j < 4; j++) {
         const cardIndex = j + i * 4;
 
-        const isEditingThisZoom =
-          isEditingZoom &&
-          selectedImage &&
-          selectedImage.cardIndex === cardIndex;
-
         let images = staticColumns[cardIndex].img;
 
         const textBoxes = [];
@@ -957,14 +974,14 @@ export default function DairyAndSnacks({
 
         column.push(
           <div
-          name={`card-${cardIndex}`}
+            name={`card-${cardIndex}`}
             className={styles.card}
             key={cardIndex}
             onClick={(event) => handleCardClick(cardIndex, event)}
           >
             {images[0] && ( // Check if img[0] exists before rendering
               <img
-              name={`image-${cardIndex}-0`}
+                name={`image-${cardIndex}-0`}
                 src={images[0].src ? images[0].src : ""}
                 className={styles.uploadedImage}
                 style={{
@@ -977,7 +994,7 @@ export default function DairyAndSnacks({
 
             {images[1] && ( // Check if img[1] exists before rendering
               <img
-              name={`image-${cardIndex}-1`}
+                name={`image-${cardIndex}-1`}
                 src={images[1] ? images[1].src : ""}
                 className={styles.uploadedImage}
                 style={{
@@ -996,7 +1013,11 @@ export default function DairyAndSnacks({
                   setStaticColumns,
                   cardIndex,
                   staticColumns[cardIndex].text.priceBoxColor,
-                  staticColumns[cardIndex].text.priceBoxBorder
+                  staticColumns[cardIndex].text.priceBoxBorder,
+                  templateCollection,
+                  templateName,
+                  staticColumns,
+                  dynamicColumn
                 )}
               </div>
             ) : null}
@@ -1005,18 +1026,19 @@ export default function DairyAndSnacks({
               textBoxes={staticColumns}
               setTextBoxes={setStaticColumns}
               cardIndex={cardIndex}
-              setPopup={setPopup}
+              setPopup={setPopupState}
               setSelectedTextBox={setSelectedTextBox}
               setType={setType}
               setSelectedImage={setSelectedImage}
               index={cardIndex}
+              maxCardPosition={maxStaticIndex}
             />
 
             <TextBoxLeft
               textBoxes={staticColumns}
               setTextBoxes={setStaticColumns}
               cardIndex={cardIndex}
-              setPopup={setPopup}
+              setPopup={setPopupState}
               setSelectedTextBox={setSelectedTextBox}
               setType={setType}
               setSelectedImage={setSelectedImage}
@@ -1038,235 +1060,38 @@ export default function DairyAndSnacks({
 
   return (
     <div className={styles.body}>
-      { maintenance ? (
-          <>
-      {popup ? (
-        <TextPopUp
-          textBox={
-            selectedImage.cardIndex > maxStaticIndex
-              ? dynamicColumn
-              : staticColumns
-          }
-          setTextBox={
-            selectedImage.cardIndex > maxStaticIndex
-              ? setDynamicColumn
-              : setStaticColumns
-          }
-          setPopup={setPopup}
-          cardIndex={selectedImage}
-          maxCardPosition={maxStaticIndex}
-          type={type}
-          uploadDataToFirebase={uploadDataToFirebase}
-        />
-      ) : null}
-      {isEditingZoom && (
-        <ResizableImage 
-        cardIndex={selectedImage.cardIndex > maxStaticIndex ? selectedImage.cardIndex - cardsInStatic : selectedImage.cardIndex}
-        selectedColumn={selectedImage.cardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
-        setSelectedColumn={selectedImage.cardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns}
-        setIsEditingZoom={setIsEditingZoom}
-        cardNumber={selectedImage.cardIndex}
-        imageFolder={selectedCardIndex > 11 && selectedCardIndex < maxStaticIndex ? "snacks" : "dairy"}
-        uploadDataToFirebase={uploadDataToFirebase}
+      {!maintenance ? (
+        <>
+          {renderPopup(popupState)}
+          <Sidebar
+            handleConvertToPDF={handleConvertToPDF}
+            setPopup={setPopupState}
           />
-      )}
-      {isCroppingImage && (
-        <ImageCropper src={
-          selectedCardIndex > maxStaticIndex ? dynamicColumn[selectedCardIndex  - cardsInStatic].img[imgIndex].src : staticColumns[selectedCardIndex ].img[imgIndex].src
-        }
-        setIsCroppingImage={
-          setIsCroppingImage
-        }
-        selectedColumn={selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
-        setSelectedColumn={
-          selectedCardIndex > 20 ? setDynamicColumn : setStaticColumns
-        }
-        selectedCardIndex={selectedCardIndex}
-        imageIndex={imgIndex}
-        imageFolder={selectedCardIndex > 11 && selectedCardIndex < maxStaticIndex ? "snacks" : "dairy"}
-        />
-      )}
-      {isAutomaticCropping && (
-        <AutomaticImageCropper
-        selectedCardColumn={selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns}
-        setSelectedCardColumn={selectedCardIndex > maxStaticIndex ? setDynamicColumn : setStaticColumns}
-        cardIndex={selectedCardIndex}
-        imageIndex={imgIndex}
-        setIsAutomaticCropping={setIsAutomaticCropping}
-        uploadDataToFirebase={uploadDataToFirebase}
-        imageFolder={selectedCardIndex > 11 && selectedCardIndex <= maxStaticIndex ? "snacks" : "dairy"}
-        maxStaticIndex={maxStaticIndex}
-        />
-      )} 
-      {popup2 ? (
-        <div className={styles.popUp2} style={{ zIndex: "1" }}>
-          <button
-            className={styles.actionButton}
-            onClick={(event) =>
-              handleImageUpload(event, selectedCardIndex, imgIndex)
-            }
-          >
-            Import from Device
-          </button>
-          <button
-            className={styles.actionButton}
-            onClick={(event) => getImageList(event)}
-          >
-            Import from Database
-          </button>
-          <button
-            className={styles.closeButton}
-            onClick={() => setPopup2(false)}
-          >
-            Close
-          </button>
-        </div>
-      ) : null}
-      {popup3 ? (
-        <div className={styles.popUp2} style={{top: "40%", left: "50%", zIndex: "1"}}>
-          <div>
-            Do you really wish to go back?
-          </div>  
-          <div>
-            <button
-              onClick={() => navigate("/")}
+          <div id="magazineContainer" className={styles.containerDivBorder}>
+            <div
+              className={styles.containerDiv}
+              style={{ height: "129%" }}
+              ref={contextMenuRef}
             >
-              Yes
-            </button>
-            <button
-              onClick={() => setPopup3(false)}
-            >
-              No
-            </button>
+              <RenderCards />
+              <div className={styles.overlay}>DAIRY</div>
+              {contextMenu && (
+                <ContextMenu
+                  x={contextMenu.x}
+                  y={contextMenu.y}
+                  items={contextMenu.items}
+                  onClose={() => setContextMenu(null)}
+                />
+              )}
+            </div>
+
+            <div className={styles.secondContainerDiv}>
+              <div className={styles.secondOverlay}>SNACKS</div>
+              <RenderLiquorCards />
+            </div>
           </div>
-        </div>
-      ) : null}
-      {popup4 ? (
-        <ManageTemplates
-        dynamicColumn={dynamicColumn}
-        staticColumns={staticColumns}
-        setDynamicColumn={setDynamicColumn}
-        setStaticColumns={setStaticColumns}
-        templates={templates}
-        setTemplates={setTemplates}
-        setPopup4={setPopup4}
-        db={db}
-        setCurrentTemplate={setTemplateName}
-        templateFolder="Dairy&Snacks"
-        cardsInStatic={cardsInStatic}
-        />
-      ): null}
-
-      <div className={styles.sidebar} style={{ top: "0px" }}>
-        <div
-          style={{
-            position: "relative",
-            left: "px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-start",
-            padding: "3px",
-          }}
-        >
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-              zIndex: "1",
-            }}
-            onClick={handleConvertToPDF}
-          >
-            Make PDF
-          </button>
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-              zIndex: "1",
-            }}
-            onClick={() => setPopup3(true)}
-          >
-            Back to Home
-          </button>
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-              zIndex: "1",
-            }}
-            onClick={() => setInfo(!info)}
-          >
-            Info
-          </button>
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-            }}
-            onClick={() => setPopup4(true)}
-          >
-            Open Template Manager
-          </button>
-
-          <ImageUploader  uploadDataToFirebase={uploadDataToFirebase} imageFolder={imageFolder} />
-        </div>
-      </div>
-
-      <div id="magazineContainer" className={styles.containerDivBorder}>
-        <div
-          className={styles.containerDiv}
-          style={{ height: "129%" }}
-          ref={contextMenuRef}
-        >
-          <RenderCards />
-          <div className={styles.overlay}>DAIRY</div>
-          {contextMenu && (
-            <ContextMenu
-              x={contextMenu.x}
-              y={contextMenu.y}
-              items={contextMenu.items}
-              onClose={() => setContextMenu(null)}
-            />
-          )}
-        </div>
-
-        <div className={styles.secondContainerDiv}>
-          <div className={styles.secondOverlay}>SNACKS</div>
-          <RenderLiquorCards />
-        </div>
-      </div>
-      {info ? <RenderInfo /> : null}
-      {images != null ? (
-        <ImageFromCloud
-          images={images}
-          cardIndex={selectedCardIndex}
-          selectedColumn={
-            selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
-          }
-          setSelectedColumn={
-            selectedCardIndex > maxStaticIndex
-              ? setDynamicColumn
-              : setStaticColumns
-          }
-          setImages={setImages}
-          imgIndex={imgIndex}
-          maxCardPosition={maxStaticIndex}
-          imageFolder={selectedCardIndex > 11 && selectedCardIndex < maxStaticIndex ? "snacks" : "dairy"}
-          uploadDataToFirebase={uploadDataToFirebase}
-          />
-      ) : null} </>) : (
+        </>
+      ) : (
         <h1>In maintenance..</h1>
       )}
     </div>
