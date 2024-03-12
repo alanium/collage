@@ -12,10 +12,8 @@ import MeatAndSeafood from "./routes/Meats&Seafood/Meat&Seafood.jsx";
 import DelicatessenAndMore from "./routes/Delicatessen&Fish&Taqueria/Delicatessen&Fish&Taqueria.jsx";
 import NapervilleFreshMarket from "./routes/NapervilleFreshMarket/NapervilleFreshMarket.jsx";
 import html2pdf from "html2pdf.js";
-import AmountForPrice from "./components/AmountForPrice/AmountForPrice.jsx";
-import TripleBox from "./components/TripleBoxWithText/TripleBoxWithText.jsx";
-import FixedBox from "./components/BoxWithText/BoxWithText.jsx";
 import { doc, setDoc } from "firebase/firestore";
+import NewPriceBox from "./components/NewPriceBox/NewPriceBox.jsx";
 
 const uploadDataToFirebase = async (
   folderName,
@@ -129,63 +127,9 @@ const downloadExternalImages = async (container) => {
 };
 
 const renderPriceBox = (
-  number,
-  column,
-  setColumn,
-  cardIndex,
-  backgroundColor,
-  priceBoxBorder,
-  templateCollection,
-  templateName,
-  staticColumns,
-  dynamicColumn
+  {priceBox}
 ) => {
-  const priceBoxes = [
-    <FixedBox
-      key={`fixed-box-${cardIndex}`}
-      textBoxes={column}
-      setTextBoxes={setColumn}
-      backgroundColor={backgroundColor}
-      i={cardIndex}
-      cardIndex={cardIndex}
-      priceBoxBorder={priceBoxBorder}
-      uploadDataToFirebase={uploadDataToFirebase}
-      templateCollection={templateCollection}
-      templateName={templateName}
-      staticColumns={staticColumns}
-      dynamicColumn={dynamicColumn}
-    />,
-    <TripleBox
-      key={`fixed-box-${cardIndex}`}
-      textBoxes={column}
-      setTextBoxes={setColumn}
-      backgroundColor={backgroundColor}
-      i={cardIndex}
-      cardIndex={cardIndex}
-      priceBoxBorder={priceBoxBorder}
-      uploadDataToFirebase={uploadDataToFirebase}
-      templateCollection={templateCollection}
-      templateName={templateName}
-      staticColumns={staticColumns}
-      dynamicColumn={dynamicColumn}
-    />,
-    <AmountForPrice
-      key={`fixed-box-${cardIndex}`}
-      textBoxes={column}
-      setTextBoxes={setColumn}
-      backgroundColor={backgroundColor}
-      i={cardIndex}
-      cardIndex={cardIndex}
-      priceBoxBorder={priceBoxBorder}
-      uploadDataToFirebase={uploadDataToFirebase}
-      templateCollection={templateCollection}
-      templateName={templateName}
-      staticColumns={staticColumns}
-      dynamicColumn={dynamicColumn}
-    />,
-  ];
-
-  return priceBoxes[number];
+  return <NewPriceBox priceBox={priceBox} />
 };
 
 const router = createBrowserRouter([

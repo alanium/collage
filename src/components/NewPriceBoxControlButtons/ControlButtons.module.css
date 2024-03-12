@@ -1,0 +1,70 @@
+.controlsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Add some space between groups */
+  background-color: #000000;
+  border: 2px solid white;
+  padding: 20px;
+  border-radius: 20px;
+  margin: 50px;
+}
+
+.controlsGroup {
+  display: flex;
+  align-items: center; /* Center items vertically */
+  gap: 10px; /* Add space between label and buttons */
+}
+
+.controlsGroup label {
+  font-weight: bold;
+  width: 50%; /* Make labels occupy 50% of the container */
+}
+
+.controlsGroup .buttonContainer {
+  width: 50%; /* Make button container occupy 50% of the container */
+}
+
+.labelContainer{
+  width: 50%; /* Make button container occupy 50% of the container */
+}
+
+.controlsGroup button {
+  width: 100%; /* Make buttons fill their container */
+  padding: 8px 12px; /* Increase padding for buttons */
+  border: 1px solid white;
+  background-color: #000000;
+  color: #ffffff;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.controlsGroup input {
+  width: 97%;
+}
+
+.controlsGroup button:hover {
+  background-color: #ddd;
+  color: black
+}
+
+.colorPicker {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.979);
+  z-index: 9999;
+}
+
+.colorPickerWithButton{
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}

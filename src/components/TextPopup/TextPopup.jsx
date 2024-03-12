@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styles from "./TextPopup.module.css";
 
 export default function TextPopUp({
@@ -16,6 +16,12 @@ export default function TextPopUp({
   dynamicColumn,
 }) {
   const [text, setText] = useState("");
+  const textareaRef = useRef(null); // Ref for textarea
+
+  useEffect(() => {
+    // Focus on the textarea when the component mounts
+    textareaRef.current.focus();
+  }, []); // Empty dependency array ensures this effect runs only once after the initial render
 
   const calculatedIndex =
     cardIndex.cardIndex > maxCardPosition
@@ -28,8 +34,6 @@ export default function TextPopUp({
 
   const handleConfirm = (event) => {
     const newTextBox = [...textBox];
-    console.log(textBox);
-    console.log(calculatedIndex);
     newTextBox[calculatedIndex].text[type] = text;
 
     setTextBox(newTextBox);
@@ -50,6 +54,7 @@ export default function TextPopUp({
     <div className={styles.centerContainer}>
       <div className={styles.popupContainer}>
         <textarea
+          ref={textareaRef} // Connect the ref to the textarea element
           className={styles.textarea}
           value={text}
           onChange={handleChange}

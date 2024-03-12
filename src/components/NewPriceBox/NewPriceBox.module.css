@@ -1,0 +1,11 @@
+@font-face {
+    font-family: 'Futura PT Condensed Extra Bold';
+    src: url('../../assets/futura-pt-cond-extrabold.otf') format('opentype');
+    font-weight: 800;
+    font-style: normal;
+}
+
+.textBox {
+    font-family: 'Futura PT Condensed Extra Bold', sans-serif;
+ 
+}

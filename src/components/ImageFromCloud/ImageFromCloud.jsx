@@ -28,14 +28,15 @@ export default function ImageFromCloud({
   const [showLoading, setShowLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [inputPage, setInputPage] = useState("");
+  const [imageNames, setImageNames] = useState([]);
   const imagesPerPage = 30;
   const totalImages = images.length;
   const totalPages = Math.ceil(totalImages / imagesPerPage);
   const storage = getStorage();
 
-  console.log(images)
+  console.log(images);
 
-  const handleImageChange = (event, imagePreview) => {
+  const handleImageChange = (event, imagePreview, imageName) => {
     event.preventDefault();
     setSelectedImage(imagePreview);
     setPreviewImage(imagePreview);
@@ -45,17 +46,15 @@ export default function ImageFromCloud({
   const handleConfirmSelection = (event) => {
     const newSelectedColumn = [...selectedColumn];
     const calculatedCardIndex =
-      cardIndex > maxCardPosition
-        ? cardIndex - (maxCardPosition + 1)
-        : cardIndex;
+      cardIndex > maxCardPosition ? cardIndex - (maxCardPosition + 1) : cardIndex;
     newSelectedColumn[calculatedCardIndex].img[imgIndex].src = selectedImage;
     setSelectedColumn(newSelectedColumn);
     setSelectedImage(null);
     setImages(null);
     setPreviewImage(null);
     setContainerToLeft(false);
-    setPopup(0)
-    uploadDataToFirebase(templateCollection, templateName, staticColumns, dynamicColumn)
+    setPopup(0);
+    uploadDataToFirebase(templateCollection, templateName, staticColumns, dynamicColumn);
   };
 
   const loadMoreImages = () => {
@@ -93,17 +92,20 @@ export default function ImageFromCloud({
     setSelectedImage(null);
     setPreviewImage(null);
     setContainerToLeft(false);
-    setPopup(0)
+    setPopup(0);
   };
 
   const renderImages = () => {
+    const start = (currentPage - 1) * imagesPerPage;
+    const end = start + imagesPerPage;
     Promise.all(
-      images.map((imageName) =>
+      images.slice(start, end).map((imageName) =>
         getDownloadURL(ref(storage, `images/${imageFolder}/${imageName}`))
       )
     )
       .then((urls) => {
         setImagesPreview(urls);
+        setImageNames(images.slice(start, end));
         setShowLoading(false);
       })
       .catch((error) => {
@@ -113,12 +115,15 @@ export default function ImageFromCloud({
 
   useEffect(() => {
     renderImages();
-  }, []);
+  }, [currentPage]);
 
   useEffect(() => {
-    const copiedArray = imagesPreview.slice((currentPage - 1) * imagesPerPage, currentPage * imagesPerPage);
+    const copiedArray = imagesPreview.slice(
+      0,
+      Math.min(visibleImages, imagesPreview.length)
+    );
     setRenderedImages(copiedArray);
-  }, [imagesPreview, currentPage]);
+  }, [imagesPreview, visibleImages]);
 
   useEffect(() => {
     setInputPage(String(currentPage)); // Convertimos el número de página a String para que sea el valor del input
@@ -136,14 +141,24 @@ export default function ImageFromCloud({
     );
   }
 
- return (
+  return (
     <div className={styles.background}>
       <div className={styles.containerWithPreview}>
         {renderedImages.length > 0 && (
-          <div className={`${styles.container} ${containerToLeft ? styles.containerToLeft : ""}`}>
+          <div
+            className={`${styles.container} ${
+              containerToLeft ? styles.containerToLeft : ""
+            }`}
+          >
             <h1 className={styles.title}>Database Explorer</h1>
             <div className={styles.pageNavigation}>
-              <button className={styles.pageButton} onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>Previous</button>
+              <button
+                className={styles.pageButton}
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
               <input
                 type="text"
                 value={inputPage}
@@ -153,17 +168,29 @@ export default function ImageFromCloud({
                 placeholder="Enter Page"
               />
               <span className={styles.pageText}>of {totalPages}</span>
-              <button className={styles.pageButton} onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages}>Next</button>
+              <button
+                className={styles.pageButton}
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
             </div>
-            
+
             <hr />
-            
+
             <div className={styles.gridContainer}>
               {renderedImages.map((imagePreview, index) => (
                 <div
                   key={index}
                   className={styles.gridItem}
-                  onClick={(event) => handleImageChange(event, imagePreview)}
+                  onClick={(event) =>
+                    handleImageChange(
+                      event,
+                      imagePreview,
+                      imageNames[index]
+                    )
+                  }
                 >
                   <img
                     key={index}
@@ -175,6 +202,7 @@ export default function ImageFromCloud({
                     src={imagePreview}
                     alt={`Image ${index}`}
                   />
+                  <label>{imageNames[index]}</label>
                 </div>
               ))}
             </div>

@@ -24,6 +24,10 @@ import ContextMenu from "../../components/ContextMenu/ContextMenu";
 import ImportPopup from "../../components/ImportPopup/ImportPopup";
 import ClosePopup from "../../components/ClosePopup/ClosePopup";
 import Sidebar from "../../components/Sidebar/Sidebar";
+import NewPriceBoxEdit from "../../components/NewPriceBoxEdit/NewPriceBoxEdit";
+import NewPriceBox from "../../components/NewPriceBox/NewPriceBox";
+import PriceBoxFromCloud from "../../components/PriceBoxFromCloud/PriceBoxFromCloud";
+import IrregularImageCropper from "../../components/IrregularImageCropper/IrregularImageCropper";
 
 const groceryRef = collection(db, "Grocery");
 const templatesQuerySnapshot = await getDocs(groceryRef);
@@ -43,11 +47,23 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
         text: {
           top: "",
           left: "",
-          bottom: "",
-          priceBoxType: 0,
-          priceBoxColor: false,
-          renderPriceBox: true,
-          priceBoxBorder: true,
+          priceBox: {
+            text: [
+              {
+                text: "XS/$X",
+                fontSize: 24,
+                draggable: true,
+                resizable: true,
+                position: { x: 10, y: 0 },
+                size: { x: 50, y: 50 },
+              },
+            ],
+            width: "100",
+            height: "50",
+            backgroundColor: "red",
+            textColor: "white",
+            border: "black",
+          },
         },
         index,
       }))
@@ -119,11 +135,23 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
         text: {
           top: "",
           left: "",
-          bottom: "",
-          priceBoxType: 0,
-          priceBoxColor: false,
-          renderPriceBox: false,
-          priceBoxBorder: true,
+          priceBox: {
+            text: [
+              {
+                text: "XS/$X",
+                fontSize: 24,
+                draggable: true,
+                resizable: true,
+                position: { x: 10, y: 0 },
+                size: { x: 50, y: 50 },
+              },
+            ],
+            width: "100",
+            height: "50",
+            backgroundColor: "red",
+            textColor: "white",
+            border: "black",
+          },
         },
         index: i + 21,
       };
@@ -143,7 +171,7 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
   const renderPopup = (popupNumber) => {
     switch (popupNumber) {
       case 0:
-        return null;
+        return "";
       case 1:
         return (
           <TextPopUp
@@ -305,6 +333,80 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
             templateCollection={templateCollection}
             setPopup={setPopupState}
             uploadDataToFirebase={uploadDataToFirebase}
+          />
+        );
+      case 12:
+        return (
+          <NewPriceBoxEdit
+            oldPriceBox={
+              selectedCardIndex > maxStaticIndex
+                ? dynamicColumn[selectedCardIndex - maxStaticIndex].text
+                    .priceBox
+                : staticColumns[selectedCardIndex].text.priceBox
+            }
+            setSelectedColumn={
+              selectedCardIndex > maxStaticIndex
+                ? setDynamicColumn
+                : setStaticColumns
+            }
+            selectedColumn={
+              selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
+            }
+            selectedCardIndex={selectedCardIndex}
+            cardsInStatic={cardsInStatic}
+            setPopup={setPopupState}
+            uploadDataToFirebase={() => uploadDataToFirebase(
+              "Grocery",
+              templateName,
+              staticColumns,
+              dynamicColumn
+            )}
+          />
+        );
+      case 13:
+        return (
+          <PriceBoxFromCloud
+            setPopup={setPopupState}
+            setSelectedColumn={
+              selectedCardIndex > maxStaticIndex
+                ? setDynamicColumn
+                : setStaticColumns
+            }
+            selectedColumn={
+              selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
+            }
+            selectedCardIndex={selectedCardIndex}
+            cardsInStatic={cardsInStatic}
+            uploadDataToFirebase={() => uploadDataToFirebase(
+              "Grocery",
+              templateName,
+              staticColumns,
+              dynamicColumn
+            )}
+          />
+        );
+      case 14:
+        return (
+          <IrregularImageCropper
+            setPopup={setPopupState}
+            setSelectedColumn={
+              selectedCardIndex > maxStaticIndex
+                ? setDynamicColumn
+                : setStaticColumns
+            }
+            selectedColumn={
+              selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
+            }
+            selectedCardIndex={selectedCardIndex}
+            cardsInStatic={cardsInStatic}
+            imgIndex={imgIndex}
+            uploadDataToFirebase={() => uploadDataToFirebase(
+              "Grocery",
+              templateName,
+              staticColumns,
+              dynamicColumn
+            )}
+            imageFolder={"Grocery"}
           />
         );
     }
@@ -469,72 +571,6 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
     }
   };
 
-  const showHidePriceBox = (cardIndex) => {
-    if (cardIndex > maxStaticIndex) {
-      const newDynamicColumn = [...dynamicColumn];
-      newDynamicColumn[cardIndex - cardsInStatic].text.renderPriceBox =
-        !newDynamicColumn[cardIndex - cardsInStatic].text.renderPriceBox;
-      setDynamicColumn(newDynamicColumn);
-    } else {
-      const newStaticColumns = [...staticColumns];
-      newStaticColumns[cardIndex].text.renderPriceBox =
-        !newStaticColumns[cardIndex].text.renderPriceBox;
-      setStaticColumns(newStaticColumns);
-    }
-    uploadDataToFirebase("Grocery", templateName, staticColumns, dynamicColumn);
-  };
-
-  const switchBoxType = (cardIndex) => {
-    if (cardIndex > maxStaticIndex) {
-      const newDynamicColumn = [...dynamicColumn];
-      if (newDynamicColumn[cardIndex - cardsInStatic].text.priceBoxType < 2) {
-        newDynamicColumn[cardIndex - cardsInStatic].text.priceBoxType++;
-      } else {
-        newDynamicColumn[cardIndex - cardsInStatic].text.priceBoxType = 0; // Reset to 0 if it's already 3
-      }
-      setDynamicColumn(newDynamicColumn);
-    } else {
-      const newStaticColumns = [...staticColumns];
-      if (newStaticColumns[cardIndex].text.priceBoxType < 2) {
-        newStaticColumns[cardIndex].text.priceBoxType++;
-      } else {
-        newStaticColumns[cardIndex].text.priceBoxType = 0;
-      }
-      setStaticColumns(newStaticColumns);
-    }
-    uploadDataToFirebase("Grocery", templateName, staticColumns, dynamicColumn);
-  };
-
-  const changePriceBoxColor = (cardIndex) => {
-    if (cardIndex > maxStaticIndex) {
-      const newDynamicColumn = [...dynamicColumn];
-      newDynamicColumn[cardIndex - cardsInStatic].text.priceBoxColor =
-        !newDynamicColumn[cardIndex - cardsInStatic].text.priceBoxColor;
-      setDynamicColumn(newDynamicColumn);
-    } else {
-      const newStaticColumns = [...staticColumns];
-      newStaticColumns[cardIndex].text.priceBoxColor =
-        !newStaticColumns[cardIndex].text.priceBoxColor;
-      setStaticColumns(newStaticColumns);
-    }
-    uploadDataToFirebase("Grocery", templateName, staticColumns, dynamicColumn);
-  };
-
-  const changePriceBoxBorder = (cardIndex) => {
-    if (cardIndex > maxStaticIndex) {
-      const newDynamicColumn = [...dynamicColumn];
-      newDynamicColumn[cardIndex - cardsInStatic].text.priceBoxBorder =
-        !newDynamicColumn[cardIndex - cardsInStatic].text.priceBoxBorder;
-      setDynamicColumn(newDynamicColumn);
-    } else {
-      const newStaticColumns = [...staticColumns];
-      newStaticColumns[cardIndex].text.priceBoxBorder =
-        !newStaticColumns[cardIndex].text.priceBoxBorder;
-      setStaticColumns(newStaticColumns);
-    }
-    uploadDataToFirebase("Grocery", templateName, staticColumns, dynamicColumn);
-  };
-
   const handleCropImage = () => {
     setPopupState(8);
   };
@@ -550,20 +586,12 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
 
     const contextMenuItems = [
       {
-        label: "Show/Hide Price Box",
-        action: () => showHidePriceBox(cardIndex),
+        label: "New Edit Price Box",
+        action: () => setPopupState(12),
       },
       {
-        label: "Change Price Box Type",
-        action: () => switchBoxType(cardIndex),
-      },
-      {
-        label: "Change Price Box Color",
-        action: () => changePriceBoxColor(cardIndex),
-      },
-      {
-        label: "Change Price Box Border",
-        action: () => changePriceBoxBorder(cardIndex),
+        label: "Load Price Box From Cloud",
+        action: () => setPopupState(13),
       },
       { type: "divider" },
       {
@@ -639,6 +667,12 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
             setImgIndex(0), setPopupState(7);
             setSelectedCardIndex(cardIndex);
           },
+        },
+        {
+          label: "Precise Crop Image 1",
+          action: () => {
+            setImgIndex(0), setPopupState(14), setSelectedCardIndex(cardIndex);
+          },
         }
       );
     }
@@ -658,6 +692,12 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
             setImgIndex(1);
             setSelectedCardIndex(cardIndex);
             setPopupState(7);
+          },
+        },
+        {
+          label: "Precise Crop Image 2",
+          action: () => {
+            setImgIndex(2), setPopupState(14), setSelectedCardIndex(cardIndex);
           },
         }
       );
@@ -776,24 +816,13 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
                   }}
                 />
               )}
-              {dynamicColumn[cardIndex - cardsInStatic] &&
-              dynamicColumn[cardIndex - cardsInStatic].text.renderPriceBox ? (
-                <div className="priceBox">
-                  {renderPriceBox(
-                    dynamicColumn[cardIndex - cardsInStatic].text.priceBoxType,
-                    dynamicColumn,
-                    setDynamicColumn,
-                    cardIndex - cardsInStatic,
-                    dynamicColumn[cardIndex - cardsInStatic].text.priceBoxColor,
-                    dynamicColumn[cardIndex - cardsInStatic].text
-                      .priceBoxBorder,
-                    templateCollection,
-                    templateName,
-                    staticColumns,
-                    dynamicColumn
-                  )}
-                </div>
-              ) : null}
+
+              <NewPriceBox
+                priceBox={
+                  dynamicColumn[cardIndex - cardsInStatic].text.priceBox
+                }
+              />
+
               <TextBoxLeft
                 textBoxes={dynamicColumn}
                 setTextBoxes={setDynamicColumn}
@@ -871,23 +900,7 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
               />
             )}
 
-            {staticColumns[cardIndex] &&
-            staticColumns[cardIndex].text.renderPriceBox ? (
-              <div className="priceBox">
-                {renderPriceBox(
-                  staticColumns[cardIndex].text.priceBoxType,
-                  staticColumns,
-                  setStaticColumns,
-                  cardIndex,
-                  staticColumns[cardIndex].text.priceBoxColor,
-                  staticColumns[cardIndex].text.priceBoxBorder,
-                  templateCollection,
-                  templateName,
-                  staticColumns,
-                  dynamicColumn
-                )}
-              </div>
-            ) : null}
+            <NewPriceBox priceBox={staticColumns[cardIndex].text.priceBox} />
 
             <TopTextBox
               textBoxes={staticColumns}
