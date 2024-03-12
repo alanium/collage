@@ -41,7 +41,17 @@ export default function NewPriceBox({ priceBox }) {
           alignItems: "center", // Added for centering text
           }}
         >
-          <div style={{ transform: "scaleY(1.5)" }}>{textBox.text}</div>
+          
+          <div style={{ fontFamily: "'Futura PT Condensed Extra Bold', sans-serif", transform: "scaleY(1.5)", display: "flex", alignItems: "center" }}>
+              {textBox.text.split("/").map((part, index) => (
+                <React.Fragment key={index}>
+                  {index > 0 && <div style={{ transform: "scaleY(1.0)", fontSize: `${textBox.fontSize * 1.0}px`, fontFamily: "'Encode Sans', sans-serif" }}>/</div>}
+                  {part}
+                </React.Fragment>
+              ))}
+            </div>
+          
+          
         </div>
       ))}
     </div>

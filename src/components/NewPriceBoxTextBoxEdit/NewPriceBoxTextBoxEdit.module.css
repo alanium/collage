@@ -1,0 +1,53 @@
+.container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 99.9%;
+    display: flex;
+  }
+  
+  .container > * {
+    flex: 1;
+  }
+  
+  .inputContainer {
+    display: flex;
+    flex-direction: column;
+    margin-right: 10px;
+  }
+
+  .inputContainer input{
+    background-color: black;
+    border: 1px solid white;
+  }
+  
+  
+  .bttnContainer {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .bttn {
+    width: 100%;
+  }
+
+  .bttn button{
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    border: 1px solid white;
+  }
+
+  .inputWrapper {
+    position: relative;
+  }
+  
+  .additionalText {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 10px;
+    color: grey;
+  }
+  

@@ -5,6 +5,11 @@
     font-style: normal;
 }
 
+@font-face {
+    font-family: "Encode Sans", sans-serif;
+    src: url('https://fonts.googleapis.com/css2?family=Encode+Sans:wght@100..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap');
+}
+
 .textBox {
     font-family: 'Futura PT Condensed Extra Bold', sans-serif;
  
