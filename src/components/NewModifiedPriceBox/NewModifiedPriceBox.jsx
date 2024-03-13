@@ -9,6 +9,7 @@ export default function NewModifiedPriceBox({
   dragMoveListener,
   oldPriceBox,
   boxRef,
+  textBoxes,
 }) {
   useEffect(() => {
     const parentContainer = boxRef.current.parentElement;
@@ -39,8 +40,8 @@ export default function NewModifiedPriceBox({
         backgroundColor: priceBox.backgroundColor,
         color: priceBox.textColor, // Initial height
         // To show resize cursor
-        width: `${oldPriceBox.width}px`,
-        height: `${oldPriceBox.height}px`,
+        width: `${priceBox.width}px`,
+        height: `${priceBox.height}px`,
         right: "2px",
         bottom: "2px",
         boxSizing: "border-box",
@@ -48,22 +49,29 @@ export default function NewModifiedPriceBox({
         position: "absolute",
         borderRadius: "10px",
         overflow: "hidden",
+        justifyContent: "center", // Added for centering text
+          alignItems: "center", 
         // To enable scrolling if content exceeds box size
       }}
     >
-      {priceBox.text.map((textBox, index) => (
+      {textBoxes.map((textBox, index) => (
+        <>
+        {textBoxes[index] && 
         <NewPriceBoxTextBox
-          key={`textBox-${index}`}
-          text={textBox.text}
-          fontSize={textBox.fontSize}
-          initialPosition={{ top: "10px", left: "10px" }}
-          textBoxIndex={index}
-          handleSelectedTextBox={handleSelectedTextBox}
-          isDraggable={priceBox.text[index].draggable}
-          isResizable={priceBox.text[index].resizable}
-          handleTextBoxChange={handleTextBoxChange}
-          oldPriceBox={oldPriceBox}
-        />
+        key={`textBox-${index}`}
+        textBox={textBox}
+        text={textBox.text}
+        fontSize={textBox.fontSize}
+        initialPosition={{ top: "10px", left: "10px" }}
+        textBoxIndex={index}
+        handleSelectedTextBox={handleSelectedTextBox}
+        isDraggable={textBoxes[index].draggable}
+        isResizable={textBoxes[index].resizable}
+        handleTextBoxChange={handleTextBoxChange}
+        priceBox={priceBox}
+      />
+        }
+        </>
       ))}
     </div>
   );

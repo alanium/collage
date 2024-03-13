@@ -14,38 +14,48 @@ export default function NewPriceBoxEdit({
   selectedCardIndex,
   setPopup,
   cardsInStatic,
-  uploadDataToFirebase
+  uploadDataToFirebase,
 }) {
   const [priceBox, setPriceBox] = useState(oldPriceBox);
-  const [isClosing, setIsClosing] = useState(false)
-  const [selectedTextBox, setSelectedTextBox] = useState(null);
-  const [selectedTextBoxIndex, setSelectedTextBoxIndex] = useState(null)
+  const [isClosing, setIsClosing] = useState(false);
+  const [selectedTextBox, setSelectedTextBox] = useState(oldPriceBox.text[0]);
+  const [selectedTextBoxIndex, setSelectedTextBoxIndex] = useState(null);
+  const [renderEdit, setRenderEdit] = useState(false)
   const [containerResolution, setContainerResolution] = useState({});
+  const [updatedTextBoxes, setUpdatedTextBoxes] = useState([...oldPriceBox.text])
   const boxRef = useRef(null);
   const [boxDimensions, setBoxDimensions] = useState({
     width: oldPriceBox.width,
-    height: oldPriceBox.height
+    height: oldPriceBox.height,
   });
 
   const [textBoxes, setTextBoxes] = useState([...oldPriceBox.text]);
 
-  const calculatedCardIndex = selectedCardIndex > cardsInStatic ? selectedCardIndex - cardsInStatic : selectedCardIndex
+  const calculatedCardIndex =
+    selectedCardIndex > cardsInStatic
+      ? selectedCardIndex - cardsInStatic
+      : selectedCardIndex;
 
-  const handleTextBoxChange = (index, dimensions, position) => {
+      const handleTextBoxChange = (index, dimensions, position, text, fontSize) => {
     
-    const newTextBoxes = [...priceBox.text]
-    newTextBoxes[index].size = {...dimensions}
-    newTextBoxes[index].position = {...position}
-    console.log(newTextBoxes)
-
-    setTextBoxes(newTextBoxes)
-  };
-
+        const newTextBoxes = [...priceBox.text]
+        newTextBoxes[index].size = {...dimensions}
+        newTextBoxes[index].position = {...position}
+        newTextBoxes[index].text = text
+        newTextBoxes[index].fontSize = fontSize
+        console.log(newTextBoxes)
+    
+        setTextBoxes(newTextBoxes)
+      };
 
   const uploadPriceBoxToFirestore = async () => {
     const priceBoxName = prompt("Enter the name of the template");
-    const newPriceBox = {...priceBox, width: boxDimensions.width, height: boxDimensions.height}
-    newPriceBox.text = [...textBoxes]
+    const newPriceBox = {
+      ...priceBox,
+      width: boxDimensions.width,
+      height: boxDimensions.height,
+    };
+    newPriceBox.text = [...textBoxes];
 
     // Validate template name
     if (!priceBoxName || priceBoxName.trim() === "") {
@@ -58,22 +68,29 @@ export default function NewPriceBoxEdit({
       const priceBoxesRef = collection(db, "priceBoxes");
 
       // Add the document with the user-inputted template name as the document ID
-      await setDoc(doc(priceBoxesRef, priceBoxName), 
-        newPriceBox
-      );
-      console.log("Uploaded to Firebase", newPriceBox)
+      await setDoc(doc(priceBoxesRef, priceBoxName), newPriceBox);
+      console.log("Uploaded to Firebase", newPriceBox);
     } catch (error) {
       console.error("Error uploading template:", error.message);
     } finally {
       setPopup(0);
     }
   };
-  
 
   const addTextBox = () => {
     const newText = prompt("Enter new text");
     if (newText) {
-      // Check if the user provided input
+      setTextBoxes([
+        ...textBoxes,
+        {
+          text: newText,
+          fontSize: 16,
+          draggable: true,
+          resizable: true,
+          position: { x: 10, y: 0 },
+          size: { x: 50, y: 50 },
+        },
+      ]);
       setPriceBox((prevPriceBox) => ({
         ...prevPriceBox,
         text: [
@@ -86,10 +103,11 @@ export default function NewPriceBoxEdit({
             position: { x: 10, y: 0 },
             size: { x: 50, y: 50 },
           },
-        ], // Use spread operator to update text array
+        ],
       }));
     }
   };
+
 
   const setBackgroundColor = (color) => {
     setPriceBox((prevPriceBox) => ({
@@ -121,38 +139,50 @@ export default function NewPriceBoxEdit({
         text: updatedText, // Update the text array
       };
     });
+    setTextBoxes((textBox) => {
+      const updatedText = [...textBox]; // Create a copy of text array
+      updatedText.pop(); // Remove the last item
+      return updatedText;
+    })
   };
 
-  const handleSelectedTextBox = (textBoxIndex, index) => {
-    setSelectedTextBoxIndex(index)
+  const handleSelectedTextBox = ( index) => {
+    setSelectedTextBoxIndex(index);
     setSelectedTextBox(textBoxes[index]);
   };
 
   useEffect(() => {
     if (isClosing) {
-       // Unset interact
-       interact(boxRef.current).unset();
+      // Unset interact
+      interact(boxRef.current).unset();
     }
   }, [isClosing]);
 
   const saveAndClose = () => {
+    const newPriceBox = {
+      ...priceBox,
+      width: boxDimensions.width,
+      height: boxDimensions.height,
+    };
 
-    const newPriceBox = {...priceBox, width: boxDimensions.width, height: boxDimensions.height}
+    const newColumn = [...selectedColumn];
 
-    const newColumn = [...selectedColumn]
+    newPriceBox.text = [...textBoxes];
 
-    newPriceBox.text = [...textBoxes]
+    console.log(newPriceBox)
 
-    newColumn[calculatedCardIndex].text.priceBox = {...newPriceBox}
+    newColumn[calculatedCardIndex].text.priceBox = { ...newPriceBox };
 
-    setSelectedColumn(newColumn)
+    setSelectedColumn(newColumn);
 
-    uploadDataToFirebase
-    setPopup(0)
+    uploadDataToFirebase;
+    setPopup(0);
   };
 
   const renderContainerBox = () => {
-    const elementToCopy = document.getElementsByName(`card-${selectedCardIndex}`)[0];
+    const elementToCopy = document.getElementsByName(
+      `card-${selectedCardIndex}`
+    )[0];
     const computedStyles = window.getComputedStyle(elementToCopy);
     const stylesToCopy = {};
     for (let i = 0; i < computedStyles.length; i++) {
@@ -164,14 +194,13 @@ export default function NewPriceBoxEdit({
       width: Number(stylesToCopy.width.replace("px", "")) + 4,
       height: Number(stylesToCopy.height.replace("px", "")) + 5,
     });
-
-  }
+  };
 
   function dragMoveListener(event) {
     const target = event.target;
 
-    const x = (parseFloat(target.getAttribute("data-x")) || 0) + event.dx;
-    const y = (parseFloat(target.getAttribute("data-y")) || 0) + event.dy;
+    const x = (parseFloat(target.getAttribute("data-x")) || priceBox.width) + event.dx;
+    const y = (parseFloat(target.getAttribute("data-y")) || priceBox.height) + event.dy;
 
     target.style.width = event.rect.width + "px";
     target.style.height = event.rect.height + "px";
@@ -182,21 +211,26 @@ export default function NewPriceBoxEdit({
 
     setBoxDimensions({
       width: event.rect.width,
-      height: event.rect.height
+      height: event.rect.height,
     });
   }
-  
 
   useEffect(() => {
     renderContainerBox();
-  }, [])
+  }, []);
 
   return (
     <>
       <div className={styles.background}>
-        <div className={styles.popupContainer} style={{ position: "relative", height: `${containerResolution.height}px`,
-            width: `${containerResolution.width}px`, }}>
-         <NewModifiedPriceBox
+        <div
+          className={styles.popupContainer}
+          style={{
+            position: "relative",
+            height: `${containerResolution.height}px`,
+            width: `${containerResolution.width}px`,
+          }}
+        >
+          <NewModifiedPriceBox
             priceBox={priceBox}
             handleSelectedTextBox={handleSelectedTextBox}
             boxDimensions={boxDimensions}
@@ -205,8 +239,8 @@ export default function NewPriceBoxEdit({
             dragMoveListener={dragMoveListener}
             handleTextBoxChange={handleTextBoxChange}
             oldPriceBox={oldPriceBox}
+            textBoxes={textBoxes}
           />
-          
         </div>
         <NewPriceBoxControlButtons
           setBackgroundColor={setBackgroundColor}
@@ -231,10 +265,9 @@ export default function NewPriceBoxEdit({
               setTextBoxes([...updatedTextArray]);
               setPriceBox((prevPriceBox) => ({
                 ...prevPriceBox,
-                text: [...updatedTextArray]
-              }))
-
-              
+                text: [...updatedTextArray],
+              }));
+              console.log(updatedTextArray)
               setSelectedTextBox(null); // Deselect the TextBox after update
             }}
           />

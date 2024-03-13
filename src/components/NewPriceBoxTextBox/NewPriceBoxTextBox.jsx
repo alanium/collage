@@ -9,20 +9,53 @@ export default function NewPriceBoxTextBox({
   textBoxIndex,
   handleSelectedTextBox,
   isDraggable,
-  isResizable,
+  textBox,
   handleTextBoxChange,
-  oldPriceBox,
+  priceBox,
 }) {
   const textBoxRef = useRef(null);
   const [isFirstClick, setIsFirstClick] = useState(true);
+  const [textBoxText, setTextBoxText] = useState(""); // Initialize with an empty string
+
+  const handleDragMove = (event) => {
+    const { target } = event;
+    const x = (parseFloat(target.getAttribute("data-x")) || priceBox.text[textBoxIndex]?.position.x) + event.dx;
+    const y = (parseFloat(target.getAttribute("data-y")) || priceBox.text[textBoxIndex]?.position.y) + event.dy;
+  
+    target.style.transform = `translate(${x}px, ${y}px)`;
+    target.setAttribute("data-x", x);
+    target.setAttribute("data-y", y);
+  
+    const dimensions = {
+      width: event.rect.width,
+      height: event.rect.height,
+    };
+  
+    const position = { x, y };
+
+  
+    // Update text state
+    setTextBoxText(text);
+  
+    console.log(priceBox.text[textBoxIndex].position);
+  };
+
+  const handleClick = (event) => {
+    handleSelectedTextBox(textBoxIndex);
+  };
+
+  useEffect(() => {
+    // Update textBoxText when text prop changes
+    setTextBoxText(text || priceBox.text[textBoxIndex].text);
+  }, [text]);
 
   useEffect(() => {
     const textBoxElement = textBoxRef.current;
     let interactable = null;
-
+  
     if (textBoxElement) {
       interactable = interact(textBoxElement);
-
+  
       if (isDraggable) {
         interactable.draggable({
           listeners: { move: handleDragMove },
@@ -32,107 +65,89 @@ export default function NewPriceBoxTextBox({
               endOnly: true,
             }),
           ],
+        }).on('dragend', () => {
+          // Execute handleTextBoxChange when dragging ends
+          const dimensions = {
+            width: textBoxElement.offsetWidth,
+            height: textBoxElement.offsetHeight,
+          };
+  
+          const position = {
+            x: parseFloat(textBoxElement.getAttribute("data-x")) || priceBox.text[textBoxIndex].position.x,
+            y: parseFloat(textBoxElement.getAttribute("data-y")) || priceBox.text[textBoxIndex].position.y,
+          };
+  
+          handleTextBoxChange(textBoxIndex, dimensions, position, textBoxText, fontSize);
         });
       }
     }
-
+  
     return () => {
       if (interactable) {
         interactable.unset();
       }
     };
-  }, [isDraggable]);
+  }, [isDraggable, handleDragMove, handleTextBoxChange, priceBox, fontSize, textBoxIndex, textBoxText]); // Include handleDragMove in the dependency array
 
-  const handleDragMove = (event) => {
-    const { target } = event;
-    const x = (parseFloat(target.getAttribute("data-x")) || 0) + event.dx;
-    const y = (parseFloat(target.getAttribute("data-y")) || 0) + event.dy;
+  // Transform style depends on priceBox, fontSize, and initialPosition
 
-    target.style.transform = `translate(${x}px, ${y}px)`;
-    target.setAttribute("data-x", x);
-    target.setAttribute("data-y", y);
-
-    const dimensions = {
-      width: event.rect.width,
-      height: event.rect.height,
-    };
-    const position = { x, y };
-    handleTextBoxChange(textBoxIndex, dimensions, position);
-  };
-
-  const handleClick = (event) => {
-    event.stopPropagation();
-    handleSelectedTextBox(textBoxIndex, textBoxIndex);
-
-    if (isFirstClick) {
-      const rect = textBoxRef.current.getBoundingClientRect();
-      const offsetX = event.clientX - rect.left;
-      const offsetY = event.clientY - rect.top;
-
-      textBoxRef.current.setAttribute("data-x", offsetX);
-      textBoxRef.current.setAttribute("data-y", offsetY);
-
-      setIsFirstClick(false);
-    }
-  };
 
   return (
-    <div
-      ref={textBoxRef}
-      onClick={handleClick}
-      key={textBoxIndex}
-      className={styles.textBox}
-      style={{
-        border: isDraggable ? "1px solid black" : "",
-        backgroundColor: isDraggable ? "rgba(255, 255, 255, 0.5)" : "",
-        padding: "0px",
-        boxSizing: "border-box",
-        touchAction: "none",
-        position: "absolute",
-        transform: `translate(${
-          oldPriceBox.text[textBoxIndex]
-            ? oldPriceBox.text[textBoxIndex].position.x
-            : 10
-        }px, ${
-          oldPriceBox.text[textBoxIndex]
-            ? oldPriceBox.text[textBoxIndex].position.y
-            : 10
-        }px`,
-        top: "0px",
-        height: "auto",
-        width: "auto",
-        left: initialPosition.left,
-        fontSize: `${fontSize}px`,
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <div
+    <>
+    {textBox && (
+        <div
+        ref={textBoxRef}
+        onClick={handleClick}
+        key={textBoxIndex}
+        className={styles.textBox}
         style={{
-          fontFamily: "'Futura PT Condensed Extra Bold', sans-serif",
-          transform: "scaleY(1.5)",
+          border: isDraggable ? "1px solid black" : "",
+          backgroundColor: isDraggable ? "rgba(255, 255, 255, 0.5)" : "",
+          padding: "0px",
+          boxSizing: "border-box",
+          touchAction: "none",
+          position: "absolute",
+          transform: `translate(${priceBox.text[textBoxIndex] && priceBox.text[textBoxIndex].position.x}px, ${priceBox.text[textBoxIndex] && priceBox.text[textBoxIndex].position.y}px`,
+          top: "0px",
+          height: "auto",
+          width: "auto",
+          left: initialPosition.left,
+          fontSize: `${fontSize}px`,
           display: "flex",
+          justifyContent: "center",
           alignItems: "center",
         }}
       >
-        {text.split("/").map((part, index) => (
-          <React.Fragment key={index}>
-            {index > 0 && (
-              <div
-                style={{
-                  transform: "scaleY(1.0)",
-                  fontSize: `${fontSize * 1}px`,
-                  fontFamily: "'Encode Sans', sans-serif",
-                }}
-              >
-                /
-              </div>
-            )}
-            {part}
-          </React.Fragment>
-        ))}
+        <div
+          style={{
+            fontFamily: "'Futura PT Condensed Extra Bold', sans-serif",
+            transform: "scaleY(1.5)",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          {textBoxText &&
+            typeof textBoxText === "string" &&
+            textBoxText.split("/").map((part, index) => (
+              <React.Fragment key={index}>
+                {index > 0 && (
+                  <div
+                    style={{
+                      transform: "scaleY(1.0)",
+                      fontSize: `${fontSize * 1}px`,
+                      fontFamily: "'Encode Sans', sans-serif",
+                    }}
+                  >
+                    /
+                  </div>
+                )}
+                {part}
+              </React.Fragment>
+            ))}
+        </div>
       </div>
-    </div>
+    )}
+    </>
+    
   );
 }

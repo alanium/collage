@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./NewPriceBoxTextBoxEdit.module.css";
 
 export default function NewPriceBoxTextBoxEdit({ textBox, onUpdate }) {
-  const [fontSize, setFontSize] = useState(textBox.fontSize || "");
-  const [text, setText] = useState(textBox.text || "");
+  const [fontSize, setFontSize] = useState(textBox.fontSize );
+  const [text, setText] = useState(textBox.text);
   const [draggable, setDraggable] = useState(textBox.draggable);
   const [resizable, setResizable] = useState(textBox.resizable);
 
@@ -41,6 +41,16 @@ export default function NewPriceBoxTextBoxEdit({ textBox, onUpdate }) {
       resizable: resizable,
     });
   };
+
+  
+  useEffect(() => {
+    // Update state when textBox prop changes
+    setFontSize(textBox.fontSize);
+    setText(textBox.text);
+    setDraggable(textBox.draggable);
+    setResizable(textBox.resizable);
+  }, [textBox]);
+
 
   return (
     <form className={styles.container} onSubmit={handleSubmit}>
