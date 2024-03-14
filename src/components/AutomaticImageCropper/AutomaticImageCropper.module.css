@@ -12,16 +12,27 @@
 }
 
 .popupContainer {
-  
   background-color: #242424;
   padding: 20px;
   border-radius: 5px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
 }
 
 .actionButtons {
-  display: flex;
-  justify-content: space-between;
   margin-top: 20px;
+}
+
+.actionButtons button{
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #000000;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .saveButton,
@@ -35,9 +46,4 @@
 .saveButton {
   background-color: #007bff;
   color: white;
-}
-
-.cancelButton {
-  background-color: #ccc;
-  color: black;
 }

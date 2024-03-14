@@ -22,9 +22,7 @@ const AutomaticImageCropper = ({
   const storage = getStorage();
   const calculatedCardIndex = (cardIndex > maxStaticIndex ? cardIndex - maxStaticIndex - 1 : cardIndex)
   const [transparentImageSrc, setTransparentImageSrc] = useState(null);
-
-
-  console.log(selectedCardColumn)
+  const maxWidth = 300; // Define your desired maximum width here
 
   useEffect(() => {
     const getImageFromFirebase = async () => {
@@ -54,12 +52,15 @@ const AutomaticImageCropper = ({
         image.onload = () => {
           const imageWidth = image.width;
           const imageHeight = image.height;
+          
+          // Calculate the height based on the original aspect ratio
+          const height = maxWidth * (imageHeight / imageWidth);
         
-          // Set the dimensions of the canvases to match the image dimensions
-          canvas.width = imageWidth;
-          canvas.height = imageHeight;
-          transparentCanvas.width = imageWidth;
-          transparentCanvas.height = imageHeight;
+          // Set the dimensions of the canvases
+          canvas.width = maxWidth;
+          canvas.height = height;
+          transparentCanvas.width = maxWidth;
+          transparentCanvas.height = height;
         
           // Draw the image on the canvases
           ctx.fillStyle = "#ffffff";
@@ -165,7 +166,8 @@ const AutomaticImageCropper = ({
           />   
           <canvas
             ref={previewCanvasRef}
-            
+            width={maxWidth} // Set the width of the preview canvas
+            height={maxWidth} // Set the height of the preview canvas
           />      
         </div>
         <div className={styles.actionButtons}>

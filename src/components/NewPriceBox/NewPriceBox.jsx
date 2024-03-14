@@ -19,7 +19,7 @@ export default function NewPriceBox({ priceBox }) {
         boxSizing: "border-box",
         touchAction: "none",
         position: "absolute",
-        borderRadius: "10px",
+        borderRadius: ( priceBox.borderRadius ? "10px" : "0px"),
         overflow: "hidden",
         zIndex: "10",
       }}

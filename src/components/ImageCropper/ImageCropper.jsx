@@ -105,7 +105,7 @@ const ImageCropper = ({
     <div className={styles.background}>
       <div className={styles.popupContainer}>
         <div>
-          <img style={{maxHeight: "700px", maxWidth:"500px"}} ref={imageRef} src={src} alt="Crop preview" />
+          <img style={{maxHeight: "400px", maxWidth:"400px"}} ref={imageRef} src={src} alt="Crop preview" />
         </div>
         <div className={styles.rotationSliderContainer}>
           <input

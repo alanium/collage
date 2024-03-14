@@ -30,6 +30,10 @@ import RenderInfo from "../../components/RenderInfo/RenderInfo";
 import ClosePopup from "../../components/ClosePopup/ClosePopup";
 import BugReport from "../../components/BugReport/BugReport";
 import ImportPopup from "../../components/ImportPopup/ImportPopup";
+import NewPriceBox from "../../components/NewPriceBox/NewPriceBox";
+import IrregularImageCropper from "../../components/IrregularImageCropper/IrregularImageCropper";
+import PriceBoxFromCloud from "../../components/PriceBoxFromCloud/PriceBoxFromCloud";
+import NewPriceBoxEdit from "../../components/NewPriceBoxEdit/NewPriceBoxEdit";
 
 const groceryRef = collection(db, "Dairy&Snacks");
 const templatesQuerySnapshot = await getDocs(groceryRef);
@@ -53,11 +57,23 @@ export default function DairyAndSnacks({
         text: {
           top: "",
           left: "",
-          bottom: "",
-          priceBoxType: 0,
-          priceBoxColor: false,
-          renderPriceBox: true,
-          priceBoxBorder: true,
+          priceBox: {
+            text: [
+              {
+                text: "XS/$X",
+                fontSize: 24,
+                draggable: true,
+                resizable: true,
+                position: { x: 10, y: 0 },
+                size: { x: 50, y: 50 },
+              },
+            ],
+            width: "100",
+            height: "50",
+            backgroundColor: "red",
+            textColor: "white",
+            border: "black",
+          },
         },
         index,
       }))
@@ -75,7 +91,7 @@ export default function DairyAndSnacks({
   const [templateName, setTemplateName] = useState(templatesQuerySnapshot[0]);
   const [popupState, setPopupState] = useState(3);
 
-  const maintenance = true
+  const maintenance = false
   const templateCollection = "Dairy&Snacks";
   const imageFolder =
     selectedCardIndex > 11 && selectedCardIndex < maxStaticIndex
@@ -143,11 +159,23 @@ export default function DairyAndSnacks({
         text: {
           top: "",
           left: "",
-          bottom: "",
-          priceBoxType: 0,
-          priceBoxColor: false,
-          renderPriceBox: false,
-          priceBoxBorder: true,
+          priceBox: {
+            text: [
+              {
+                text: "XS/$X",
+                fontSize: 24,
+                draggable: true,
+                resizable: true,
+                position: { x: 10, y: 0 },
+                size: { x: 50, y: 50 },
+              },
+            ],
+            width: "100",
+            height: "50",
+            backgroundColor: "red",
+            textColor: "white",
+            border: "black",
+          },
         },
         index: i + cardsInStatic,
       };
@@ -328,6 +356,86 @@ export default function DairyAndSnacks({
             uploadDataToFirebase={uploadDataToFirebase}
           />
         );
+        case 12:
+          return (
+            <NewPriceBoxEdit  
+              oldPriceBox={
+                selectedCardIndex > maxStaticIndex
+                  ? dynamicColumn[selectedCardIndex - maxStaticIndex].text
+                      .priceBox
+                  : staticColumns[selectedCardIndex].text.priceBox
+              }
+              setSelectedColumn={
+                selectedCardIndex > maxStaticIndex
+                  ? setDynamicColumn
+                  : setStaticColumns
+              }
+              selectedColumn={
+                selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
+              }
+              selectedCardIndex={selectedCardIndex}
+              cardsInStatic={cardsInStatic}
+              setPopup={setPopupState}
+              uploadDataToFirebase={() =>
+                uploadDataToFirebase(
+                  templateCollection,
+                  templateName,
+                  staticColumns,
+                  dynamicColumn
+                )
+              }
+            />
+          );
+        case 13:
+          return (
+            <PriceBoxFromCloud
+              setPopup={setPopupState}
+              setSelectedColumn={
+                selectedCardIndex > maxStaticIndex
+                  ? setDynamicColumn
+                  : setStaticColumns
+              }
+              selectedColumn={
+                selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
+              }
+              selectedCardIndex={selectedCardIndex}
+              cardsInStatic={cardsInStatic}
+              uploadDataToFirebase={() =>
+                uploadDataToFirebase(
+                  templateCollection,
+                  templateName,
+                  staticColumns,
+                  dynamicColumn
+                )
+              }
+            />
+          );
+        case 14:
+          return (
+            <IrregularImageCropper
+              setPopup={setPopupState}
+              setSelectedColumn={
+                selectedCardIndex > maxStaticIndex
+                  ? setDynamicColumn
+                  : setStaticColumns
+              }
+              selectedColumn={
+                selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
+              }
+              selectedCardIndex={selectedCardIndex}
+              cardsInStatic={cardsInStatic}
+              imgIndex={imgIndex}
+              uploadDataToFirebase={() =>
+                uploadDataToFirebase(
+                  templateCollection,
+                  templateName,
+                  staticColumns,
+                  dynamicColumn
+                )
+              }
+              imageFolder={imageFolder}
+            />
+        );
     }
   };
 
@@ -493,101 +601,6 @@ export default function DairyAndSnacks({
     }
   };
 
-  const showHidePriceBox = (cardIndex) => {
-    const calculatedCardIndex = cardIndex - cardsInStatic;
-
-    if (cardIndex > maxStaticIndex) {
-      const newDynamicColumn = [...dynamicColumn];
-      newDynamicColumn[calculatedCardIndex].text.renderPriceBox =
-        !newDynamicColumn[calculatedCardIndex].text.renderPriceBox;
-      setDynamicColumn(newDynamicColumn);
-    } else {
-      const newStaticColumns = [...staticColumns];
-      newStaticColumns[cardIndex].text.renderPriceBox =
-        !newStaticColumns[cardIndex].text.renderPriceBox;
-      setStaticColumns(newStaticColumns);
-    }
-    uploadDataToFirebase(
-      templateCollection,
-      templateName,
-      staticColumns,
-      dynamicColumn
-    );
-  };
-
-  const switchBoxType = (cardIndex) => {
-    console.log("switchBoxType");
-
-    const calculatedCardIndex = cardIndex - cardsInStatic;
-    if (cardIndex > maxStaticIndex) {
-      const newDynamicColumn = [...dynamicColumn];
-      if (newDynamicColumn[calculatedCardIndex].text.priceBoxType < 2) {
-        newDynamicColumn[calculatedCardIndex].text.priceBoxType++;
-      } else {
-        newDynamicColumn[calculatedCardIndex].text.priceBoxType = 0; // Reset to 0 if it's already 3
-      }
-      setDynamicColumn(newDynamicColumn);
-    } else {
-      const newStaticColumns = [...staticColumns];
-      if (newStaticColumns[cardIndex].text.priceBoxType < 2) {
-        newStaticColumns[cardIndex].text.priceBoxType++;
-      } else {
-        newStaticColumns[cardIndex].text.priceBoxType = 0;
-      }
-      setStaticColumns(newStaticColumns);
-    }
-    uploadDataToFirebase(
-      templateCollection,
-      templateName,
-      staticColumns,
-      dynamicColumn
-    );
-  };
-
-  const changePriceBoxColor = (cardIndex) => {
-    const calculatedCardIndex = cardIndex - cardsInStatic;
-
-    if (cardIndex > maxStaticIndex) {
-      const newDynamicColumn = [...dynamicColumn];
-      newDynamicColumn[calculatedCardIndex].text.priceBoxColor =
-        !newDynamicColumn[calculatedCardIndex].text.priceBoxColor;
-      setDynamicColumn(newDynamicColumn);
-    } else {
-      const newStaticColumns = [...staticColumns];
-      newStaticColumns[cardIndex].text.priceBoxColor =
-        !newStaticColumns[cardIndex].text.priceBoxColor;
-      setStaticColumns(newStaticColumns);
-    }
-    uploadDataToFirebase(
-      templateCollection,
-      templateName,
-      staticColumns,
-      dynamicColumn
-    );
-  };
-
-  const changePriceBoxBorder = (cardIndex) => {
-    const calculatedCardIndex = cardIndex - cardsInStatic;
-
-    if (cardIndex > maxStaticIndex) {
-      const newDynamicColumn = [...dynamicColumn];
-      newDynamicColumn[calculatedCardIndex].text.priceBoxBorder =
-        !newDynamicColumn[calculatedCardIndex].text.priceBoxBorder;
-      setDynamicColumn(newDynamicColumn);
-    } else {
-      const newStaticColumns = [...staticColumns];
-      newStaticColumns[cardIndex].text.priceBoxBorder =
-        !newStaticColumns[cardIndex].text.priceBoxBorder;
-      setStaticColumns(newStaticColumns);
-    }
-    uploadDataToFirebase(
-      templateCollection,
-      templateName,
-      staticColumns,
-      dynamicColumn
-    );
-  };
-
   const handleCropImage = () => {
     setPopupState(8);
   };
@@ -603,27 +616,20 @@ export default function DairyAndSnacks({
 
     const contextMenuItems = [
       {
-        label: "Edit ",
+        label: "New Edit Price Box",
+        action: () => setPopupState(12),
+      },
+      {
+        label: "Load Price Box From Cloud",
+        action: () => setPopupState(13),
+      },
+      { type: "divider" },
+      {
+        label: "Move Images",
         action: () => {
           setPopupState(9);
           setSelectedImage({ cardIndex });
         },
-      },
-      {
-        label: "Show/Hide",
-        action: () => showHidePriceBox(cardIndex),
-      },
-      {
-        label: "Box1/Box2/Box3",
-        action: () => switchBoxType(cardIndex),
-      },
-      {
-        label: "Change PriceBox Color",
-        action: () => changePriceBoxColor(cardIndex),
-      },
-      {
-        label: "Change PriceBox Border",
-        action: () => changePriceBoxBorder(cardIndex),
       },
     ];
 
@@ -679,16 +685,25 @@ export default function DairyAndSnacks({
     if (selectedColumn[index].img[0].src != "") {
       contextMenuItems.push(
         {
-          label: "Crop Image 1",
+          label: "crop image 1",
           action: () => {
             setImgIndex(0);
+            setSelectedCardIndex(cardIndex);
             handleCropImage(cardIndex, imgIndex);
           },
         },
         {
           label: "Delete Background of Image 1",
           action: () => {
-            setImgIndex(0), setPopupState(7);
+            setImgIndex(0);
+            setPopupState(7);
+            setSelectedCardIndex(cardIndex);
+          },
+        },
+        {
+          label: "Precise Crop Image 1",
+          action: () => {
+            setImgIndex(0), setPopupState(14), setSelectedCardIndex(cardIndex);
           },
         }
       );
@@ -696,16 +711,25 @@ export default function DairyAndSnacks({
     if (selectedColumn[index].img[1].src != "") {
       contextMenuItems.push(
         {
-          label: "Crop Image 2",
+          label: "crop image 2",
           action: () => {
             setImgIndex(1);
+            setSelectedCardIndex(cardIndex);
             handleCropImage(cardIndex, imgIndex);
           },
         },
         {
           label: "Delete Background of Image 2",
           action: () => {
-            setImgIndex(1), setPopupState(7);
+            setImgIndex(1);
+            setSelectedCardIndex(cardIndex);
+            setPopupState(7);
+          },
+        },
+        {
+          label: "Precise Crop Image 2",
+          action: () => {
+            setImgIndex(2), setPopupState(14), setSelectedCardIndex(cardIndex);
           },
         }
       );
@@ -817,23 +841,9 @@ export default function DairyAndSnacks({
                   }}
                 />
               )}
-              {dynamicColumn[calculatedCardIndex] &&
-              dynamicColumn[calculatedCardIndex].text.renderPriceBox ? (
-                <div className="priceBox">
-                  {renderPriceBox(
-                    dynamicColumn[calculatedCardIndex].text.priceBoxType,
-                    dynamicColumn,
-                    setDynamicColumn,
-                    calculatedCardIndex,
-                    dynamicColumn[calculatedCardIndex].text.priceBoxColor,
-                    dynamicColumn[calculatedCardIndex].text.priceBoxBorder,
-                    templateCollection,
-                    templateName,
-                    staticColumns,
-                    dynamicColumn
-                  )}
-                </div>
-              ) : null}
+             <NewPriceBox
+                priceBox={dynamicColumn[calculatedCardIndex].text.priceBox}
+              />
               <TextBoxLeft
                 textBoxes={dynamicColumn}
                 setTextBoxes={setDynamicColumn}
@@ -901,23 +911,7 @@ export default function DairyAndSnacks({
                 }}
               />
             )}
-            {staticColumns[cardIndex] &&
-            staticColumns[cardIndex].text.renderPriceBox ? (
-              <div className="priceBox">
-                {renderPriceBox(
-                  staticColumns[cardIndex].text.priceBoxType,
-                  staticColumns,
-                  setStaticColumns,
-                  cardIndex,
-                  staticColumns[cardIndex].text.priceBoxColor,
-                  staticColumns[cardIndex].text.priceBoxBorder,
-                  templateCollection,
-                  templateName,
-                  staticColumns,
-                  dynamicColumn
-                )}
-              </div>
-            ) : null}
+            <NewPriceBox priceBox={staticColumns[cardIndex].text.priceBox} />
 
             <TopTextBox
               textBoxes={staticColumns}
@@ -1004,23 +998,7 @@ export default function DairyAndSnacks({
                 }}
               />
             )}
-            {staticColumns[cardIndex] &&
-            staticColumns[cardIndex].text.renderPriceBox ? (
-              <div className="priceBox">
-                {renderPriceBox(
-                  staticColumns[cardIndex].text.priceBoxType,
-                  staticColumns,
-                  setStaticColumns,
-                  cardIndex,
-                  staticColumns[cardIndex].text.priceBoxColor,
-                  staticColumns[cardIndex].text.priceBoxBorder,
-                  templateCollection,
-                  templateName,
-                  staticColumns,
-                  dynamicColumn
-                )}
-              </div>
-            ) : null}
+            <NewPriceBox priceBox={staticColumns[cardIndex].text.priceBox} />
 
             <TopTextBox
               textBoxes={staticColumns}

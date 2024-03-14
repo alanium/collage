@@ -9,7 +9,7 @@ export default function NewPriceBoxControlButtons({
   setBorder,
   addTextBox,
   removeTextBox,
-
+  setBorderRadius
 }) {
 
   const [displayColorPicker, setDisplayColorPicker] = useState(false);
@@ -82,6 +82,7 @@ export default function NewPriceBoxControlButtons({
             Pick Color
           </button>
           <button onClick={() => setBorder("transparent")}>No Border</button>
+          <button onClick={() => setBorderRadius()}>Round Corners</button>
         </div>
       </div>
       

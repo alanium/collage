@@ -96,6 +96,7 @@ function NapervilleFreshMarket(
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
   const templateCollection  = "NapervilleFresh"
+  const imageFolder = "produce"
 
   useEffect(() => {
     const unsubscribeStaticColumns = onSnapshot(
@@ -749,7 +750,7 @@ function NapervilleFreshMarket(
     ];
 
     if (image.img[0].src === "" && image.img[1].src === "") {
-      setPopup2(true);
+      setPopupState(2);
       setSelectedCardIndex(cardIndex);
     } else {
       handleContextMenu(event, cardIndex, image);
@@ -768,7 +769,7 @@ function NapervilleFreshMarket(
         setImages(names);
         console.log(names);
       })
-      .then(() => setPopup2(false))
+      .then(() => setPopupState(11))
       .catch((error) => {
         console.log(error);
       });
@@ -843,13 +844,13 @@ function NapervilleFreshMarket(
                 />
               )}
              <NewPriceBox
-                priceBox={dynamicColumn[calculatedCardIndex].text.priceBox}
+                priceBox={dynamicColumn[cardIndex - cardsInStatic].text.priceBox}
               />
               <TextBoxLeft
                 textBoxes={dynamicColumn}
                 setTextBoxes={setDynamicColumn}
                 cardIndex={cardIndex}
-                setPopup={setPopup}
+                setPopup={setPopupState}
                 setSelectedTextBox={setSelectedTextBox}
                 setType={setType}
                 setSelectedImage={setSelectedImage}

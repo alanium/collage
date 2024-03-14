@@ -47,7 +47,7 @@ export default function NewModifiedPriceBox({
         boxSizing: "border-box",
         touchAction: "none",
         position: "absolute",
-        borderRadius: "10px",
+        borderRadius: ( priceBox.borderRadius ? "10px" : "0px"),
         overflow: "hidden",
         justifyContent: "center", // Added for centering text
           alignItems: "center", 

@@ -47,9 +47,24 @@ const IrregularImageCropper = ({
       const propertyValue = computedStyles.getPropertyValue(propertyName);
       stylesToCopy[propertyName] = propertyValue;
     }
+  
+    const containerWidth = Number(stylesToCopy.width.replace("px", ""));
+    const containerHeight = Number(stylesToCopy.height.replace("px", ""));
+  
+    const aspectRatio = imageRef.current.width / imageRef.current.height;
+  
+    // Calcula el ancho y el alto del canvas manteniendo el aspect ratio de la imagen original
+    let canvasWidth = containerWidth;
+    let canvasHeight = containerWidth / aspectRatio;
+  
+    if (canvasHeight > containerHeight) {
+      canvasHeight = containerHeight;
+      canvasWidth = containerHeight * aspectRatio;
+    }
+  
     setContainerResolution({
-      width: Number(stylesToCopy.width.replace("px", "")) + 4,
-      height: Number(stylesToCopy.height.replace("px", "")) + 5,
+      width: canvasWidth,
+      height: canvasHeight,
     });
   };
 
@@ -102,6 +117,18 @@ const IrregularImageCropper = ({
 
     draw();
   }, [points, closedPath, imageData]);
+
+  const loadImage = async () => {
+    const img = new Image();
+    img.src = imageSrc;
+    await img.decode();
+    setImageData(img);
+  };
+  
+  useEffect(() => {
+    loadImage();
+  }, [imageSrc]);
+  
 
   const handleMouseDown = (event) => {
     const { offsetX, offsetY } = event.nativeEvent;
@@ -223,6 +250,8 @@ const IrregularImageCropper = ({
         newSelectedColumn[calculatedCardIndex].img[imgIndex].src = url;
         setSelectedColumn(newSelectedColumn);
         uploadDataToFirebase();
+
+        setPopup(0);
       });
     });
   };
@@ -237,34 +266,37 @@ const IrregularImageCropper = ({
 
   return (
     <div className={styles.background}>
-      <div
-        className={styles.popupContainer}
-        style={{
-          position: "relative",
-          height: `${containerResolution.height}px`,
-          width: `${containerResolution.width}px`,
-        }}
-      >
-        <img
-          ref={imageRef}
-          src={imageSrc}
-          alt="Source"
-          crossOrigin="anonymous"
-          style={{ display: "none" }}
-          onLoad={() => setImageData(imageRef.current)}
-        />
-        <canvas
-          ref={canvasRef}
-          width={containerResolution.width}
-          height={containerResolution.height}
-          style={{ border: "1px solid #000" }}
-          onMouseDown={handleMouseDown}
-          onMouseUp={handleMouseUp}
-          onMouseMove={handleMouseMove}
-        />
-        <button onClick={handleDownload}>Accept</button>
-        <button onClick={handleUndo}>Undo</button>
-        <button onClick={() => setPopup(0)}>Cancel</button>
+      <div className={styles.popupContainer}>
+        <div className={styles.canvasContainer}>
+          <img
+            ref={imageRef}
+            src={imageSrc}
+            alt="Source"
+            crossOrigin="anonymous"
+            style={{ display: "none" }}
+            onLoad={() => setImageData(imageRef.current)}
+          />
+          <canvas
+            ref={canvasRef}
+            width={containerResolution.width * 3}
+            height={containerResolution.height * 3}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
+            onMouseMove={handleMouseMove}
+          />
+        </div>
+  
+        <div className={styles.bttnContainer}>
+          <button className={styles.Button} onClick={handleDownload}>
+            Accept
+          </button>
+          <button className={styles.Button} onClick={handleUndo}>
+            Undo
+          </button>
+          <button className={styles.Button} onClick={() => setPopup(0)}>
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   );

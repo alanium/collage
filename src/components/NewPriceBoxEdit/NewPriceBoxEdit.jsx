@@ -130,6 +130,13 @@ export default function NewPriceBoxEdit({
     }));
   };
 
+  const setBorderRadius = (color) => {
+    setPriceBox((prevPriceBox) => ({
+      ...prevPriceBox,
+      borderRadius: !priceBox.borderRadius,
+    }));
+  };
+
   const removeTextBox = () => {
     setPriceBox((prevPriceBox) => {
       const updatedText = [...prevPriceBox.text]; // Create a copy of text array
@@ -248,6 +255,7 @@ export default function NewPriceBoxEdit({
           setTextColor={setTextColor}
           addTextBox={addTextBox}
           removeTextBox={removeTextBox}
+          setBorderRadius={setBorderRadius}
         />
         {selectedTextBox && ( // Render TextBoxEditor if selectedTextBox is truthy
           <NewPriceBoxTextBoxEdit
