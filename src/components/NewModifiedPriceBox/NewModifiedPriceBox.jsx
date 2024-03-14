@@ -10,28 +10,39 @@ export default function NewModifiedPriceBox({
   oldPriceBox,
   boxRef,
   textBoxes,
+  resizablePricebox
 }) {
-  useEffect(() => {
-    const parentContainer = boxRef.current.parentElement;
-    const parentWidth = parentContainer.clientWidth;
-    const parentHeight = parentContainer.clientHeight;
 
-    interact(boxRef.current)
-      .resizable({
-        edges: { top: true, left: true }, // Set only top and left edges to true
-        restrictEdges: {
-          outer: "parent",
-          endOnly: true,
-        },
-        restrictSize: {
-          min: { width: 50, height: 50 },
-          max: { width: 400, height: 400 },
-        },
-        inertia: true,
-      })
-      .on("resizemove", dragMoveListener);
-  }, []);
 
+    useEffect(() => {
+      const parentContainer = boxRef.current.parentElement;
+      const parentWidth = parentContainer.clientWidth;
+      const parentHeight = parentContainer.clientHeight;
+  
+      const interactInstance = interact(boxRef.current);
+  
+      if (resizablePricebox) {
+        interactInstance.resizable({
+          edges: { top: true, left: true },
+          restrictEdges: {
+            outer: "parent",
+            endOnly: true,
+          },
+          restrictSize: {
+            min: { width: 50, height: 50 },
+            max: { width: 400, height: 400 },
+          },
+          inertia: true,
+        }).on("resizemove", dragMoveListener);
+      } else {
+        interactInstance.resizable(false); // Disable resizable
+      }
+  
+      // Cleanup function
+    }, [boxRef, dragMoveListener, resizablePricebox]);
+  
+    // Function to toggle resizable property
+  
   return (
     <div
       ref={boxRef}

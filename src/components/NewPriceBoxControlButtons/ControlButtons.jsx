@@ -9,7 +9,8 @@ export default function NewPriceBoxControlButtons({
   setBorder,
   addTextBox,
   removeTextBox,
-  setBorderRadius
+  setBorderRadius,
+  handleResizablePricebox
 }) {
 
   const [displayColorPicker, setDisplayColorPicker] = useState(false);
@@ -28,6 +29,8 @@ export default function NewPriceBoxControlButtons({
     setSelectedColorType(colorType);
     setDisplayColorPicker(true);
   };
+
+
 
   const handleSetColor = () => {
     if (selectedColorType === "background" && setBackgroundColor) {
@@ -83,6 +86,12 @@ export default function NewPriceBoxControlButtons({
           </button>
           <button onClick={() => setBorder("transparent")}>No Border</button>
           <button onClick={() => setBorderRadius()}>Round Corners</button>
+        </div>
+        <div>
+          <label>Toggle Resizable Pricebox</label>
+        </div>
+        <div>
+          <button onClick={() => handleResizablePricebox()}>Toggle</button>
         </div>
       </div>
       

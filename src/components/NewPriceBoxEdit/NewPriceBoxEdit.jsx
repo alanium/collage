@@ -28,7 +28,7 @@ export default function NewPriceBoxEdit({
     width: oldPriceBox.width,
     height: oldPriceBox.height,
   });
-
+  const [resizablePricebox, setResizablePricbox] = useState(true)
   const [textBoxes, setTextBoxes] = useState([...oldPriceBox.text]);
 
   const calculatedCardIndex =
@@ -136,6 +136,11 @@ export default function NewPriceBoxEdit({
       borderRadius: !priceBox.borderRadius,
     }));
   };
+
+  
+  const handleResizablePricebox =  () => {
+    setResizablePricbox(!resizablePricebox)
+  }
 
   const removeTextBox = () => {
     setPriceBox((prevPriceBox) => {
@@ -247,6 +252,7 @@ export default function NewPriceBoxEdit({
             handleTextBoxChange={handleTextBoxChange}
             oldPriceBox={oldPriceBox}
             textBoxes={textBoxes}
+            resizablePricebox={resizablePricebox}
           />
         </div>
         <NewPriceBoxControlButtons
@@ -256,6 +262,7 @@ export default function NewPriceBoxEdit({
           addTextBox={addTextBox}
           removeTextBox={removeTextBox}
           setBorderRadius={setBorderRadius}
+          handleResizablePricebox={handleResizablePricebox}
         />
         {selectedTextBox && ( // Render TextBoxEditor if selectedTextBox is truthy
           <NewPriceBoxTextBoxEdit
@@ -281,7 +288,7 @@ export default function NewPriceBoxEdit({
           />
         )}
         <button onClick={saveAndClose}>Save And Close</button>
-        <button onClick={uploadPriceBoxToFirestore}>Upload To Cloud</button>
+        <button onClick={uploadPriceBoxToFirestore}>Upload To Cloud As Preset</button>
         <button onClick={() => setPopup(0)}>Cancel</button>
       </div>
     </>
