@@ -37,7 +37,7 @@ const templatesQuerySnapshot = await getDocs(groceryRef);
 function NapervilleFreshMarket(
   uploadDataToFirebase,
   handleConvertToPDF,) {
-  const cardsInStatic = 30;
+  const cardsInStatic = 28;
   const maxStaticIndex = cardsInStatic - 1;
 
   const [staticColumns, setStaticColumns] = useState(
@@ -89,7 +89,7 @@ function NapervilleFreshMarket(
   const storage = getStorage();
   const imagesRef = ref(
     storage,
-    selectedCardIndex > 15 && selectedCardIndex < 30
+    selectedCardIndex > 15 && selectedCardIndex < 28
       ? "images/produce"
       : "images/produce"
   );
@@ -544,7 +544,7 @@ function NapervilleFreshMarket(
       "Are you sure you want to delete the image?"
     );
 
-    if (cardIndex > 17) {
+    if (cardIndex > maxStaticIndex) {
       if (confirmDelete) {
         setDynamicColumn((prevDynamicColumn) => {
           const newDynamicColumn = [...prevDynamicColumn];
@@ -756,6 +756,7 @@ function NapervilleFreshMarket(
       setSelectedCardIndex(cardIndex);
     } else {
       handleContextMenu(event, cardIndex, image);
+      setSelectedCardIndex(cardIndex);
     }
   };
 
@@ -874,7 +875,7 @@ function NapervilleFreshMarket(
       const column = [];
 
       for (let j = 0; j < 6; j++) {
-        const cardIndex = j + i * 6 + 18;
+        const cardIndex = j + i * 6 + 16;
 
         let images = staticColumns[cardIndex].img;
 

@@ -42,6 +42,7 @@
 .gridItem {
   padding: 10px;
   text-align: center;
+  color: black
 }
 
 .gridItem img {
@@ -130,9 +131,8 @@
 .pageNavigation {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-top: 20px;
-  justify-content: center;
-  align-items: center;
   background-color: rgb(0, 0, 0);
   padding: 7px;
   border-radius: 4px;
@@ -152,7 +152,7 @@
 .pageButton:disabled {
   background-color: lightgray;
   cursor: not-allowed;
-  color: grey
+  color: grey;
 }
 
 .pageText {
@@ -169,6 +169,23 @@
   border-radius: 4px;
   text-align: center;
   font-size: 15px;
+}
+
+.searchInput {
+  width: 200px; /* Ajusta el ancho según sea necesario */
+  padding: 8px;
+  border: none;
+  color: lightgray;
+  background-color: black;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 15px;
+}
+
+.centeredItems {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 

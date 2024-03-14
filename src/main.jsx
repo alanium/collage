@@ -185,7 +185,8 @@ const router = createBrowserRouter([
   },
   {
     path: "/NapervilleFreshMarket",
-    element: <NapervilleFreshMarket  />,
+    element: <NapervilleFreshMarket  handleConvertToPDF={handleConvertToPDF}
+    uploadDataToFirebase={uploadDataToFirebase} />,
   },
 ]);
 ReactDOM.createRoot(document.getElementById("root")).render(

@@ -120,7 +120,7 @@ export default function NewPriceBoxTextBox({
         <div
           style={{
             fontFamily: "'Futura PT Condensed Extra Bold', sans-serif",
-            transform: "scaleY(1.5)",
+            transform: "scale(1.4, 1.5)",
             display: "flex",
             alignItems: "center",
           }}
