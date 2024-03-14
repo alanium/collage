@@ -44,7 +44,7 @@ export default function BakeryLiquor({
   const cardsInStatic = 28;
   const maxStaticIndex = cardsInStatic - 1;
   const templateCollection = "Bakery&Beverages";
-  const maintenance = false
+  const maintenance = true
   const [staticColumns, setStaticColumns] = useState(
     Array(cardsInStatic)
       .fill()

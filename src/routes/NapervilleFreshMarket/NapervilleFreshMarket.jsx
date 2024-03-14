@@ -6,7 +6,7 @@ import TextBoxLeft from "../../components/ParagraphBox/ParagraphBox";
 import TopTextBox from "../../components/TopTextBox/TopTextBox";
 import TextPopUp from "../../components/TextPopup/TextPopup";
 import ImageUploader from "../../components/ImageToCloud/ImageToCloud";
-import { getStorage, ref, listAll, uploadBytes } from "firebase/storage";
+import { getStorage, ref, listAll, uploadBytes, getDownloadURL } from "firebase/storage";
 import ImageFromCloud from "../../components/ImageFromCloud/ImageFromCloud";
 import ResizableImage from "../../components/ResizableImage/ResizableImage";
 import ManageTemplates from "../../components/ManageTemplates/ManageTemplates";
@@ -20,11 +20,23 @@ import {
   onSnapshot,
   setDoc,
 } from "firebase/firestore";
+import NewPriceBox from "../../components/NewPriceBox/NewPriceBox";
+import Sidebar from "../../components/Sidebar/Sidebar";
+import ContextMenu from "../../components/ContextMenu/ContextMenu";
+import ImportPopup from "../../components/ImportPopup/ImportPopup";
+import BugReport from "../../components/BugReport/BugReport";
+import ClosePopup from "../../components/ClosePopup/ClosePopup";
+import RenderInfo from "../../components/RenderInfo/RenderInfo";
+import NewPriceBoxEdit from "../../components/NewPriceBoxEdit/NewPriceBoxEdit";
+import PriceBoxFromCloud from "../../components/PriceBoxFromCloud/PriceBoxFromCloud";
+import IrregularImageCropper from "../../components/IrregularImageCropper/IrregularImageCropper";
 
 const groceryRef = collection(db, "NapervilleFresh");
 const templatesQuerySnapshot = await getDocs(groceryRef);
 
-function NapervilleFreshMarket() {
+function NapervilleFreshMarket(
+  uploadDataToFirebase,
+  handleConvertToPDF,) {
   const cardsInStatic = 30;
   const maxStaticIndex = cardsInStatic - 1;
 
@@ -39,11 +51,23 @@ function NapervilleFreshMarket() {
         text: {
           top: "",
           left: "",
-          bottom: "",
-          priceBoxType: 0,
-          priceBoxColor: false,
-          renderPriceBox: true,
-          priceBoxBorder: true,
+          priceBox: {
+            text: [
+              {
+                text: "XS/$X",
+                fontSize: 24,
+                draggable: true,
+                resizable: true,
+                position: { x: 10, y: 0 },
+                size: { x: 50, y: 50 },
+              },
+            ],
+            width: "100",
+            height: "50",
+            backgroundColor: "red",
+            textColor: "white",
+            border: "black",
+          },
         },
         index,
       }))
@@ -51,23 +75,16 @@ function NapervilleFreshMarket() {
 
   const [dynamicColumn, setDynamicColumn] = useState([]);
   const [contextMenu, setContextMenu] = useState(null);
-  const [isEditingZoom, setIsEditingZoom] = useState(false);
   const [selectedImage, setSelectedImage] = useState({});
   const [selectedTextBox, setSelectedTextBox] = useState({});
   const [selectedCardIndex, setSelectedCardIndex] = useState({});
-  const [isCroppingImage, setIsCroppingImage] = useState(false);
-  const [isAutomaticCropping, setIsAutomaticCropping] = useState(false);
-  const [info, setInfo] = useState(false);
-  const [popup, setPopup] = useState(false);
   const [type, setType] = useState("");
-  const [popup2, setPopup2] = useState(false);
-  const [popup4, setPopup4] = useState(false);
   const [templates, setTemplates] = useState(null);
   const [images, setImages] = useState(null);
   const [imgIndex, setImgIndex] = useState(null);
   const [templateName, setTemplateName] = useState(templatesQuerySnapshot[0]);
-  const maintenance = false
-
+  const [popupState, setPopupState] = useState(3);
+  const maintenance = true
   const storage = getStorage();
   const imagesRef = ref(
     storage,
@@ -78,6 +95,7 @@ function NapervilleFreshMarket() {
   const templatesRef = ref(storage, "templates/");
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
+  const templateCollection  = "NapervilleFresh"
 
   useEffect(() => {
     const unsubscribeStaticColumns = onSnapshot(
@@ -111,77 +129,253 @@ function NapervilleFreshMarket() {
       unsubscribeDynamicColumn();
     };
   }, [templateName]);
-
-  const uploadDataToFirebase = async () => {
-    try {
-      // Upload staticColumns to a document in "Grocery" collection
-      await setDoc(doc(db, `NapervilleFresh/${templateName}`), {
-        staticColumns: staticColumns,
-        dynamicColumn: dynamicColumn,
-      });
-
-      console.log("Data uploaded successfully!");
-    } catch (error) {
-      console.error("Error uploading data:", error);
-    }
-  };
-
-  const handleConvertToPDF = async () => {
-    const container = document.getElementById("magazineContainer");
-
-    if (container) {
-      await downloadExternalImages(container);
-
-      const pdfOptions = {
-        filename: "grocery_magazine.pdf",
-        image: { type: "png", quality: 1 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      };
-
-      container.style.top = "-100px";
-      // Generar PDF desde el clon
-      await html2pdf().from(container).set(pdfOptions).save();
-
-      container.style.top = "0";
-    }
-  };
-
-  const downloadExternalImages = async (container) => {
-    const images = container.querySelectorAll("img");
-    const promises = [];
-
-    images.forEach((img) => {
-      if (
-        img.src &&
-        new URL(img.src).host != window.location.host &&
-        img.src.startsWith("http")
-      ) {
-        promises.push(
-          new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.open("GET", img.src, true);
-            xhr.responseType = "blob";
-            xhr.onload = () => {
-              if (xhr.status === 200) {
-                const blob = xhr.response;
-                const urlCreator = window.URL || window.webkitURL;
-                const imageUrl = urlCreator.createObjectURL(blob);
-                img.src = imageUrl;
-                resolve();
-              } else {
-                reject(xhr.statusText);
-              }
-            };
-            xhr.onerror = () => {
-              reject(xhr.statusText);
-            };
-            xhr.send();
-          })
+  
+  const renderPopup = (popupNumber) => {
+    switch (popupNumber) {
+      case 0:
+        return null;
+      case 1:
+        return (
+          <TextPopUp
+            textBox={
+              selectedImage.cardIndex > maxStaticIndex
+                ? dynamicColumn
+                : staticColumns
+            }
+            setTextBox={
+              selectedImage.cardIndex > maxStaticIndex
+                ? setDynamicColumn
+                : setStaticColumns
+            }
+            setPopup={setPopupState}
+            cardIndex={selectedImage}
+            type={type}
+            maxCardPosition={maxStaticIndex}
+            uploadDataToFirebase={uploadDataToFirebase}
+            templateName={templateName}
+            staticColumns={staticColumns}
+            dynamicColumn={dynamicColumn}
+            templateCollection={templateCollection}
+          />
         );
-      }
-    });
-    await Promise.all(promises);
+      case 2:
+        return (
+          <ImportPopup
+            getImageList={getImageList}
+            setPopup={setPopupState}
+            handleImageUpload={handleImageUpload}
+            selectedCardIndex={selectedCardIndex}
+            imgIndex={imgIndex}
+          />
+        );
+      case 3:
+        return (
+          <ManageTemplates
+            dynamicColumn={dynamicColumn}
+            staticColumns={staticColumns}
+            setDynamicColumn={setDynamicColumn}
+            setStaticColumns={setStaticColumns}
+            templates={templates}
+            setTemplates={setTemplates}
+            setPopup={setPopupState}
+            db={db}
+            setCurrentTemplate={setTemplateName}
+            templateFolder={templateCollection}
+            templateName={templateName}
+          />
+        );
+      case 4:
+        return <BugReport setPopup={setPopupState} />;
+      case 6:
+        return <ClosePopup setPopup={setPopupState} />;
+      case 7:
+        return (
+          <AutomaticImageCropper
+            selectedCardColumn={
+              selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
+            }
+            setSelectedCardColumn={
+              selectedCardIndex > maxStaticIndex
+                ? setDynamicColumn
+                : setStaticColumns
+            }
+            cardIndex={selectedCardIndex}
+            imageIndex={imgIndex}
+            setPopup={setPopupState}
+            uploadDataToFirebase={uploadDataToFirebase}
+            maxStaticIndex={maxStaticIndex}
+            templateName={templateName}
+            staticColumns={staticColumns}
+            dynamicColumn={dynamicColumn}
+            templateCollection={templateCollection}
+            imageFolder={imageFolder}
+          />
+        );
+      case 8:
+        return (
+          <ImageCropper
+            src={
+              selectedCardIndex > maxStaticIndex
+                ? dynamicColumn[selectedCardIndex - cardsInStatic].img[imgIndex]
+                    .src
+                : staticColumns[selectedCardIndex].img[imgIndex].src
+            }
+            setPopup={setPopupState}
+            selectedColumn={
+              selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
+            }
+            setSelectedColumn={
+              selectedCardIndex > maxStaticIndex
+                ? setDynamicColumn
+                : setStaticColumns
+            }
+            selectedCardIndex={selectedCardIndex}
+            imageIndex={imgIndex}
+            maxStaticIndex={maxStaticIndex}
+            imageFolder={imageFolder}
+            templateCollection={templateCollection}
+            uploadDataToFirebase={uploadDataToFirebase}
+            templateName={templateName}
+            staticColumns={staticColumns}
+            dynamicColumn={dynamicColumn}
+          />
+        );
+      case 9:
+        return (
+          <ResizableImage
+            cardIndex={
+              selectedImage.cardIndex > maxStaticIndex
+                ? selectedImage.cardIndex - cardsInStatic
+                : selectedImage.cardIndex
+            }
+            selectedColumn={
+              selectedImage.cardIndex > maxStaticIndex
+                ? dynamicColumn
+                : staticColumns
+            }
+            setSelectedColumn={
+              selectedImage.cardIndex > maxStaticIndex
+                ? setDynamicColumn
+                : setStaticColumns
+            }
+            setPopup={setPopupState}
+            cardNumber={selectedImage.cardIndex}
+            imageFolder={imageFolder}
+            uploadDataToFirebase={uploadDataToFirebase}
+            templateCollection={templateCollection}
+            templateName={templateName}
+            staticColumns={staticColumns}
+            dynamicColumn={dynamicColumn}
+          />
+        );
+      case 10:
+        return <RenderInfo />;
+      case 11:
+        return (
+          <ImageFromCloud
+            images={images}
+            cardIndex={selectedCardIndex}
+            selectedColumn={
+              selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
+            }
+            setSelectedColumn={
+              selectedCardIndex > maxStaticIndex
+                ? setDynamicColumn
+                : setStaticColumns
+            }
+            setImages={setImages}
+            staticColumns={staticColumns}
+            dynamicColumn={dynamicColumn}
+            templateName={templateName}
+            imgIndex={imgIndex}
+            maxCardPosition={maxStaticIndex}
+            templateCollection={templateCollection}
+            imageFolder={imageFolder}
+            setPopup={setPopupState}
+            uploadDataToFirebase={uploadDataToFirebase}
+          />
+        );
+      case 12:
+        return (
+          <NewPriceBoxEdit  
+            oldPriceBox={
+              selectedCardIndex > maxStaticIndex
+                ? dynamicColumn[selectedCardIndex - maxStaticIndex].text
+                    .priceBox
+                : staticColumns[selectedCardIndex].text.priceBox
+            }
+            setSelectedColumn={
+              selectedCardIndex > maxStaticIndex
+                ? setDynamicColumn
+                : setStaticColumns
+            }
+            selectedColumn={
+              selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
+            }
+            selectedCardIndex={selectedCardIndex}
+            cardsInStatic={cardsInStatic}
+            setPopup={setPopupState}
+            uploadDataToFirebase={() =>
+              uploadDataToFirebase(
+                templateCollection,
+                templateName,
+                staticColumns,
+                dynamicColumn
+              )
+            }
+          />
+        );
+      case 13:
+        return (
+          <PriceBoxFromCloud
+            setPopup={setPopupState}
+            setSelectedColumn={
+              selectedCardIndex > maxStaticIndex
+                ? setDynamicColumn
+                : setStaticColumns
+            }
+            selectedColumn={
+              selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
+            }
+            selectedCardIndex={selectedCardIndex}
+            cardsInStatic={cardsInStatic}
+            uploadDataToFirebase={() =>
+              uploadDataToFirebase(
+                templateCollection,
+                templateName,
+                staticColumns,
+                dynamicColumn
+              )
+            }
+          />
+        );
+      case 14:
+        return (
+          <IrregularImageCropper
+            setPopup={setPopupState}
+            setSelectedColumn={
+              selectedCardIndex > maxStaticIndex
+                ? setDynamicColumn
+                : setStaticColumns
+            }
+            selectedColumn={
+              selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
+            }
+            selectedCardIndex={selectedCardIndex}
+            cardsInStatic={cardsInStatic}
+            imgIndex={imgIndex}
+            uploadDataToFirebase={() =>
+              uploadDataToFirebase(
+                templateCollection,
+                templateName,
+                staticColumns,
+                dynamicColumn
+              )
+            }
+            imageFolder={imageFolder}
+          />
+        );
+    }
   };
 
   const handleDynamicColumns = (event) => {
@@ -200,20 +394,37 @@ function NapervilleFreshMarket() {
         text: {
           top: "",
           left: "",
-          bottom: "",
-          priceBoxType: 0,
-          priceBoxColor: false,
-          renderPriceBox: false,
-          priceBoxBorder: true,
+          priceBox: {
+            text: [
+              {
+                text: "XS/$X",
+                fontSize: 24,
+                draggable: true,
+                resizable: true,
+                position: { x: 10, y: 0 },
+                size: { x: 50, y: 50 },
+              },
+            ],
+            width: "100",
+            height: "50",
+            backgroundColor: "red",
+            textColor: "white",
+            border: "black",
+          },
         },
         index: i + cardsInStatic,
       };
       cards.push(card);
     }
     setDynamicColumn(cards),
-      () => {
-        uploadDataToFirebase();
-      };
+    () => {
+      uploadDataToFirebase(
+        templateCollection,
+        templateName,
+        staticColumns,
+        dynamicColumn
+      );
+    };
   };
 
   const handleImageUpload = (event, cardIndex, img) => {
@@ -231,16 +442,29 @@ function NapervilleFreshMarket() {
             const file = event.target.files[0];
 
             if (file) {
-              const reader = new FileReader();
-              reader.onload = (e) => {
-                const result = e.target.result;
-                const newDynamicColumn = [...dynamicColumn];
-                newDynamicColumn[cardIndex - cardsInStatic].img[img].src =
-                  result;
-                setDynamicColumn(newDynamicColumn);
-              };
-
-              reader.readAsDataURL(file);
+              const uploadedImageRef = ref(
+                storage,
+                `images/${imageFolder}/${file.name}`
+              );
+              uploadBytes(uploadedImageRef, file).then((snapshot) => {
+                getDownloadURL(
+                  ref(storage, `images/${imageFolder}/${file.name}`)
+                )
+                  .then((url) => {
+                    const newDynamicColumn = [...dynamicColumn];
+                    newDynamicColumn[cardIndex].img[img].src = url;
+                    setDynamicColumn(newDynamicColumn);
+                  })
+                  .then(() => {
+                    uploadDataToFirebase(
+                      templateCollection,
+                      templateName,
+                      staticColumns,
+                      dynamicColumn
+                    );
+                  });
+                console.log("Uploaded a blob or file!");
+              });
             }
           };
           input.click();
@@ -258,21 +482,37 @@ function NapervilleFreshMarket() {
             const file = event.target.files[0];
 
             if (file) {
-              const reader = new FileReader();
-              reader.onload = (e) => {
-                const result = e.target.result;
-                const newStaticColumns = [...staticColumns];
-                newStaticColumns[cardIndex].img[img].src = result;
-                setStaticColumns(newStaticColumns);
-              };
-
-              reader.readAsDataURL(file);
+              const uploadedImageRef = ref(
+                storage,
+                `images/${imageFolder}/${file.name}`
+              );
+              uploadBytes(uploadedImageRef, file).then((snapshot) => {
+                getDownloadURL(
+                  ref(storage, `images/${imageFolder}/${file.name}`)
+                )
+                  .then((url) => {
+                    console.log(file.name);
+                    console.log(url);
+                    const newStaticColumns = [...staticColumns];
+                    newStaticColumns[cardIndex].img[img].src = url;
+                    setStaticColumns(newStaticColumns);
+                  })
+                  .then(() => {
+                    uploadDataToFirebase(
+                      templateCollection,
+                      templateName,
+                      staticColumns,
+                      dynamicColumn
+                    );
+                  });
+              });
             }
           };
           input.click();
         }
       });
     }
+    setPopupState(0);
   };
 
   useEffect(() => {
@@ -295,58 +535,13 @@ function NapervilleFreshMarket() {
     };
   }, []);
 
-  const RenderInfo = () => {
-    return (
-      <div className={styles.infoTab}>
-        <div>Info:</div>
-        <div>
-          <label>
-            This tab explains how to use the functionalities of the page
-          </label>
-        </div>
-        <div>
-          Click on the plus sign to the left column to input the number of cards
-          you want to have in the first column
-        </div>
-        <div>Click on a card to upload an image</div>
-        <div>
-          Click again on the uploaded image to open the context menu, where you
-          can:
-          <div>1- Edit the size and position of the image</div>
-          <div>2- Show or hide the Price Box</div>
-          <div>
-            3- Manually change the Price Box Type (not recommended since it can
-            lead to unwanted behaviour)
-          </div>
-          <div>4- Change the price box color</div>
-          <div>5- upload a second image</div>
-          <div>6- Cancel</div>
-        </div>
-        <div>
-          Click on the Price Box, to write the content of the pricebox:
-          <div>
-            1. If you write "Number / $Number" the price box type 1 is
-            automatically selected
-          </div>
-          <div>
-            2. If you write "Number . Number + each/oz/lb/pk" the price box type
-            2 is automatically selected
-          </div>
-          <div>
-            3. If you write "Number for $ Number" the price box type 3 is
-            automatically selected
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   const handleDeleteImage = (cardIndex, index) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete the image?"
     );
 
-    if (cardIndex > maxStaticIndex) {
+    if (cardIndex > 17) {
       if (confirmDelete) {
         setDynamicColumn((prevDynamicColumn) => {
           const newDynamicColumn = [...prevDynamicColumn];
@@ -363,7 +558,7 @@ function NapervilleFreshMarket() {
             imageToUpdate.img[0].src == "" &&
             imageToUpdate.img[1].src == ""
           ) {
-            setIsEditingZoom(false);
+            setPopupState(0);
           }
 
           return newDynamicColumn;
@@ -386,7 +581,7 @@ function NapervilleFreshMarket() {
             imageToUpdate.img[0].src == "" &&
             imageToUpdate.img[1].src == ""
           ) {
-            setIsEditingZoom(false);
+            setPopupState(0);
           }
 
           return newStaticColumns;
@@ -395,113 +590,10 @@ function NapervilleFreshMarket() {
     }
   };
 
-  const showHidePriceBox = (cardIndex) => {
-    if (cardIndex > maxStaticIndex) {
-      const newDynamicColumn = [...dynamicColumn];
-      newDynamicColumn[cardIndex - cardsInStatic].text.renderPriceBox =
-        !newDynamicColumn[cardIndex - cardsInStatic].text.renderPriceBox;
-      setDynamicColumn(newDynamicColumn);
-    } else {
-      const newStaticColumns = [...staticColumns];
-      newStaticColumns[cardIndex].text.renderPriceBox =
-        !newStaticColumns[cardIndex].text.renderPriceBox;
-      setStaticColumns(newStaticColumns);
-    }
-    uploadDataToFirebase();
+  const handleCropImage = () => {
+    setPopupState(8);
   };
 
-  const switchBoxType = (cardIndex) => {
-    console.log("switchBoxType");
-    if (cardIndex > maxStaticIndex) {
-      const newDynamicColumn = [...dynamicColumn];
-      if (newDynamicColumn[cardIndex - cardsInStatic].text.priceBoxType < 2) {
-        newDynamicColumn[cardIndex - cardsInStatic].text.priceBoxType++;
-      } else {
-        newDynamicColumn[cardIndex - cardsInStatic].text.priceBoxType = 0; // Reset to 0 if it's already 3
-      }
-      setDynamicColumn(newDynamicColumn);
-    } else {
-      const newStaticColumns = [...staticColumns];
-      if (newStaticColumns[cardIndex].text.priceBoxType < 2) {
-        newStaticColumns[cardIndex].text.priceBoxType++;
-      } else {
-        newStaticColumns[cardIndex].text.priceBoxType = 0;
-      }
-      setStaticColumns(newStaticColumns);
-    }
-    uploadDataToFirebase();
-  };
-
-  const changePriceBoxColor = (cardIndex) => {
-    if (cardIndex > maxStaticIndex) {
-      const newDynamicColumn = [...dynamicColumn];
-      newDynamicColumn[cardIndex - cardsInStatic].text.priceBoxColor =
-        !newDynamicColumn[cardIndex - cardsInStatic].text.priceBoxColor;
-      setDynamicColumn(newDynamicColumn);
-    } else {
-      const newStaticColumns = [...staticColumns];
-      newStaticColumns[cardIndex].text.priceBoxColor =
-        !newStaticColumns[cardIndex].text.priceBoxColor;
-      setStaticColumns(newStaticColumns);
-    }
-    uploadDataToFirebase();
-  };
-
-  const changePriceBoxBorder = (cardIndex) => {
-    if (cardIndex > maxStaticIndex) {
-      const newDynamicColumn = [...dynamicColumn];
-      newDynamicColumn[cardIndex - cardsInStatic].text.priceBoxBorder =
-        !newDynamicColumn[cardIndex - cardsInStatic].text.priceBoxBorder;
-      setDynamicColumn(newDynamicColumn);
-    } else {
-      const newStaticColumns = [...staticColumns];
-      newStaticColumns[cardIndex].text.priceBoxBorder =
-        !newStaticColumns[cardIndex].text.priceBoxBorder;
-      setStaticColumns(newStaticColumns);
-    }
-    uploadDataToFirebase();
-  };
-
-  const ContextMenu = ({ x, y, items, onClose }) => (
-    <div
-      style={{
-        position: "absolute",
-        top: `${y}px`,
-        left: `${x}px`,
-        border: "1px solid #ccc",
-        background: "#fff",
-        boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-        borderRadius: "4px",
-        padding: "5px",
-        zIndex: "1000",
-        color: "gray",
-      }}
-    >
-      {items.map((item, index) => (
-        <div
-          key={index}
-          style={{ cursor: "pointer", padding: "5px" }}
-          onClick={() => {
-            item.action();
-            onClose(); // Cierra el menú contextual al hacer clic en una opción
-          }}
-        >
-          {item.label}
-        </div>
-      ))}
-      <div
-        style={{
-          cursor: "pointer",
-          padding: "5px",
-          borderTop: "1px solid #ccc",
-          marginTop: "5px",
-        }}
-        onClick={() => onClose()} // Agrega una opción para cancelar y cerrar el menú contextual
-      >
-        Cancel
-      </div>
-    </div>
-  );
 
   const handleContextMenu = (event, cardIndex, column, image) => {
     event.preventDefault();
@@ -514,27 +606,20 @@ function NapervilleFreshMarket() {
 
     const contextMenuItems = [
       {
-        label: "Edit ",
+        label: "New Edit Price Box",
+        action: () => setPopupState(12),
+      },
+      {
+        label: "Load Price Box From Cloud",
+        action: () => setPopupState(13),
+      },
+      { type: "divider" },
+      {
+        label: "Move Images",
         action: () => {
-          setIsEditingZoom(true);
+          setPopupState(9);
           setSelectedImage({ cardIndex });
         },
-      },
-      {
-        label: "Show/Hide",
-        action: () => showHidePriceBox(cardIndex),
-      },
-      {
-        label: "Box1/Box2/Box3",
-        action: () => switchBoxType(cardIndex),
-      },
-      {
-        label: "Change PriceBox Color",
-        action: () => changePriceBoxColor(cardIndex),
-      },
-      {
-        label: "Change PriceBox Border",
-        action: () => changePriceBoxBorder(cardIndex),
       },
     ];
 
@@ -544,65 +629,97 @@ function NapervilleFreshMarket() {
         label: "Upload Image 2",
         action: () => {
           setImgIndex(1);
-          setPopup2(true);
+          setPopupState(2);
           setSelectedCardIndex(cardIndex);
         },
       });
     } else if (selectedColumn[index].img[1].src != "") {
       // If both images uploaded, allow editing and deleting the second image
-      contextMenuItems.push(
-        {
-          label: "Delete 2",
-          action: async () => {
-            await handleDeleteImage(cardIndex, 1);
-            await uploadDataToFirebase();
-          },
+      contextMenuItems.push({
+        label: "Delete 2",
+        action: async () => {
+          await handleDeleteImage(cardIndex, 1);
+          await uploadDataToFirebase(
+            templateCollection,
+            templateName,
+            staticColumns,
+            dynamicColumn
+          );
         },
-        {
-          label: "crop image 2",
-          action: () => {
-            setImgIndex(1);
-            handleCropImage(cardIndex, imgIndex);
-          },
-        },
-        {
-          label: "Delete Background of Image 2",
-          action: () => {
-            setImgIndex(1), setIsAutomaticCropping(true);
-          },
-        }
-      );
+      });
     }
     if (selectedColumn[index].img[0].src == "") {
       contextMenuItems.push({
         label: "Upload 1",
         action: () => {
           setImgIndex(0);
-          setPopup2(true);
+          setPopupState(2);
           setSelectedCardIndex(cardIndex);
+        },
+      });
+    }
+    if (selectedColumn[index].img[0].src != "") {
+      contextMenuItems.push({
+        label: "Delete 1",
+        action: async () => {
+          await handleDeleteImage(cardIndex, 0);
+          await uploadDataToFirebase(
+            templateCollection,
+            templateName,
+            staticColumns,
+            dynamicColumn
+          );
         },
       });
     }
     if (selectedColumn[index].img[0].src != "") {
       contextMenuItems.push(
         {
-          label: "Delete 1",
-          action: async () => {
-            await handleDeleteImage(cardIndex, 0);
-            await uploadDataToFirebase();
-          },
-        },
-        {
           label: "crop image 1",
           action: () => {
             setImgIndex(0);
+            setSelectedCardIndex(cardIndex);
             handleCropImage(cardIndex, imgIndex);
           },
         },
         {
           label: "Delete Background of Image 1",
           action: () => {
-            setImgIndex(0), setIsAutomaticCropping(true);
+            setImgIndex(0);
+            setPopupState(7);
+            setSelectedCardIndex(cardIndex);
+          },
+        },
+        {
+          label: "Precise Crop Image 1",
+          action: () => {
+            setImgIndex(0), setPopupState(14), setSelectedCardIndex(cardIndex);
+          },
+        }
+      );
+    }
+    if (selectedColumn[index].img[1].src != "") {
+      contextMenuItems.push(
+        {
+          label: "crop image 2",
+          action: () => {
+            setImgIndex(1);
+            setSelectedCardIndex(cardIndex);
+            handleCropImage(cardIndex, imgIndex);
+          },
+        },
+        {
+          label: "Delete Background of Image 2",
+          action: () => {
+            setImgIndex(1);
+            setSelectedCardIndex(cardIndex);
+            setPopupState(7);
+          },
+        },
+        {
+          label: "Precise Crop Image 2",
+          action: () => {
+            setImgIndex(2), setPopupState(14), setSelectedCardIndex(cardIndex);
           },
         }
       );
@@ -691,11 +808,6 @@ function NapervilleFreshMarket() {
       <div className={styles.topCardColumn}>
         {dynamicColumn.map((card) => {
           const cardIndex = card.index;
-          const isEditingThisZoom =
-            isEditingZoom &&
-            selectedImage &&
-            selectedImage.cardIndex !== undefined &&
-            selectedImage.cardIndex === cardIndex;
 
           let images = { ...card };
 
@@ -730,19 +842,9 @@ function NapervilleFreshMarket() {
                   }}
                 />
               )}
-              {dynamicColumn[cardIndex - cardsInStatic] &&
-              dynamicColumn[cardIndex - cardsInStatic].text.renderPriceBox ? (
-                <div className="priceBox">
-                  {renderPriceBox(
-                    dynamicColumn[cardIndex - cardsInStatic].text.priceBoxType,
-                    dynamicColumn,
-                    setDynamicColumn,
-                    cardIndex - cardsInStatic,
-                    dynamicColumn[cardIndex - cardsInStatic].text.priceBoxColor,
-                    dynamicColumn[cardIndex - cardsInStatic].text.priceBoxBorder
-                  )}
-                </div>
-              ) : null}
+             <NewPriceBox
+                priceBox={dynamicColumn[calculatedCardIndex].text.priceBox}
+              />
               <TextBoxLeft
                 textBoxes={dynamicColumn}
                 setTextBoxes={setDynamicColumn}
@@ -771,11 +873,6 @@ function NapervilleFreshMarket() {
       for (let j = 0; j < 6; j++) {
         const cardIndex = j + i * 6 + 18;
 
-        const isEditingThisZoom =
-          isEditingZoom &&
-          selectedImage &&
-          selectedImage.cardIndex === cardIndex;
-
         let images = staticColumns[cardIndex].img;
 
         const textBoxes = [];
@@ -814,25 +911,15 @@ function NapervilleFreshMarket() {
                 }}
               />
             )}
-            {staticColumns[cardIndex] &&
-            staticColumns[cardIndex].text.renderPriceBox ? (
-              <div className="priceBox">
-                {renderPriceBox(
-                  staticColumns[cardIndex].text.priceBoxType,
-                  staticColumns,
-                  setStaticColumns,
-                  cardIndex,
-                  staticColumns[cardIndex].text.priceBoxColor,
-                  staticColumns[cardIndex].text.priceBoxBorder
-                )}
-              </div>
-            ) : null}
+            <NewPriceBox
+                priceBox={staticColumns[cardIndex].text.priceBox}
+              />
 
             <TopTextBox
               textBoxes={staticColumns}
               setTextBoxes={setStaticColumns}
               cardIndex={cardIndex}
-              setPopup={setPopup}
+              setPopup={setPopupState}
               setSelectedTextBox={setSelectedTextBox}
               setType={setType}
               setSelectedImage={setSelectedImage}
@@ -843,7 +930,7 @@ function NapervilleFreshMarket() {
               textBoxes={staticColumns}
               setTextBoxes={setStaticColumns}
               cardIndex={cardIndex}
-              setPopup={setPopup}
+              setPopup={setPopupState}
               setSelectedTextBox={setSelectedTextBox}
               setType={setType}
               setSelectedImage={setSelectedImage}
@@ -872,11 +959,6 @@ function NapervilleFreshMarket() {
       for (let j = 0; j < 8; j++) {
         const cardIndex = j + i * 8;
 
-        const isEditingThisZoom =
-          isEditingZoom &&
-          selectedImage &&
-          selectedImage.cardIndex === cardIndex;
-
         let images = staticColumns[cardIndex].img;
 
         const textBoxes = [];
@@ -915,25 +997,13 @@ function NapervilleFreshMarket() {
                 }}
               />
             )}
-            {staticColumns[cardIndex] &&
-            staticColumns[cardIndex].text.renderPriceBox ? (
-              <div className="priceBox">
-                {renderPriceBox(
-                  staticColumns[cardIndex].text.priceBoxType,
-                  staticColumns,
-                  setStaticColumns,
-                  cardIndex,
-                  staticColumns[cardIndex].text.priceBoxColor,
-                  staticColumns[cardIndex].text.priceBoxBorder
-                )}
-              </div>
-            ) : null}
+            <NewPriceBox priceBox={staticColumns[cardIndex].text.priceBox} />
 
             <TopTextBox
               textBoxes={staticColumns}
               setTextBoxes={setStaticColumns}
               cardIndex={cardIndex}
-              setPopup={setPopup}
+              setPopup={setPopupState}
               setSelectedTextBox={setSelectedTextBox}
               setType={setType}
               setSelectedImage={setSelectedImage}
@@ -944,7 +1014,7 @@ function NapervilleFreshMarket() {
               textBoxes={staticColumns}
               setTextBoxes={setStaticColumns}
               cardIndex={cardIndex}
-              setPopup={setPopup}
+              setPopup={setPopupState}
               setSelectedTextBox={setSelectedTextBox}
               setType={setType}
               setSelectedImage={setSelectedImage}
@@ -968,210 +1038,11 @@ function NapervilleFreshMarket() {
     <div className={styles.body}>
       { maintenance ? (
           <>
-      {popup ? (
-        <TextPopUp
-          textBox={
-            selectedImage.cardIndex > maxStaticIndex
-              ? dynamicColumn
-              : staticColumns
-          }
-          setTextBox={
-            selectedImage.cardIndex > maxStaticIndex
-              ? setDynamicColumn
-              : setStaticColumns
-          }
-          setPopup={setPopup}
-          cardIndex={selectedImage}
-          type={type}
-          maxCardPosition={maxStaticIndex}
-          uploadDataToFirebase={uploadDataToFirebase}
-        />
-      ) : null}
-
-      {isEditingZoom && (
-        <ResizableImage
-          cardIndex={
-            selectedImage.cardIndex > maxStaticIndex
-              ? selectedImage.cardIndex - cardsInStatic
-              : selectedImage.cardIndex
-          }
-          selectedColumn={
-            selectedImage.cardIndex > maxStaticIndex
-              ? dynamicColumn
-              : staticColumns
-          }
-          setSelectedColumn={
-            selectedImage.cardIndex > maxStaticIndex
-              ? setDynamicColumn
-              : setStaticColumns
-          }
-          setIsEditingZoom={setIsEditingZoom}
-          cardNumber={selectedImage.cardIndex}
-          imageFolder={
-            selectedCardIndex > 15 && selectedCardIndex < 30
-              ? "produce"
-              : "produce"
-          }
-          uploadDataToFirebase={uploadDataToFirebase}
-        />
-      )}
-      {popup2 ? (
-        <div className={styles.popUp2} style={{ zIndex: "1" }}>
-          <button
-            className={styles.actionButton}
-            onClick={(event) =>
-              handleImageUpload(event, selectedCardIndex, imgIndex)
-            }
-          >
-            Import from Device
-          </button>
-          <button
-            className={styles.actionButton}
-            onClick={(event) => getImageList(event)}
-          >
-            Import from Database
-          </button>
-          <button
-            className={styles.closeButton}
-            onClick={() => setPopup2(false)}
-          >
-            Close
-          </button>
-        </div>
-      ) : null}
-      {popup4 ? (
-        <ManageTemplates
-          dynamicColumn={dynamicColumn}
-          staticColumns={staticColumns}
-          setDynamicColumn={setDynamicColumn}
-          setStaticColumns={setStaticColumns}
-          templates={templates}
-          setTemplates={setTemplates}
-          setPopup4={setPopup4}
-          templateFolder="NapervilleFreshMarket"
-        />
-      ) : null}
-      {isCroppingImage && (
-        <ImageCropper
-          src={
-            selectedCardIndex > maxStaticIndex
-              ? dynamicColumn[selectedCardIndex - cardsInStatic].img[imgIndex]
-                  .src
-              : staticColumns[selectedCardIndex].img[imgIndex].src
-          }
-          setIsCroppingImage={setIsCroppingImage}
-          selectedColumn={
-            selectedImage.cardIndex > maxStaticIndex
-              ? dynamicColumn
-              : staticColumns
-          }
-          setSelectedColumn={
-            selectedImage.cardIndex > maxStaticIndex
-              ? setDynamicColumn
-              : setStaticColumns
-          }
-          selectedCardIndex={selectedCardIndex}
-          imageIndex={imgIndex}
-          imageFolder={
-            selectedCardIndex > 15 && selectedCardIndex < 30
-              ? "produce"
-              : "produce"
-          }
-          uploadDataToFirebase={uploadDataToFirebase}
-        />
-      )}
-      {isAutomaticCropping && (
-        <AutomaticImageCropper
-          selectedColumn={
-            selectedImage.cardIndex > maxStaticIndex
-              ? dynamicColumn
-              : staticColumns
-          }
-          setSelectedColumn={
-            selectedImage.cardIndex > maxStaticIndex
-              ? setDynamicColumn
-              : setStaticColumns
-          }
-          cardIndex={selectedCardIndex}
-          imageIndex={imgIndex}
-          setIsAutomaticCropping={setIsAutomaticCropping}
-          uploadDataToFirebase={uploadDataToFirebase}
-          maxStaticIndex={maxStaticIndex}
-        />
-      )}
-
-      <div className={styles.sidebar} style={{ top: "1maxStaticIndexpx" }}>
-        <div
-          style={{
-            position: "relative",
-            left: "12px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-start",
-            padding: "3px",
-          }}
-        >
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-              zIndex: "1",
-            }}
-            onClick={handleConvertToPDF}
-          >
-            Make PDF
-          </button>
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-              zIndex: "1",
-            }}
-            onClick={() => navigate("/")}
-          >
-            Back to Home
-          </button>
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-              zIndex: "1",
-            }}
-            onClick={() => setInfo(!info)}
-          >
-            Info
-          </button>
-          <button
-            style={{
-              width: "165px",
-              position: "relative",
-              backgroundColor: "gray",
-              color: "white",
-              marginBottom: "10px",
-            }}
-            onClick={() => setPopup4(true)}
-          >
-            Open Template Manager
-          </button>
-          <ImageUploader
-            uploadDataToFirebase={uploadDataToFirebase}
-            imageFolder={
-              selectedCardIndex > 15 && selectedCardIndex < 30
-                ? "produce"
-                : "produce"
-            }
+      {renderPopup(popupState)}
+          <Sidebar
+            handleConvertToPDF={handleConvertToPDF}
+            setPopup={setPopupState}
           />
-        </div>
-      </div>
 
       <div id="magazineContainer" style={{position: "relative"}}>
         <div style={{ display: "grid" }} className={styles.containerDivBorder}>
@@ -1197,30 +1068,7 @@ function NapervilleFreshMarket() {
           </div>
         </div>
       </div>
-      {info ? <RenderInfo /> : null}
-      {images != null ? (
-        <ImageFromCloud
-          images={images}
-          cardIndex={selectedCardIndex}
-          selectedColumn={
-            selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
-          }
-          setSelectedColumn={
-            selectedCardIndex > maxStaticIndex
-              ? setDynamicColumn
-              : setStaticColumns
-          }
-          setImages={setImages}
-          imgIndex={imgIndex}
-          maxCardPosition={maxStaticIndex}
-          imageFolder={
-            selectedCardIndex > 15 && selectedCardIndex < 30
-              ? "produce"
-              : "produce"
-          }
-          uploadDataToFirebase={uploadDataToFirebase}
-        />
-      ) : null}  </>) : (
+        </>) : (
         <h1>In maintenance..</h1>
       )}
     </div>

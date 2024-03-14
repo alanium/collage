@@ -69,7 +69,7 @@ export default function DelicatessenAndMore({
   const [templateName, setTemplateName] = useState(templatesQuerySnapshot[0]);
   const [popupState, setPopupState] = useState(3);
 
-  const maintenance = false;
+  const maintenance = true
   const templateCollection = "Deli&Taqueria";
   const storage = getStorage();
   const imageFolder =

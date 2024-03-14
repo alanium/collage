@@ -35,7 +35,7 @@ export default function FrozenAndBeverages(
 ) {
   const cardsInStatic = 24;
   const maxStaticIndex = cardsInStatic - 1;
-  const maintenance = false
+  const maintenance = true
   const templateCollection = "Frozen&Beverages"
   const [staticColumns, setStaticColumns] = useState(
     Array(cardsInStatic)

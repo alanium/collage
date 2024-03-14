@@ -75,7 +75,7 @@ export default function DairyAndSnacks({
   const [templateName, setTemplateName] = useState(templatesQuerySnapshot[0]);
   const [popupState, setPopupState] = useState(3);
 
-  const maintenance = false;
+  const maintenance = true
   const templateCollection = "Dairy&Snacks";
   const imageFolder =
     selectedCardIndex > 11 && selectedCardIndex < maxStaticIndex
