@@ -112,6 +112,7 @@ export default function ManageTemplates({
                 backgroundColor: "red",
                 textColor: "white",
                 border: "black",
+                borderRadius: true,
               },
             },
             index,

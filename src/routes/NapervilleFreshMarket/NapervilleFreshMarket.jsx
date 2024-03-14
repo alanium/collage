@@ -68,6 +68,7 @@ function NapervilleFreshMarket(
             textColor: "white",
             border: "black",
           },
+          borderRadius: true,
         },
         index,
       }))
@@ -411,6 +412,7 @@ function NapervilleFreshMarket(
             backgroundColor: "red",
             textColor: "white",
             border: "black",
+            borderRadius: true,
           },
         },
         index: i + cardsInStatic,
