@@ -32,7 +32,7 @@ export default function NewPriceBoxEdit({
   const [textBoxes, setTextBoxes] = useState([...oldPriceBox.text]);
 
   const calculatedCardIndex =
-    selectedCardIndex > cardsInStatic
+    selectedCardIndex >= cardsInStatic
       ? selectedCardIndex - cardsInStatic
       : selectedCardIndex;
 
@@ -263,6 +263,8 @@ export default function NewPriceBoxEdit({
           removeTextBox={removeTextBox}
           setBorderRadius={setBorderRadius}
           handleResizablePricebox={handleResizablePricebox}
+          boxDimensions={{width: boxDimensions.width, height: boxDimensions.height}}
+          setBoxDimensions={setBoxDimensions}
         />
         {selectedTextBox && ( // Render TextBoxEditor if selectedTextBox is truthy
           <NewPriceBoxTextBoxEdit
@@ -270,6 +272,7 @@ export default function NewPriceBoxEdit({
             selectedTextBoxIndex={selectedTextBoxIndex}
             textBoxes={textBoxes}
             setTextBoxes={setTextBoxes}
+            setPriceBox={setPriceBox}
             onUpdate={(updatedTextBox) => {
               const updatedTextArray = textBoxes.map((textBox, index) => {
                 if (index === selectedTextBoxIndex) {
@@ -287,9 +290,11 @@ export default function NewPriceBoxEdit({
             }}
           />
         )}
-        <button onClick={saveAndClose}>Save And Close</button>
-        <button onClick={uploadPriceBoxToFirestore}>Upload To Cloud As Preset</button>
-        <button onClick={() => setPopup(0)}>Cancel</button>
+        <div className={styles.bttnContainer}>
+          <button onClick={saveAndClose}>Save And Close</button>
+          <button onClick={uploadPriceBoxToFirestore}>Upload To Cloud</button>
+          <button onClick={() => setPopup(0)}>Cancel</button>
+        </div>
       </div>
     </>
   );

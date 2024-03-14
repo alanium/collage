@@ -294,7 +294,7 @@ function International({ uploadDataToFirebase, handleConvertToPDF, renderPriceBo
             <NewPriceBoxEdit
               oldPriceBox={
                 selectedCardIndex > maxStaticIndex
-                  ? dynamicColumn[selectedCardIndex - maxStaticIndex].text
+                  ? dynamicColumn[selectedCardIndex - cardsInStatic].text
                       .priceBox
                   : staticColumns[selectedCardIndex].text.priceBox
               }

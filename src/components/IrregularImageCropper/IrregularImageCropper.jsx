@@ -30,7 +30,7 @@ const IrregularImageCropper = ({
   const draggedPointIndex = useRef(null);
 
   const calculatedCardIndex =
-    selectedCardIndex > cardsInStatic
+    selectedCardIndex >= cardsInStatic
       ? selectedCardIndex - cardsInStatic
       : selectedCardIndex;
 
@@ -53,13 +53,13 @@ const IrregularImageCropper = ({
   
     const aspectRatio = imageRef.current.width / imageRef.current.height;
   
-    // Calcula el ancho y el alto del canvas manteniendo el aspect ratio de la imagen original
-    let canvasWidth = containerWidth;
-    let canvasHeight = containerWidth / aspectRatio;
+    // Calculate the canvas width and height considering the scaling factor
+    let canvasWidth = containerWidth / 3; // Divided by 3 to adjust for scaling
+    let canvasHeight = containerHeight / 3; // Divided by 3 to adjust for scaling
   
     if (canvasHeight > containerHeight) {
-      canvasHeight = containerHeight;
-      canvasWidth = containerHeight * aspectRatio;
+      canvasHeight = containerHeight / 3; // Divided by 3 to adjust for scaling
+      canvasWidth = containerHeight * aspectRatio / 3; // Divided by 3 to adjust for scaling
     }
   
     setContainerResolution({

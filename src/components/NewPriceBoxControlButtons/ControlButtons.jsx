@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import styles from "./ControlButtons.module.css";
 import { SketchPicker } from "react-color";
 
-
 export default function NewPriceBoxControlButtons({
   setBackgroundColor,
   setTextColor,
@@ -10,9 +9,8 @@ export default function NewPriceBoxControlButtons({
   addTextBox,
   removeTextBox,
   setBorderRadius,
-  handleResizablePricebox
+  handleResizablePricebox,
 }) {
-
   const [displayColorPicker, setDisplayColorPicker] = useState(false);
   const [currentColor, setCurrentColor] = useState("#000000");
   const [selectedColorType, setSelectedColorType] = useState(null);
@@ -29,8 +27,6 @@ export default function NewPriceBoxControlButtons({
     setSelectedColorType(colorType);
     setDisplayColorPicker(true);
   };
-
-
 
   const handleSetColor = () => {
     if (selectedColorType === "background" && setBackgroundColor) {
@@ -76,6 +72,7 @@ export default function NewPriceBoxControlButtons({
           </button>
         </div>
       </div>
+
       <div className={styles.controlsGroup}>
         <div className={styles.labelContainer}>
           <label>Border Color</label>
@@ -87,21 +84,21 @@ export default function NewPriceBoxControlButtons({
           <button onClick={() => setBorder("transparent")}>No Border</button>
           <button onClick={() => setBorderRadius()}>Round Corners</button>
         </div>
-        <div>
+      </div>
+
+      <div className={styles.controlsGroup}>
+        <div className={styles.labelContainer}>
           <label>Toggle Resizable Pricebox</label>
         </div>
-        <div>
+        <div className={styles.buttonContainer}>
           <button onClick={() => handleResizablePricebox()}>Toggle</button>
         </div>
       </div>
-      
+
       {displayColorPicker && (
         <div className={styles.colorPicker}>
           <div className={styles.colorPickerWithButton}>
-            <SketchPicker
-              color={currentColor}
-              onChange={handleColorChange}
-            />
+            <SketchPicker color={currentColor} onChange={handleColorChange} />
             <button onClick={handleSetColor}>Set Color</button>
           </div>
         </div>

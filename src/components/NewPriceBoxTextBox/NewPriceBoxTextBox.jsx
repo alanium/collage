@@ -111,7 +111,6 @@ export default function NewPriceBoxTextBox({
           top: "0px",
           height: "auto",
           width: "auto",
-          left: initialPosition.left,
           fontSize: `${fontSize}px`,
           display: "flex",
           justifyContent: "center",

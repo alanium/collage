@@ -315,7 +315,7 @@ export default function FrozenAndBeverages(
           <NewPriceBoxEdit  
             oldPriceBox={
               selectedCardIndex > maxStaticIndex
-                ? dynamicColumn[selectedCardIndex - maxStaticIndex].text
+                ? dynamicColumn[selectedCardIndex - cardsInStatic].text
                     .priceBox
                 : staticColumns[selectedCardIndex].text.priceBox
             }
