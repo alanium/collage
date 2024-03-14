@@ -29,12 +29,13 @@ export default function NewPriceBox({ priceBox }) {
         key={index}
         className={styles.textBox} // Ensure unique keys for each child element
         style={{
-          transform: `translate(${textBox.position.x + 10}px, ${textBox.position.y}px)`,
+          transform: `translate(${textBox.position.x}px, ${textBox.position.y}px)`,
           width: `${textBox.size.width}px`, // Using dimensions from NewPriceBoxTextBox
           height: `${textBox.size.height}px`, // Using dimensions from NewPriceBoxTextBox
           fontSize: `${textBox.fontSize}px`,
           boxSizing: "border-box",
           touchAction: "none",
+          right: "5x",
           position: "absolute",
           display: "flex", // Added for centering text
           justifyContent: "center", // Added for centering text

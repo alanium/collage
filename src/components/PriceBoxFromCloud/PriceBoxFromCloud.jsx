@@ -15,7 +15,7 @@ export default function PriceBoxFromCloud({
   const [renderedPriceBoxes, setRenderedPriceBoxes] = useState([]);
   const [selectedPriceBox, setSelectedPriceBox] = useState(null);
   const calculatedCardIndex =
-    selectedCardIndex > cardsInStatic
+    selectedCardIndex >= cardsInStatic
       ? selectedCardIndex - cardsInStatic
       : selectedCardIndex;
 

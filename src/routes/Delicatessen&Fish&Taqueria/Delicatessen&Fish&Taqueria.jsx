@@ -719,7 +719,7 @@ export default function DelicatessenAndMore({
         {
           label: "Precise Crop Image 2",
           action: () => {
-            setImgIndex(2), setPopupState(14), setSelectedCardIndex(cardIndex);
+            setImgIndex(1), setPopupState(14), setSelectedCardIndex(cardIndex);
           },
         }
       );
