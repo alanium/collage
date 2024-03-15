@@ -58,7 +58,6 @@
   border-radius: 5px;
   background-color: red;
   box-sizing: border-box;
-  z-index: 1;
   font-weight: bold;
   text-align: center;
   color: white;
@@ -97,7 +96,6 @@
   z-index: 1;
   color: black;
   font-weight: bold;
-  text-align: center;
   word-wrap: break-word;
   white-space: pre-line;
   overflow: hidden;

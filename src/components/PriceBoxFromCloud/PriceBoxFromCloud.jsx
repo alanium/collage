@@ -1,4 +1,4 @@
-import { collection, getDocs } from "firebase/firestore";
+import { collection, deleteDoc, getDocs } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import styles from "./PriceBoxFromCloud.module.css";
 import { db } from "../../routes/root";
@@ -71,6 +71,33 @@ export default function PriceBoxFromCloud({
     }
   };
 
+  const handleDeleteTemplate = async (priceBoxName) => {
+    try {
+      const priceBoxesCollection = collection(db, "priceBoxes");
+      const querySnapshot = await getDocs(priceBoxesCollection);
+
+      console.log("Template Name:", priceBoxName);
+      console.log("Query Snapshot:", querySnapshot.docs);
+
+      const deletePromises = [];
+
+      querySnapshot.docs.forEach((doc) => {
+        const data = doc.data();
+        console.log("Document Data:", data);
+        if (doc.id === priceBoxName) {
+          deletePromises.push(deleteDoc(doc.ref));
+        }
+      });
+
+      await Promise.all(deletePromises);
+
+      console.log("Templates deleted successfully");
+      await downloadPriceBoxesFromFirestore(); // Wait for download to finish
+    } catch (error) {
+      console.error("Error deleting template:", error.message);
+    }
+  };
+
   useEffect(() => {
     downloadPriceBoxesFromFirestore();
   }, []);
@@ -95,6 +122,11 @@ export default function PriceBoxFromCloud({
                   <td>
                     <button onClick={() => handleConfirmSelection(priceBox)}>
                       Load
+                    </button>
+                    <button
+                      onClick={() => handleDeleteTemplate(priceBox)}
+                    >
+                      Delete
                     </button>
                   </td>
                 </tr>

@@ -101,7 +101,7 @@ export default function NewPriceBoxTextBox({
         key={textBoxIndex}
         className={styles.textBox}
         style={{
-          border: isDraggable ? "1px solid black" : "",
+          outline: isDraggable ? "1px solid black" : "",
           backgroundColor: isDraggable ? "rgba(255, 255, 255, 0.5)" : "",
           padding: "0px",
           boxSizing: "border-box",
@@ -120,7 +120,7 @@ export default function NewPriceBoxTextBox({
         <div
           style={{
             fontFamily: "'Futura PT Condensed Extra Bold', sans-serif",
-            transform: "scale(1.4, 1.5)",
+            transform: "scale(1.4, 1.8)",
             display: "flex",
             alignItems: "center",
           }}

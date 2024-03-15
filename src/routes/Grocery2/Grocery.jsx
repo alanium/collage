@@ -41,8 +41,8 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
       .fill()
       .map((_, index) => ({
         img: [
-          { src: "", zoom: 100, x: 0, y: 0 },
-          { src: "", zoom: 100, x: 0, y: 0 },
+          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
+          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
         ],
         text: {
           top: "",
@@ -54,7 +54,7 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
                 fontSize: 24,
                 draggable: true,
                 resizable: true,
-                position: { x: 10, y: 0 },
+                position: { x: 10, y: 0, },
                 size: { x: 50, y: 50 },
               },
             ],
@@ -130,8 +130,8 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
     for (let i = 0; i < Number(cardAmount); i++) {
       const card = {
         img: [
-          { src: "", zoom: 100, x: 0, y: 0 },
-          { src: "", zoom: 100, x: 0, y: 0 },
+          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
+          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
         ],
         text: {
           top: "",
@@ -588,11 +588,14 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
 
     const contextMenuItems = [
       {
-        label: "New Edit Price Box",
+        label: "PriceBox"
+      },
+      {
+        label: "Edit",
         action: () => setPopupState(12),
       },
       {
-        label: "Load Price Box From Cloud",
+        label: "Load",
         action: () => setPopupState(13),
       },
       { type: "divider" },
@@ -607,17 +610,23 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
 
     if (selectedColumn[index].img[1].src == "") {
       // If only one image uploaded, allow uploading the second image
-      contextMenuItems.push({
-        label: "Upload Image 2",
+      contextMenuItems.push({ type: "divider" },{
+        label: "Image 2"
+      },{
+        label: "Upload",
         action: () => {
           setImgIndex(1);
           setPopupState(2);
           setSelectedCardIndex(cardIndex);
         },
-      });
-    } else if (selectedColumn[index].img[1].src != "") {
-      contextMenuItems.push({
-        label: "Delete Image 2",
+      },
+     );
+    }
+    if (selectedColumn[index].img[1].src !== "") {
+      contextMenuItems.push({ type: "divider" },{
+        label: "Image 2"
+      },{
+        label: "Delete",
         action: async () => {
           await handleDeleteImage(cardIndex, 1);
           await uploadDataToFirebase(
@@ -627,11 +636,36 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
             dynamicColumn
           );
         },
-      });
+      },{
+        label: "Crop-Square",
+        action: () => {
+          setImgIndex(1);
+          setSelectedCardIndex(cardIndex);
+          handleCropImage(cardIndex, imgIndex);
+        },
+      },
+      {
+        label: "Auto-crop",
+        action: () => {
+          setImgIndex(1);
+          setSelectedCardIndex(cardIndex);
+          setPopupState(7);
+        },
+      },
+      {
+        label: "Freehand",
+        action: () => {
+          setImgIndex(1), setPopupState(14), setSelectedCardIndex(cardIndex);
+        },
+      },
+      )
     }
+    
     if (selectedColumn[index].img[0].src == "") {
-      contextMenuItems.push({
-        label: "Upload Image 1",
+      contextMenuItems.push({ type: "divider" },{
+        label: "Image 1"
+      },{
+        label: "Upload",
         action: () => {
           setImgIndex(0);
           setPopupState(2);
@@ -640,8 +674,10 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
       });
     }
     if (selectedColumn[index].img[0].src != "") {
-      contextMenuItems.push({
-        label: "Delete Image 1",
+      contextMenuItems.push({ type: "divider" },{
+        label: "Image 1"
+      },{
+        label: "Delete",
         action: async () => {
           await handleDeleteImage(cardIndex, 0);
           await uploadDataToFirebase(
@@ -651,59 +687,30 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
             dynamicColumn
           );
         },
+      },
+      {
+        label: "Crop-Square",
+        action: () => {
+          setImgIndex(0);
+          setSelectedCardIndex(cardIndex);
+          handleCropImage(cardIndex, imgIndex);
+        },
+      },
+      {
+        label: "Auto-crop",
+        action: () => {
+          setImgIndex(0), setPopupState(7);
+          setSelectedCardIndex(cardIndex);
+        },
+      },
+      {
+        label: "Freehand",
+        action: () => {
+          setImgIndex(0), setPopupState(14), setSelectedCardIndex(cardIndex);
+        },
       });
     }
-    if (selectedColumn[index].img[0].src != "") {
-      contextMenuItems.push(
-        {
-          label: "Crop Image 1",
-          action: () => {
-            setImgIndex(0);
-            setSelectedCardIndex(cardIndex);
-            handleCropImage(cardIndex, imgIndex);
-          },
-        },
-        {
-          label: "Delete Background of Image 1",
-          action: () => {
-            setImgIndex(0), setPopupState(7);
-            setSelectedCardIndex(cardIndex);
-          },
-        },
-        {
-          label: "Precise Crop Image 1",
-          action: () => {
-            setImgIndex(0), setPopupState(14), setSelectedCardIndex(cardIndex);
-          },
-        }
-      );
-    }
-    if (selectedColumn[index].img[1].src != "") {
-      contextMenuItems.push(
-        {
-          label: "Crop Image 2",
-          action: () => {
-            setImgIndex(1);
-            setSelectedCardIndex(cardIndex);
-            handleCropImage(cardIndex, imgIndex);
-          },
-        },
-        {
-          label: "Delete Background of Image 2",
-          action: () => {
-            setImgIndex(1);
-            setSelectedCardIndex(cardIndex);
-            setPopupState(7);
-          },
-        },
-        {
-          label: "Precise Crop Image 2",
-          action: () => {
-            setImgIndex(1), setPopupState(14), setSelectedCardIndex(cardIndex);
-          },
-        }
-      );
-    }
+
 
     const containerRect = contextMenuRef.current.getBoundingClientRect();
     setContextMenu({
@@ -798,6 +805,7 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
                     transform: `scale(${images.img[0].zoom / 100}) translate(${
                       images.img[0].x / (images.img[0].zoom / 100)
                     }px, ${images.img[0].y / (images.img[0].zoom / 100)}px)`,
+                    zIndex: images.img[0].zIndex
                   }}
                 />
               )}
@@ -815,6 +823,7 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
                     transform: `scale(${images.img[1].zoom / 100}) translate(${
                       images.img[1].x / (images.img[1].zoom / 100)
                     }px, ${images.img[1].y / (images.img[1].zoom / 100)}px)`,
+                    zIndex: images.img[1].zIndex
                   }}
                 />
               )}
@@ -881,7 +890,9 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
                   transform: `scale(${images[0].zoom / 100}) translate(${
                     images[0].x / (images[0].zoom / 100)
                   }px, ${images[0].y / (images[0].zoom / 100)}px)`,
+                  zIndex: images[0].zIndex
                 }}
+                onClick={(event) => handleCardClick(cardIndex, event)}
               />
             )}
 
@@ -898,7 +909,9 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
                   transform: `scale(${images[1].zoom / 100}) translate(${
                     images[1].x / (images[1].zoom / 100)
                   }px, ${images[1].y / (images[1].zoom / 100)}px)`,
+                  zIndex: images[1].zIndex
                 }}
+                onClick={(event) => handleCardClick(cardIndex, event)}
               />
             )}
 

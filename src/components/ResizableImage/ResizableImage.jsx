@@ -13,8 +13,8 @@ const ResizableImage = ({
 }) => {
   const imageRefs = useRef([useRef(null), useRef(null)]);
   const [imageCoords, setImageCoords] = useState([
-    { x: 0, y: 0, zoom: 100 },
-    { x: 0, y: 0, zoom: 100 },
+    { x: 0, y: 0, zoom: 100, zIndex: 1 },
+    { x: 0, y: 0, zoom: 100, zIndex: 1 },
   ]);
   const [tempImageCoords, setTempImageCoords] = useState([...imageCoords]); // Temporary state
   const [containerResolution, setContainerResolution] = useState({});
@@ -25,6 +25,7 @@ const ResizableImage = ({
       x: image.x,
       y: image.y,
       zoom: image.zoom || 100,
+      zIndex: image.zIndex  
     }));
     setImageCoords(initialImageCoords);
     setTempImageCoords(initialImageCoords); // Initialize temporary state
@@ -43,6 +44,7 @@ const ResizableImage = ({
                 x: tempImageCoords[index].x + dx,
                 y: tempImageCoords[index].y + dy,
                 zoom: tempImageCoords[index].zoom,
+                zIndex: tempImageCoords[index].zIndex,
               };
               setTempImageCoords((prevCoords) => {
                 const newCoordsArray = [...prevCoords];
@@ -65,6 +67,16 @@ const ResizableImage = ({
     });
   };
 
+  const handleZindexChange = (deltaIndex, index) => {
+    const newZIndex = tempImageCoords[index].zIndex + deltaIndex
+    setTempImageCoords((prevCoords) => {
+      const newCoords = [...prevCoords];
+      newCoords[index] = { ...newCoords[index], zIndex: newZIndex  };
+      return newCoords;
+    });
+    console.log(tempImageCoords)
+  }
+
   const handleConfirmClick = () => {
     setImageCoords(tempImageCoords); // Apply temporary state
     tempImageCoords.forEach((coords, index) => {
@@ -81,8 +93,10 @@ const ResizableImage = ({
         ...newSelectedColumn[cardIndex].img[imageIndex],
         ...properties,
       };
+      console.log(newSelectedColumn[cardIndex].img[imageIndex])
       return newSelectedColumn;
     });
+    
   };
 
   const renderContainerBox = () => {
@@ -105,14 +119,16 @@ const ResizableImage = ({
   return (
     <div className={styles.background}>
       <div className={styles.popupContainer}>
-        <div className={styles.zoomSliderContainer}>
+        <div className={styles.zoomSliderContainer} style={{top: "30%"}}>
           {selectedColumn[cardIndex].img.slice(0, 2).map((image, index) => (
             image.src != "" ? (
-              <div className={styles.zoomControlGrid}>
+              <div className={styles.zoomControlGrid} >
               <button onClick={() => handleZoomChange(5, index)}>Zoom +</button>
               <button onClick={() => handleZoomChange(-5, index)}>
                 Zoom -
               </button>
+              <button onClick={() => handleZindexChange(5, index)}>zIndex +</button>
+              <button onClick={() => handleZindexChange(-5, index)}>zIndex -</button>
             </div>
             ) : null
           ))}
@@ -122,6 +138,7 @@ const ResizableImage = ({
           style={{
             height: `${containerResolution.height}px`,
             width: `${containerResolution.width}px`,
+            position: "absolute"
           }}
         >
           <div className={styles.imagesContainer}>
@@ -139,6 +156,7 @@ const ResizableImage = ({
                     transform: `translate(${tempImageCoords[index].x}px, ${
                       tempImageCoords[index].y
                     }px) scale(${tempImageCoords[index].zoom / 100})`,
+                    zIndex: tempImageCoords[index].zIndex
                   }}
                 />
               ) : null

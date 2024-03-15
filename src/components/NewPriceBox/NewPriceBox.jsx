@@ -7,13 +7,13 @@ export default function NewPriceBox({ priceBox }) {
       {priceBox ? (
         <div
           style={{
-            border: `1.7px solid ${priceBox.border}`,
+            outline: `1.7px solid ${priceBox.border}`,
             backgroundColor: priceBox.backgroundColor,
             color: priceBox.textColor,
             width: `${priceBox.width}px`,
             height: `${priceBox.height}px`,
-            right: "2px",
-            bottom: "2px",
+            right: "5px",
+            bottom: "5px",
             boxSizing: "border-box",
             touchAction: "none",
             position: "absolute",
@@ -33,7 +33,7 @@ export default function NewPriceBox({ priceBox }) {
                 fontSize: `${textBox.fontSize}px`,
                 boxSizing: "border-box",
                 touchAction: "none",
-                right: "5x",
+                right: "5pxs",
                 position: "absolute",
                 display: "flex", // Added for centering text
                 justifyContent: "center", // Added for centering text
@@ -43,7 +43,7 @@ export default function NewPriceBox({ priceBox }) {
               <div
                 style={{
                   fontFamily: "'Futura PT Condensed Extra Bold', sans-serif",
-                  transform: "scale(1.4, 1.5)",
+                  transform: "scale(1.4, 1.8)",
                   display: "flex",
                   alignItems: "center",
                 }}
