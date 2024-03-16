@@ -37,9 +37,7 @@ const IrregularImageCropper = ({
   const imageSrc = selectedColumn[calculatedCardIndex].img[imgIndex].src;
 
   const renderContainerBox = () => {
-    const elementToCopy = document.getElementsByName(
-      `card-${selectedCardIndex}`
-    )[0];
+    const elementToCopy = document.getElementsByName(`card-${selectedCardIndex}`)[0];
     const computedStyles = window.getComputedStyle(elementToCopy);
     const stylesToCopy = {};
     for (let i = 0; i < computedStyles.length; i++) {
@@ -55,7 +53,7 @@ const IrregularImageCropper = ({
   
     // Calculate the canvas width and height considering the scaling factor
     let canvasWidth = containerWidth / 3; // Divided by 3 to adjust for scaling
-    let canvasHeight = containerHeight / 3; // Divided by 3 to adjust for scaling
+    let canvasHeight = containerWidth / aspectRatio / 3; // Divided by 3 to adjust for scaling
   
     if (canvasHeight > containerHeight) {
       canvasHeight = containerHeight / 3; // Divided by 3 to adjust for scaling
@@ -67,17 +65,28 @@ const IrregularImageCropper = ({
       height: canvasHeight,
     });
   };
+  
 
   useEffect(() => {
     renderContainerBox();
-    const canvas = canvasRef.current;
-    const context = canvas.getContext("2d");
-    const image = imageRef.current;
+  const canvas = canvasRef.current;
+  const context = canvas.getContext("2d");
+  const image = imageRef.current;
 
-    const draw = () => {
-      context.clearRect(0, 0, canvas.width, canvas.height);
-      context.drawImage(image, 0, 0, canvas.width, canvas.height);
-      if (points.length >= 1) {
+  const draw = () => {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Calcular el aspect ratio de la imagen original
+    const aspectRatio = image.width / image.height;
+
+    // Calcular las dimensiones del canvas recortado
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvasWidth / aspectRatio;
+
+    // Dibujar la imagen en el canvas con el tamaño ajustado
+    context.drawImage(image, 0, 0, canvasWidth, canvasHeight);
+
+    if (points.length >= 1) {
         context.save();
         context.beginPath();
         context.moveTo(points[0].x, points[0].y);
@@ -278,8 +287,8 @@ const IrregularImageCropper = ({
           />
           <canvas
             ref={canvasRef}
-            width={containerResolution.width * 3}
-            height={containerResolution.height * 3}
+            width={containerResolution.width * 5}
+            height={containerResolution.height * 5}
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
             onMouseMove={handleMouseMove}

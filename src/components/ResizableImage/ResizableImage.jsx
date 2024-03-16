@@ -9,7 +9,10 @@ const ResizableImage = ({
   setPopup,
   cardNumber,
   uploadDataToFirebase,
-  templateCollection, templateName, staticColumns, dynamicColumn
+  templateCollection,
+  templateName,
+  staticColumns,
+  dynamicColumn,
 }) => {
   const imageRefs = useRef([useRef(null), useRef(null)]);
   const [imageCoords, setImageCoords] = useState([
@@ -25,7 +28,7 @@ const ResizableImage = ({
       x: image.x,
       y: image.y,
       zoom: image.zoom || 100,
-      zIndex: image.zIndex  
+      zIndex: image.zIndex,
     }));
     setImageCoords(initialImageCoords);
     setTempImageCoords(initialImageCoords); // Initialize temporary state
@@ -68,22 +71,26 @@ const ResizableImage = ({
   };
 
   const handleZindexChange = (deltaIndex, index) => {
-    const newZIndex = tempImageCoords[index].zIndex + deltaIndex
+    const newZIndex = tempImageCoords[index].zIndex + deltaIndex;
     setTempImageCoords((prevCoords) => {
       const newCoords = [...prevCoords];
-      newCoords[index] = { ...newCoords[index], zIndex: newZIndex  };
+      newCoords[index] = { ...newCoords[index], zIndex: newZIndex };
       return newCoords;
     });
-    console.log(tempImageCoords)
-  }
+  };
 
   const handleConfirmClick = () => {
     setImageCoords(tempImageCoords); // Apply temporary state
     tempImageCoords.forEach((coords, index) => {
       updateImageProperties(cardIndex, index, coords); // Call updateImageProperties
     });
-    uploadDataToFirebase(templateCollection, templateName, staticColumns, dynamicColumn);
-   setPopup(0);
+    uploadDataToFirebase(
+      templateCollection,
+      templateName,
+      staticColumns,
+      dynamicColumn
+    );
+    setPopup(0);
   };
 
   const updateImageProperties = (cardIndex, imageIndex, properties) => {
@@ -93,10 +100,8 @@ const ResizableImage = ({
         ...newSelectedColumn[cardIndex].img[imageIndex],
         ...properties,
       };
-      console.log(newSelectedColumn[cardIndex].img[imageIndex])
       return newSelectedColumn;
     });
-    
   };
 
   const renderContainerBox = () => {
@@ -109,7 +114,6 @@ const ResizableImage = ({
       stylesToCopy[propertyName] = propertyValue;
     }
 
-    console.log(stylesToCopy.width, stylesToCopy.height);
     setContainerResolution({
       width: Number(stylesToCopy.width.replace("px", "")) + 4,
       height: Number(stylesToCopy.height.replace("px", "")) + 5,
@@ -119,59 +123,80 @@ const ResizableImage = ({
   return (
     <div className={styles.background}>
       <div className={styles.popupContainer}>
-        <div className={styles.zoomSliderContainer} style={{top: "30%"}}>
-          {selectedColumn[cardIndex].img.slice(0, 2).map((image, index) => (
-            image.src != "" ? (
-              <div className={styles.zoomControlGrid} >
-              <button onClick={() => handleZoomChange(5, index)}>Zoom +</button>
-              <button onClick={() => handleZoomChange(-5, index)}>
-                Zoom -
-              </button>
-              <button onClick={() => handleZindexChange(5, index)}>zIndex +</button>
-              <button onClick={() => handleZindexChange(-5, index)}>zIndex -</button>
-            </div>
+        <div className={styles.zoomSliderContainer}>
+          {selectedColumn[cardIndex].img.slice(0, 2).map((image, index) =>
+            image.src !== "" ? (
+              <div
+                className={styles.zoomControlGrid}
+                key={`image-controls-${index}`}
+              >
+                <label className={styles.imageLabel}>
+                  {index === 0 ? "Image 1" : "Image 2"}
+                </label>
+                <div className={styles.buttonGroup}>
+                  <button
+                    className={styles.zoomControlGridButtons}
+                    onClick={() => handleZoomChange(5, index)}
+                  >
+                    Zoom +
+                  </button>
+                  <button
+                    className={styles.zoomControlGridButtons}
+                    onClick={() => handleZoomChange(-5, index)}
+                  >
+                    Zoom -
+                  </button>
+                </div>
+
+                <div className={styles.buttonGroup}>
+                  <button
+                    className={styles.zoomControlGridButtons}
+                    onClick={() => handleZindexChange(5, index)}
+                  >
+                    ZIndex +
+                  </button>
+                  <button
+                    className={styles.zoomControlGridButtons}
+                    onClick={() => handleZindexChange(-5, index)}
+                  >
+                    ZIndex -
+                  </button>
+                </div>
+              </div>
             ) : null
-          ))}
+          )}
         </div>
-        <div
-          className={styles.sidebar}
+        <div className={styles.imageContainer}
           style={{
             height: `${containerResolution.height}px`,
             width: `${containerResolution.width}px`,
-            position: "absolute"
+            position: "absolute",
           }}
         >
-          <div className={styles.imagesContainer}>
+          <div className={styles.images}>
             {selectedColumn[cardIndex].img.slice(0, 2).map((image, index) =>
-              image.src != "" ? (
+              image.src !== "" ? (
                 <img
-                  id={`image-${cardIndex}-${index + 1}`}
+                  key={`image-${cardIndex}-${index + 1}`}
                   ref={imageRefs.current[index]}
                   className={styles.draggableImage}
                   src={image.src}
                   alt={`Image ${index + 1} - ${cardIndex}`}
                   style={{
-                    position: "absolute",
-
                     transform: `translate(${tempImageCoords[index].x}px, ${
                       tempImageCoords[index].y
                     }px) scale(${tempImageCoords[index].zoom / 100})`,
-                    zIndex: tempImageCoords[index].zIndex
+                    zIndex: tempImageCoords[index].zIndex,
                   }}
                 />
               ) : null
             )}
           </div>
-          <button className={styles.confirmButton} onClick={handleConfirmClick}>
-            OK
-          </button>
-          <button
-            className={styles.cancelButton}
-            onClick={() => setPopup(0)}
-          >
-            Back
-          </button>
         </div>
+      </div>
+      <div className={styles.bttnContainer}>
+        <button onClick={handleConfirmClick}>OK</button>
+        <button onClick={() => setPopup(0)}>Back</button>
       </div>
     </div>
   );
