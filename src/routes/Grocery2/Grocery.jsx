@@ -829,6 +829,9 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
               )}
 
               <NewPriceBox
+                cardIndex={
+                  cardIndex
+                }
                 priceBox={
                   dynamicColumn[cardIndex - cardsInStatic].text.priceBox
                 }
@@ -915,7 +918,7 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
               />
             )}
 
-            <NewPriceBox priceBox={staticColumns[cardIndex].text.priceBox} />
+            <NewPriceBox cardIndex={cardIndex} priceBox={staticColumns[cardIndex].text.priceBox} />
 
             <TopTextBox
               textBoxes={staticColumns}

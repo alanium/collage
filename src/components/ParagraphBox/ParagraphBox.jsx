@@ -3,7 +3,6 @@ import styles from "./TextBoxLeft.module.css";
 
 export default function TextBoxLeft({
   textBoxes,
-  setTextBoxes,
   cardIndex,
   setPopup,
   setSelectedTextBox,
@@ -15,6 +14,17 @@ export default function TextBoxLeft({
   const calculatedIndex = index;
 
   const [fontSize, setFontSize] = useState(14);
+  const [textBoxWidth, setTextBoxWidth] = useState(() => {
+    const textBoxElement = document.getElementById(`textBoxLeft-${cardIndex}`);
+    const currentTextBox = textBoxes[calculatedIndex];
+
+    const cardElement = document.getElementsByName(`card-${cardIndex}`)[0];
+    if (cardElement) {
+      const width = cardElement.offsetWidth;
+      const textBoxWidth = width - textBoxes[calculatedIndex].text.priceBox.width;
+
+      return textBoxWidth;
+  }});
 
   const handleLeftText = () => {
     setPopup(1);
@@ -36,6 +46,14 @@ export default function TextBoxLeft({
   useEffect(() => {
     const textBoxElement = document.getElementById(`textBoxLeft-${cardIndex}`);
     const currentTextBox = textBoxes[calculatedIndex];
+
+    const cardElement = document.getElementsByName(`card-${cardIndex}`)[0];
+    if (cardElement) {
+      const width = cardElement.offsetWidth;
+      const textBoxWidth = width - textBoxes[calculatedIndex].text.priceBox.width;
+
+      setTextBoxWidth(textBoxWidth); // Set the textBoxWidth state
+    }
 
     if (
       textBoxElement &&
@@ -63,21 +81,26 @@ export default function TextBoxLeft({
       }, "");
 
       // Check if the longest word is more than 10 characters
-      if (longestWord.length > 10) {
-        const boxWidth = textBoxElement.offsetWidth;
+      if (longestWord.length > 5) {
+        const boxWidth = textBoxWidth;
         const textWidth = getTextWidth(longestWord, fontSize);
 
-        // Check if the text width is greater than the box width
-        if (textWidth > boxWidth) {
+        if (textWidth > textBoxWidth) {
           // Calculate the new font size based on the ratio of the box width and text width
           const newFontSize = (fontSize * boxWidth) / textWidth;
+  
+          console.log("box width ", boxWidth, "text width ", textWidth)
           setFontSize(newFontSize);
         }
+        
       }
+
       if (textHeight > boxHeight) {
         const newFontSize = (fontSize * boxHeight) / textHeight;
         setFontSize(newFontSize);
+       
       }
+      
     }
   }, [textBoxes[calculatedIndex].text.left, cardIndex, fontSize]);
 
@@ -98,15 +121,11 @@ export default function TextBoxLeft({
       style={{
         fontSize: `${fontSize}px`,
         width: `${
-          textBoxes[calculatedIndex].text.priceBoxType == 2 ? "65px" : "50%"
-        }`,
+          textBoxWidth
+        }px`,
       }}
     >
-      <div
-        dangerouslySetInnerHTML={{
-          __html: textBoxes[calculatedIndex].text.left,
-        }}
-      />
+      {textBoxes[calculatedIndex].text.left}
     </div>
   );
 }

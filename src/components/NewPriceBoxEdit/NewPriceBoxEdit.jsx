@@ -187,7 +187,7 @@ export default function NewPriceBoxEdit({
 
     setSelectedColumn(newColumn);
 
-    uploadDataToFirebase;
+    uploadDataToFirebase();
     setPopup(0);
   };
 

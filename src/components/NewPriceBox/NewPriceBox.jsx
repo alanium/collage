@@ -1,13 +1,13 @@
 import React from "react";
 import styles from "./NewPriceBox.module.css";
 
-export default function NewPriceBox({ priceBox }) {
+export default function NewPriceBox({ cardIndex, priceBox }) {
   return (
     <>
       {priceBox ? (
         <div
           style={{
-            outline: `1.7px solid ${priceBox.border}`,
+            border: `1.7px solid ${priceBox.border}`,
             backgroundColor: priceBox.backgroundColor,
             color: priceBox.textColor,
             width: `${priceBox.width}px`,
@@ -21,6 +21,7 @@ export default function NewPriceBox({ priceBox }) {
             overflow: "hidden",
             zIndex: "10",
           }}
+          name={`pricebox_${cardIndex}`}
         >
           {priceBox.text.map((textBox, index) => (
             <div
@@ -39,6 +40,7 @@ export default function NewPriceBox({ priceBox }) {
                 justifyContent: "center", // Added for centering text
                 alignItems: "center", // Added for centering text
               }}
+
             >
               <div
                 style={{
