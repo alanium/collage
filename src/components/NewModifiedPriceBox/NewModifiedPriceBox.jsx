@@ -47,7 +47,7 @@ export default function NewModifiedPriceBox({
     <div
       ref={boxRef}
       style={{
-        outline: `1.7px solid ${priceBox.border}`,
+        border: `1.7px solid ${priceBox.border}`,
         backgroundColor: priceBox.backgroundColor,
         color: priceBox.textColor, // Initial height
         // To show resize cursor

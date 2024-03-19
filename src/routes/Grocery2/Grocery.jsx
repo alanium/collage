@@ -54,7 +54,7 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
                 fontSize: 24,
                 draggable: true,
                 resizable: true,
-                position: { x: 10, y: 0, },
+                position: { x: 10, y: 0 },
                 size: { x: 50, y: 50 },
               },
             ],
@@ -342,8 +342,7 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
           <NewPriceBoxEdit
             oldPriceBox={
               selectedCardIndex > maxStaticIndex
-                ? dynamicColumn[selectedCardIndex - cardsInStatic].text
-                    .priceBox
+                ? dynamicColumn[selectedCardIndex - cardsInStatic].text.priceBox
                 : staticColumns[selectedCardIndex].text.priceBox
             }
             setSelectedColumn={
@@ -357,12 +356,14 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
             selectedCardIndex={selectedCardIndex}
             cardsInStatic={cardsInStatic}
             setPopup={setPopupState}
-            uploadDataToFirebase={() => uploadDataToFirebase(
-              "Grocery",
-              templateName,
-              staticColumns,
-              dynamicColumn
-            )}
+            uploadDataToFirebase={() =>
+              uploadDataToFirebase(
+                "Grocery",
+                templateName,
+                staticColumns,
+                dynamicColumn
+              )
+            }
           />
         );
       case 13:
@@ -379,12 +380,14 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
             }
             selectedCardIndex={selectedCardIndex}
             cardsInStatic={cardsInStatic}
-            uploadDataToFirebase={() => uploadDataToFirebase(
-              "Grocery",
-              templateName,
-              staticColumns,
-              dynamicColumn
-            )}
+            uploadDataToFirebase={() =>
+              uploadDataToFirebase(
+                "Grocery",
+                templateName,
+                staticColumns,
+                dynamicColumn
+              )
+            }
           />
         );
       case 14:
@@ -402,12 +405,14 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
             selectedCardIndex={selectedCardIndex}
             cardsInStatic={cardsInStatic}
             imgIndex={imgIndex}
-            uploadDataToFirebase={() => uploadDataToFirebase(
-              "Grocery",
-              templateName,
-              staticColumns,
-              dynamicColumn
-            )}
+            uploadDataToFirebase={() =>
+              uploadDataToFirebase(
+                "Grocery",
+                templateName,
+                staticColumns,
+                dynamicColumn
+              )
+            }
             imageFolder={"Grocery"}
           />
         );
@@ -588,7 +593,7 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
 
     const contextMenuItems = [
       {
-        label: "PriceBox"
+        label: "PriceBox",
       },
       {
         label: "Edit",
@@ -608,109 +613,67 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
       },
     ];
 
-    if (selectedColumn[index].img[1].src == "") {
-      // If only one image uploaded, allow uploading the second image
-      contextMenuItems.push({ type: "divider" },{
-        label: "Image 2"
-      },{
-        label: "Upload",
-        action: () => {
-          setImgIndex(1);
-          setPopupState(2);
-          setSelectedCardIndex(cardIndex);
-        },
-      },
-     );
-    }
-    if (selectedColumn[index].img[1].src !== "") {
-      contextMenuItems.push({ type: "divider" },{
-        label: "Image 2"
-      },{
-        label: "Delete",
-        action: async () => {
-          await handleDeleteImage(cardIndex, 1);
-          await uploadDataToFirebase(
-            "Grocery",
-            templateName,
-            staticColumns,
-            dynamicColumn
-          );
-        },
-      },{
-        label: "Crop-Square",
-        action: () => {
-          setImgIndex(1);
-          setSelectedCardIndex(cardIndex);
-          handleCropImage(cardIndex, imgIndex);
-        },
-      },
-      {
-        label: "Auto-crop",
-        action: () => {
-          setImgIndex(1);
-          setSelectedCardIndex(cardIndex);
-          setPopupState(7);
-        },
-      },
-      {
-        label: "Freehand",
-        action: () => {
-          setImgIndex(1), setPopupState(14), setSelectedCardIndex(cardIndex);
-        },
-      },
-      )
-    }
-    
-    if (selectedColumn[index].img[0].src == "") {
-      contextMenuItems.push({ type: "divider" },{
-        label: "Image 1"
-      },{
-        label: "Upload",
-        action: () => {
-          setImgIndex(0);
-          setPopupState(2);
-          setSelectedCardIndex(cardIndex);
-        },
-      });
-    }
-    if (selectedColumn[index].img[0].src != "") {
-      contextMenuItems.push({ type: "divider" },{
-        label: "Image 1"
-      },{
-        label: "Delete",
-        action: async () => {
-          await handleDeleteImage(cardIndex, 0);
-          await uploadDataToFirebase(
-            "Grocery",
-            templateName,
-            staticColumns,
-            dynamicColumn
-          );
-        },
-      },
-      {
-        label: "Crop-Square",
-        action: () => {
-          setImgIndex(0);
-          setSelectedCardIndex(cardIndex);
-          handleCropImage(cardIndex, imgIndex);
-        },
-      },
-      {
-        label: "Auto-crop",
-        action: () => {
-          setImgIndex(0), setPopupState(7);
-          setSelectedCardIndex(cardIndex);
-        },
-      },
-      {
-        label: "Freehand",
-        action: () => {
-          setImgIndex(0), setPopupState(14), setSelectedCardIndex(cardIndex);
-        },
-      });
-    }
-
+    selectedColumn[index].img.map((img, index) => {
+      if (img.src == "") {
+        contextMenuItems.push(
+          { type: "divider" },
+          {
+            label: "Image " + (index + 1),
+          },
+          {
+            label: "Upload",
+            action: () => {
+              setImgIndex(index);
+              setPopupState(2);
+              setSelectedCardIndex(cardIndex);
+            },
+          }
+        );
+      } else {
+        contextMenuItems.push(
+          { type: "divider" },
+          {
+            label: "Image " + (index + 1),
+          },
+          {
+            label: "Delete",
+            action: async () => {
+              await handleDeleteImage(cardIndex, index);
+              await uploadDataToFirebase(
+                "Grocery",
+                templateName,
+                staticColumns,
+                dynamicColumn
+              );
+            },
+          },
+          {
+            label: "Crop-Square",
+            action: () => {
+              setImgIndex(index);
+              setSelectedCardIndex(cardIndex);
+              handleCropImage(cardIndex, imgIndex);
+            },
+          },
+          {
+            label: "Auto-crop",
+            action: () => {
+              setImgIndex(index);
+              setSelectedCardIndex(cardIndex);
+              setPopupState(7);
+            },
+          },
+          {
+            label: "Freehand",
+            action: () => {
+              setImgIndex(index),
+                setPopupState(14),
+                setSelectedCardIndex(cardIndex);
+            },
+          }
+        );
+      }
+    });
 
     const containerRect = contextMenuRef.current.getBoundingClientRect();
     setContextMenu({
@@ -722,7 +685,6 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
 
   const handleCardClick = (cardIndex, event) => {
     // Check if the click event target is not the card element
-
     setImgIndex(0);
 
     const auxIndex =
@@ -731,11 +693,19 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
     if (!event.target.classList.contains(styles.card)) {
       return;
     }
+
     const image = (cardIndex > maxStaticIndex ? dynamicColumn : staticColumns)[
       auxIndex
     ];
 
-    if (image.img[0].src === "" && image.img[1].src === "") {
+    const hasImages = image.img.some(
+      (img) =>
+        img.src !== "" ||
+        img.src !==
+          "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+    ); // Check if any image src is not empty
+
+    if (!hasImages) {
       setPopupState(2);
       setSelectedCardIndex(cardIndex);
       console.log(selectedCardIndex);
@@ -792,46 +762,25 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
               key={cardIndex}
               onClick={(event) => handleCardClick(cardIndex, event)}
             >
-              {images.img[0] && ( // Check if img[0] exists before rendering
+              {images.img.map((img, index) => (
                 <img
-                  name={`image-${cardIndex}-0`}
-                  src={
-                    images.img[0].src
-                      ? images.img[0].src
-                      : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-                  }
+                  name={`image-${cardIndex}-${index}`}
+                  src={images.img[index] ? images.img[index].src : ""}
                   className={styles.uploadedImage}
                   style={{
-                    transform: `scale(${images.img[0].zoom / 100}) translate(${
-                      images.img[0].x / (images.img[0].zoom / 100)
-                    }px, ${images.img[0].y / (images.img[0].zoom / 100)}px)`,
-                    zIndex: images.img[0].zIndex
+                    transform: `scale(${
+                      images.img[index].zoom / 100
+                    }) translate(${
+                      images.img[index].x / (images.img[index].zoom / 100)
+                    }px, ${
+                      images.img[index].y / (images.img[index].zoom / 100)
+                    }px)`,
+                    zIndex: images.img[index].zIndex,
                   }}
                 />
-              )}
-
-              {images.img[1] && ( // Check if img[1] exists before rendering
-                <img
-                  name={`image-${cardIndex}-1`}
-                  src={
-                    images.img[1]
-                      ? images.img[1].src
-                      : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-                  }
-                  className={styles.uploadedImage}
-                  style={{
-                    transform: `scale(${images.img[1].zoom / 100}) translate(${
-                      images.img[1].x / (images.img[1].zoom / 100)
-                    }px, ${images.img[1].y / (images.img[1].zoom / 100)}px)`,
-                    zIndex: images.img[1].zIndex
-                  }}
-                />
-              )}
-
+              ))}
               <NewPriceBox
-                cardIndex={
-                  cardIndex
-                }
+                cardIndex={cardIndex}
                 priceBox={
                   dynamicColumn[cardIndex - cardsInStatic].text.priceBox
                 }
@@ -880,45 +829,24 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
             key={cardIndex}
             onClick={(event) => handleCardClick(cardIndex, event)}
           >
-            {images[0] && ( // Check if img[0] exists before rendering
+            {images.map((img, index) => (
               <img
-                name={`image-${cardIndex}-0`}
-                src={
-                  images[0].src
-                    ? images[0].src
-                    : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-                }
+                name={`image-${cardIndex}-${index}`}
+                src={img ? img.src : ""}
                 className={styles.uploadedImage}
                 style={{
-                  transform: `scale(${images[0].zoom / 100}) translate(${
-                    images[0].x / (images[0].zoom / 100)
-                  }px, ${images[0].y / (images[0].zoom / 100)}px)`,
-                  zIndex: images[0].zIndex
+                  transform: `scale(${img.zoom / 100}) translate(${
+                    img.x / (img.zoom / 100)
+                  }px, ${img.y / (img.zoom / 100)}px)`,
+                  zIndex: img.zIndex,
                 }}
-                onClick={(event) => handleCardClick(cardIndex, event)}
               />
-            )}
+            ))}
 
-            {images[1] && ( // Check if img[1] exists before rendering
-              <img
-                name={`image-${cardIndex}-1`}
-                src={
-                  images[1]
-                    ? images[1].src
-                    : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-                }
-                className={styles.uploadedImage}
-                style={{
-                  transform: `scale(${images[1].zoom / 100}) translate(${
-                    images[1].x / (images[1].zoom / 100)
-                  }px, ${images[1].y / (images[1].zoom / 100)}px)`,
-                  zIndex: images[1].zIndex
-                }}
-                onClick={(event) => handleCardClick(cardIndex, event)}
-              />
-            )}
-
-            <NewPriceBox cardIndex={cardIndex} priceBox={staticColumns[cardIndex].text.priceBox} />
+            <NewPriceBox
+              cardIndex={cardIndex}
+              priceBox={staticColumns[cardIndex].text.priceBox}
+            />
 
             <TopTextBox
               textBoxes={staticColumns}

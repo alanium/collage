@@ -48,6 +48,7 @@
   overflow: hidden;
   margin: 2px;
   padding: 3px;
+  z-index: 1000;
 }
 .overlay {
   position: absolute;
