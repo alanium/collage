@@ -303,11 +303,10 @@ export default function MeatAndSeafood({
         );
       case 12:
         return (
-          <NewPriceBoxEdit  
+          <NewPriceBoxEdit
             oldPriceBox={
               selectedCardIndex > maxStaticIndex
-                ? dynamicColumn[selectedCardIndex - cardsInStatic].text
-                    .priceBox
+                ? dynamicColumn[selectedCardIndex - cardsInStatic].text.priceBox
                 : staticColumns[selectedCardIndex].text.priceBox
             }
             setSelectedColumn={
@@ -607,15 +606,18 @@ export default function MeatAndSeafood({
       cardIndex > maxStaticIndex ? dynamicColumn : staticColumns;
 
     const index =
-      cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
+      cardIndex > maxStaticIndex ? cardIndex - maxStaticIndex - 1 : cardIndex;
 
     const contextMenuItems = [
       {
-        label: "New Edit Price Box",
+        label: "PriceBox",
+      },
+      {
+        label: "Edit",
         action: () => setPopupState(12),
       },
       {
-        label: "Load Price Box From Cloud",
+        label: "Load",
         action: () => setPopupState(13),
       },
       { type: "divider" },
@@ -630,83 +632,41 @@ export default function MeatAndSeafood({
 
     if (selectedColumn[index].img[1].src == "") {
       // If only one image uploaded, allow uploading the second image
-      contextMenuItems.push({
-        label: "Upload Image 2",
-        action: () => {
-          setImgIndex(1);
-          setPopupState(2);
-          setSelectedCardIndex(cardIndex);
-        },
-      });
-    } else if (selectedColumn[index].img[1].src != "") {
-      // If both images uploaded, allow editing and deleting the second image
-      contextMenuItems.push({
-        label: "Delete 2",
-        action: async () => {
-          await handleDeleteImage(cardIndex, 1);
-          await uploadDataToFirebase(
-            templateCollection,
-            templateName,
-            staticColumns,
-            dynamicColumn
-          );
-        },
-      });
-    }
-    if (selectedColumn[index].img[0].src == "") {
-      contextMenuItems.push({
-        label: "Upload 1",
-        action: () => {
-          setImgIndex(0);
-          setPopupState(2);
-          setSelectedCardIndex(cardIndex);
-        },
-      });
-    }
-    if (selectedColumn[index].img[0].src != "") {
-      contextMenuItems.push({
-        label: "Delete 1",
-        action: async () => {
-          await handleDeleteImage(cardIndex, 0);
-          await uploadDataToFirebase(
-            templateCollection,
-            templateName,
-            staticColumns,
-            dynamicColumn
-          );
-        },
-      });
-    }
-    if (selectedColumn[index].img[0].src != "") {
       contextMenuItems.push(
+        { type: "divider" },
         {
-          label: "crop image 1",
-          action: () => {
-            setImgIndex(0);
-            setSelectedCardIndex(cardIndex);
-            handleCropImage(cardIndex, imgIndex);
-          },
+          label: "Image 2",
         },
         {
-          label: "Delete Background of Image 1",
+          label: "Upload",
           action: () => {
-            setImgIndex(0);
-            setPopupState(7);
+            setImgIndex(1);
+            setPopupState(2);
             setSelectedCardIndex(cardIndex);
-          },
-        },
-        {
-          label: "Precise Crop Image 1",
-          action: () => {
-            setImgIndex(0), setPopupState(14), setSelectedCardIndex(cardIndex);
           },
         }
       );
     }
-    if (selectedColumn[index].img[1].src != "") {
+    if (selectedColumn[index].img[1].src !== "") {
       contextMenuItems.push(
+        { type: "divider" },
         {
-          label: "crop image 2",
+          label: "Image 2",
+        },
+        {
+          label: "Delete",
+          action: async () => {
+            await handleDeleteImage(cardIndex, 1);
+            await uploadDataToFirebase(
+              templateCollection,
+              templateName,
+              staticColumns,
+              dynamicColumn
+            );
+          },
+        },
+        {
+          label: "Crop-Square",
           action: () => {
             setImgIndex(1);
             setSelectedCardIndex(cardIndex);
@@ -714,7 +674,7 @@ export default function MeatAndSeafood({
           },
         },
         {
-          label: "Delete Background of Image 2",
+          label: "Auto-crop",
           action: () => {
             setImgIndex(1);
             setSelectedCardIndex(cardIndex);
@@ -722,9 +682,67 @@ export default function MeatAndSeafood({
           },
         },
         {
-          label: "Precise Crop Image 2",
+          label: "Freehand",
           action: () => {
             setImgIndex(1), setPopupState(14), setSelectedCardIndex(cardIndex);
+          },
+        }
+      );
+    }
+
+    if (selectedColumn[index].img[0].src == "") {
+      contextMenuItems.push(
+        { type: "divider" },
+        {
+          label: "Image 1",
+        },
+        {
+          label: "Upload",
+          action: () => {
+            setImgIndex(0);
+            setPopupState(2);
+            setSelectedCardIndex(cardIndex);
+          },
+        }
+      );
+    }
+    if (selectedColumn[index].img[0].src != "") {
+      contextMenuItems.push(
+        { type: "divider" },
+        {
+          label: "Image 1",
+        },
+        {
+          label: "Delete",
+          action: async () => {
+            await handleDeleteImage(cardIndex, 0);
+            await uploadDataToFirebase(
+              templateCollection,
+              templateName,
+              staticColumns,
+              dynamicColumn
+            );
+          },
+        },
+        {
+          label: "Crop-Square",
+          action: () => {
+            setImgIndex(0);
+            setSelectedCardIndex(cardIndex);
+            handleCropImage(cardIndex, imgIndex);
+          },
+        },
+        {
+          label: "Auto-crop",
+          action: () => {
+            setImgIndex(0), setPopupState(7);
+            setSelectedCardIndex(cardIndex);
+          },
+        },
+        {
+          label: "Freehand",
+          action: () => {
+            setImgIndex(0), setPopupState(14), setSelectedCardIndex(cardIndex);
           },
         }
       );
@@ -906,7 +924,10 @@ export default function MeatAndSeafood({
                 }}
               />
             )}
-            <NewPriceBox priceBox={staticColumns[cardIndex].text.priceBox} />
+            <NewPriceBox
+              cardIndex={cardIndex}
+              priceBox={staticColumns[cardIndex].text.priceBox}
+            />
 
             <TopTextBox
               textBoxes={staticColumns}
@@ -992,8 +1013,11 @@ export default function MeatAndSeafood({
                 }}
               />
             )}
-            
-            <NewPriceBox priceBox={staticColumns[cardIndex].text.priceBox} />
+
+            <NewPriceBox
+              cardIndex={cardIndex}
+              priceBox={staticColumns[cardIndex].text.priceBox}
+            />
 
             <TopTextBox
               textBoxes={staticColumns}

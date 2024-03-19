@@ -39,7 +39,7 @@ export default function DelicatessenAndMore({
 }) {
   const cardsInStatic = 26;
   const maxStaticIndex = cardsInStatic - 1;
-  
+
   const [staticColumns, setStaticColumns] = useState(
     Array(cardsInStatic)
       .fill()
@@ -86,23 +86,18 @@ export default function DelicatessenAndMore({
   const [templateName, setTemplateName] = useState(templatesQuerySnapshot[0]);
   const [popupState, setPopupState] = useState(3);
 
-  const maintenance = false
+  const maintenance = false;
   const templateCollection = "Deli&Taqueria";
   const storage = getStorage();
   const imageFolder =
- ( selectedCardIndex < 12 || selectedCardIndex > maxStaticIndex
-    ? "deli"
-    : (selectedCardIndex > 11 && selectedCardIndex < 20
-    ? "seafood"
-    : "taqueria"));
-  
-  const imagesRef = ref(
-    storage,
-    `images/${
-      imageFolder
-    }`
-  );
-  
+    selectedCardIndex < 12 || selectedCardIndex > maxStaticIndex
+      ? "deli"
+      : selectedCardIndex > 11 && selectedCardIndex < 20
+      ? "seafood"
+      : "taqueria";
+
+  const imagesRef = ref(storage, `images/${imageFolder}`);
+
   const navigate = useNavigate();
   const contextMenuRef = useRef(null);
 
@@ -200,10 +195,12 @@ export default function DelicatessenAndMore({
     }
     setDynamicColumn(cards);
     () => {
-      uploadDataToFirebase(templateCollection,
+      uploadDataToFirebase(
+        templateCollection,
         templateName,
         staticColumns,
-        dynamicColumn,);
+        dynamicColumn
+      );
     };
   };
 
@@ -371,13 +368,12 @@ export default function DelicatessenAndMore({
             uploadDataToFirebase={uploadDataToFirebase}
           />
         );
-        case 12:
+      case 12:
         return (
-          <NewPriceBoxEdit  
+          <NewPriceBoxEdit
             oldPriceBox={
               selectedCardIndex > maxStaticIndex
-                ? dynamicColumn[selectedCardIndex - cardsInStatic].text
-                    .priceBox
+                ? dynamicColumn[selectedCardIndex - cardsInStatic].text.priceBox
                 : staticColumns[selectedCardIndex].text.priceBox
             }
             setSelectedColumn={
@@ -602,15 +598,18 @@ export default function DelicatessenAndMore({
       cardIndex > maxStaticIndex ? dynamicColumn : staticColumns;
 
     const index =
-      cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
+      cardIndex > maxStaticIndex ? cardIndex - maxStaticIndex - 1 : cardIndex;
 
     const contextMenuItems = [
       {
-        label: "New Edit Price Box",
+        label: "PriceBox"
+      },
+      {
+        label: "Edit",
         action: () => setPopupState(12),
       },
       {
-        label: "Load Price Box From Cloud",
+        label: "Load",
         action: () => setPopupState(13),
       },
       { type: "divider" },
@@ -625,18 +624,23 @@ export default function DelicatessenAndMore({
 
     if (selectedColumn[index].img[1].src == "") {
       // If only one image uploaded, allow uploading the second image
-      contextMenuItems.push({
-        label: "Upload Image 2",
+      contextMenuItems.push({ type: "divider" },{
+        label: "Image 2"
+      },{
+        label: "Upload",
         action: () => {
           setImgIndex(1);
           setPopupState(2);
           setSelectedCardIndex(cardIndex);
         },
-      });
-    } else if (selectedColumn[index].img[1].src != "") {
-      // If both images uploaded, allow editing and deleting the second image
-      contextMenuItems.push({
-        label: "Delete 2",
+      },
+     );
+    }
+    if (selectedColumn[index].img[1].src !== "") {
+      contextMenuItems.push({ type: "divider" },{
+        label: "Image 2"
+      },{
+        label: "Delete",
         action: async () => {
           await handleDeleteImage(cardIndex, 1);
           await uploadDataToFirebase(
@@ -646,11 +650,36 @@ export default function DelicatessenAndMore({
             dynamicColumn
           );
         },
-      });
+      },{
+        label: "Crop-Square",
+        action: () => {
+          setImgIndex(1);
+          setSelectedCardIndex(cardIndex);
+          handleCropImage(cardIndex, imgIndex);
+        },
+      },
+      {
+        label: "Auto-crop",
+        action: () => {
+          setImgIndex(1);
+          setSelectedCardIndex(cardIndex);
+          setPopupState(7);
+        },
+      },
+      {
+        label: "Freehand",
+        action: () => {
+          setImgIndex(1), setPopupState(14), setSelectedCardIndex(cardIndex);
+        },
+      },
+      )
     }
+    
     if (selectedColumn[index].img[0].src == "") {
-      contextMenuItems.push({
-        label: "Upload 1",
+      contextMenuItems.push({ type: "divider" },{
+        label: "Image 1"
+      },{
+        label: "Upload",
         action: () => {
           setImgIndex(0);
           setPopupState(2);
@@ -659,8 +688,10 @@ export default function DelicatessenAndMore({
       });
     }
     if (selectedColumn[index].img[0].src != "") {
-      contextMenuItems.push({
-        label: "Delete 1",
+      contextMenuItems.push({ type: "divider" },{
+        label: "Image 1"
+      },{
+        label: "Delete",
         action: async () => {
           await handleDeleteImage(cardIndex, 0);
           await uploadDataToFirebase(
@@ -670,60 +701,30 @@ export default function DelicatessenAndMore({
             dynamicColumn
           );
         },
+      },
+      {
+        label: "Crop-Square",
+        action: () => {
+          setImgIndex(0);
+          setSelectedCardIndex(cardIndex);
+          handleCropImage(cardIndex, imgIndex);
+        },
+      },
+      {
+        label: "Auto-crop",
+        action: () => {
+          setImgIndex(0), setPopupState(7);
+          setSelectedCardIndex(cardIndex);
+        },
+      },
+      {
+        label: "Freehand",
+        action: () => {
+          setImgIndex(0), setPopupState(14), setSelectedCardIndex(cardIndex);
+        },
       });
     }
-    if (selectedColumn[index].img[0].src != "") {
-      contextMenuItems.push(
-        {
-          label: "crop image 1",
-          action: () => {
-            setImgIndex(0);
-            setSelectedCardIndex(cardIndex);
-            handleCropImage(cardIndex, imgIndex);
-          },
-        },
-        {
-          label: "Delete Background of Image 1",
-          action: () => {
-            setImgIndex(0);
-            setPopupState(7);
-            setSelectedCardIndex(cardIndex);
-          },
-        },
-        {
-          label: "Precise Crop Image 1",
-          action: () => {
-            setImgIndex(0), setPopupState(14), setSelectedCardIndex(cardIndex);
-          },
-        }
-      );
-    }
-    if (selectedColumn[index].img[1].src != "") {
-      contextMenuItems.push(
-        {
-          label: "crop image 2",
-          action: () => {
-            setImgIndex(1);
-            setSelectedCardIndex(cardIndex);
-            handleCropImage(cardIndex, imgIndex);
-          },
-        },
-        {
-          label: "Delete Background of Image 2",
-          action: () => {
-            setImgIndex(1);
-            setSelectedCardIndex(cardIndex);
-            setPopupState(7);
-          },
-        },
-        {
-          label: "Precise Crop Image 2",
-          action: () => {
-            setImgIndex(1), setPopupState(14), setSelectedCardIndex(cardIndex);
-          },
-        }
-      );
-    }
+
 
     const containerRect = contextMenuRef.current.getBoundingClientRect();
     setContextMenu({
@@ -748,7 +749,7 @@ export default function DelicatessenAndMore({
     ];
 
     if (image.img[0].src === "" && image.img[1].src === "") {
-      setPopupState(2)
+      setPopupState(2);
       setSelectedCardIndex(cardIndex);
     } else {
       handleContextMenu(event, cardIndex, image);
@@ -832,6 +833,7 @@ export default function DelicatessenAndMore({
                 />
               )}
               <NewPriceBox
+                cardIndex={cardIndex}
                 priceBox={dynamicColumn[calculatedCardIndex].text.priceBox}
               />
               <TextBoxLeft
@@ -901,7 +903,10 @@ export default function DelicatessenAndMore({
                 }}
               />
             )}
-             <NewPriceBox priceBox={staticColumns[cardIndex].text.priceBox} />
+            <NewPriceBox
+              cardIndex={cardIndex}
+              priceBox={staticColumns[cardIndex].text.priceBox}
+            />
 
             <TopTextBox
               textBoxes={staticColumns}
@@ -987,8 +992,10 @@ export default function DelicatessenAndMore({
                 }}
               />
             )}
-             <NewPriceBox priceBox={staticColumns[cardIndex].text.priceBox} />
-
+            <NewPriceBox
+              cardIndex={cardIndex}
+              priceBox={staticColumns[cardIndex].text.priceBox}
+            />
 
             <TopTextBox
               textBoxes={staticColumns}
@@ -1064,8 +1071,10 @@ export default function DelicatessenAndMore({
               }}
             />
           )}
-          <NewPriceBox priceBox={staticColumns[25].text.priceBox} />
-
+          <NewPriceBox
+            cardIndex={cardIndex}
+            priceBox={staticColumns[25].text.priceBox}
+          />
 
           <TopTextBox
             textBoxes={staticColumns}
@@ -1144,7 +1153,10 @@ export default function DelicatessenAndMore({
                 }}
               />
             )}
-             <NewPriceBox priceBox={staticColumns[cardIndex].text.priceBox} />
+            <NewPriceBox
+              cardIndex={cardIndex}
+              priceBox={staticColumns[cardIndex].text.priceBox}
+            />
 
             <TopTextBox
               textBoxes={staticColumns}
@@ -1183,61 +1195,62 @@ export default function DelicatessenAndMore({
 
   return (
     <div className={styles.body}>
-      { !maintenance ? (
-          <>
-     {renderPopup(popupState)}
+      {!maintenance ? (
+        <>
+          {renderPopup(popupState)}
           <Sidebar
             handleConvertToPDF={handleConvertToPDF}
             setPopup={setPopupState}
           />
-      <div
-        id="magazineContainer"
-        style={{ display: "grid" }}
-        className={styles.containerDivBorder}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-start",
-            height: "129%",
-          }}
-        >
-          <div style={{ width: "80%" }}>
-            <div className={styles.containerDiv} ref={contextMenuRef}>
-              <RenderCards />
-              <div className={styles.overlay}>DELICATESSEN</div>
-              {contextMenu && (
-                <ContextMenu
-                  x={contextMenu.x}
-                  y={contextMenu.y}
-                  items={contextMenu.items}
-                  onClose={() => setContextMenu(null)}
-                />
-              )}
-            </div>
+          <div
+            id="magazineContainer"
+            style={{ display: "grid" }}
+            className={styles.containerDivBorder}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-start",
+                height: "129%",
+              }}
+            >
+              <div style={{ width: "80%" }}>
+                <div className={styles.containerDiv} ref={contextMenuRef}>
+                  <RenderCards />
+                  <div className={styles.overlay}>DELICATESSEN</div>
+                  {contextMenu && (
+                    <ContextMenu
+                      x={contextMenu.x}
+                      y={contextMenu.y}
+                      items={contextMenu.items}
+                      onClose={() => setContextMenu(null)}
+                    />
+                  )}
+                </div>
 
-            <div className={styles.secondContainerDiv}>
-              <div className={styles.secondOverlay}>SMOKED FISH</div>
-              <RenderLiquorCards />
+                <div className={styles.secondContainerDiv}>
+                  <div className={styles.secondOverlay}>SMOKED FISH</div>
+                  <RenderLiquorCards />
+                </div>
+              </div>
+              <div style={{ position: "relative" }}>
+                <div className={styles.thirdContainerDiv}>
+                  <RenderDynamicColumn />
+                </div>
+                <div className={styles.thirdOverlay}>DELI SPECIALITIES</div>
+              </div>
+            </div>
+            <div
+              style={{ position: "relative", top: "390px" }}
+              className={styles.fourthContainerDiv}
+            >
+              <div className={styles.fourthOverlay}>NAPERVILLE TAQUERIA</div>
+              <div className={styles.fifthOverlay}>HABIBI SHAWARMA</div>
+              <RenderTaqueria />
             </div>
           </div>
-          <div style={{ position: "relative" }}>
-            <div className={styles.thirdContainerDiv}>
-              <RenderDynamicColumn />
-            </div>
-            <div className={styles.thirdOverlay}>DELI SPECIALITIES</div>
-          </div>
-        </div>
-        <div
-          style={{ position: "relative", top: "390px" }}
-          className={styles.fourthContainerDiv}
-        >
-          <div className={styles.fourthOverlay}>NAPERVILLE TAQUERIA</div>
-          <div className={styles.fifthOverlay}>HABIBI SHAWARMA</div>
-          <RenderTaqueria />
-        </div>
-      </div>
-      </>) : (
+        </>
+      ) : (
         <h1>In maintenance..</h1>
       )}
     </div>

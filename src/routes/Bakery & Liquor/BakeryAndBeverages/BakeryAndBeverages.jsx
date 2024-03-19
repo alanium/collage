@@ -628,15 +628,18 @@ export default function BakeryLiquor({
       cardIndex > maxStaticIndex ? dynamicColumn : staticColumns;
 
     const index =
-      cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
+      cardIndex > maxStaticIndex ? cardIndex - maxStaticIndex - 1 : cardIndex;
 
     const contextMenuItems = [
       {
-        label: "New Edit Price Box",
+        label: "PriceBox"
+      },
+      {
+        label: "Edit",
         action: () => setPopupState(12),
       },
       {
-        label: "Load Price Box From Cloud",
+        label: "Load",
         action: () => setPopupState(13),
       },
       { type: "divider" },
@@ -651,18 +654,23 @@ export default function BakeryLiquor({
 
     if (selectedColumn[index].img[1].src == "") {
       // If only one image uploaded, allow uploading the second image
-      contextMenuItems.push({
-        label: "Upload Image 2",
+      contextMenuItems.push({ type: "divider" },{
+        label: "Image 2"
+      },{
+        label: "Upload",
         action: () => {
           setImgIndex(1);
           setPopupState(2);
           setSelectedCardIndex(cardIndex);
         },
-      });
-    } else if (selectedColumn[index].img[1].src != "") {
-      // If both images uploaded, allow editing and deleting the second image
-      contextMenuItems.push({
-        label: "Delete 2",
+      },
+     );
+    }
+    if (selectedColumn[index].img[1].src !== "") {
+      contextMenuItems.push({ type: "divider" },{
+        label: "Image 2"
+      },{
+        label: "Delete",
         action: async () => {
           await handleDeleteImage(cardIndex, 1);
           await uploadDataToFirebase(
@@ -672,11 +680,36 @@ export default function BakeryLiquor({
             dynamicColumn
           );
         },
-      });
+      },{
+        label: "Crop-Square",
+        action: () => {
+          setImgIndex(1);
+          setSelectedCardIndex(cardIndex);
+          handleCropImage(cardIndex, imgIndex);
+        },
+      },
+      {
+        label: "Auto-crop",
+        action: () => {
+          setImgIndex(1);
+          setSelectedCardIndex(cardIndex);
+          setPopupState(7);
+        },
+      },
+      {
+        label: "Freehand",
+        action: () => {
+          setImgIndex(1), setPopupState(14), setSelectedCardIndex(cardIndex);
+        },
+      },
+      )
     }
+    
     if (selectedColumn[index].img[0].src == "") {
-      contextMenuItems.push({
-        label: "Upload 1",
+      contextMenuItems.push({ type: "divider" },{
+        label: "Image 1"
+      },{
+        label: "Upload",
         action: () => {
           setImgIndex(0);
           setPopupState(2);
@@ -685,8 +718,10 @@ export default function BakeryLiquor({
       });
     }
     if (selectedColumn[index].img[0].src != "") {
-      contextMenuItems.push({
-        label: "Delete 1",
+      contextMenuItems.push({ type: "divider" },{
+        label: "Image 1"
+      },{
+        label: "Delete",
         action: async () => {
           await handleDeleteImage(cardIndex, 0);
           await uploadDataToFirebase(
@@ -696,60 +731,30 @@ export default function BakeryLiquor({
             dynamicColumn
           );
         },
+      },
+      {
+        label: "Crop-Square",
+        action: () => {
+          setImgIndex(0);
+          setSelectedCardIndex(cardIndex);
+          handleCropImage(cardIndex, imgIndex);
+        },
+      },
+      {
+        label: "Auto-crop",
+        action: () => {
+          setImgIndex(0), setPopupState(7);
+          setSelectedCardIndex(cardIndex);
+        },
+      },
+      {
+        label: "Freehand",
+        action: () => {
+          setImgIndex(0), setPopupState(14), setSelectedCardIndex(cardIndex);
+        },
       });
     }
-    if (selectedColumn[index].img[0].src != "") {
-      contextMenuItems.push(
-        {
-          label: "crop image 1",
-          action: () => {
-            setImgIndex(0);
-            setSelectedCardIndex(cardIndex);
-            handleCropImage(cardIndex, imgIndex);
-          },
-        },
-        {
-          label: "Delete Background of Image 1",
-          action: () => {
-            setImgIndex(0);
-            setPopupState(7);
-            setSelectedCardIndex(cardIndex);
-          },
-        },
-        {
-          label: "Precise Crop Image 1",
-          action: () => {
-            setImgIndex(0), setPopupState(14), setSelectedCardIndex(cardIndex);
-          },
-        }
-      );
-    }
-    if (selectedColumn[index].img[1].src != "") {
-      contextMenuItems.push(
-        {
-          label: "crop image 2",
-          action: () => {
-            setImgIndex(1);
-            setSelectedCardIndex(cardIndex);
-            handleCropImage(cardIndex, imgIndex);
-          },
-        },
-        {
-          label: "Delete Background of Image 2",
-          action: () => {
-            setImgIndex(1);
-            setSelectedCardIndex(cardIndex);
-            setPopupState(7);
-          },
-        },
-        {
-          label: "Precise Crop Image 2",
-          action: () => {
-            setImgIndex(1), setPopupState(14), setSelectedCardIndex(cardIndex);
-          },
-        }
-      );
-    }
+
 
     const containerRect = contextMenuRef.current.getBoundingClientRect();
     setContextMenu({
@@ -858,6 +863,7 @@ export default function BakeryLiquor({
                 />
               )}
               <NewPriceBox
+                cardIndex={cardIndex}
                 priceBox={dynamicColumn[calculatedCardIndex].text.priceBox}
               />
               <TextBoxLeft
@@ -927,7 +933,9 @@ export default function BakeryLiquor({
                 }}
               />
             )}
-             <NewPriceBox priceBox={staticColumns[cardIndex].text.priceBox} />
+             <NewPriceBox 
+             cardIndex={cardIndex}
+             priceBox={staticColumns[cardIndex].text.priceBox} />
 
             <TopTextBox
               textBoxes={staticColumns}
@@ -1013,7 +1021,9 @@ export default function BakeryLiquor({
                 }}
               />
             )}
-             <NewPriceBox priceBox={staticColumns[cardIndex].text.priceBox} />
+             <NewPriceBox 
+             cardIndex={cardIndex}
+             priceBox={staticColumns[cardIndex].text.priceBox} />
 
             <TopTextBox
               textBoxes={staticColumns}
