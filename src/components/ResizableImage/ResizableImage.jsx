@@ -72,11 +72,13 @@ const ResizableImage = ({
 
   const handleZindexChange = (deltaIndex, index) => {
     const newZIndex = tempImageCoords[index].zIndex + deltaIndex;
-    setTempImageCoords((prevCoords) => {
-      const newCoords = [...prevCoords];
-      newCoords[index] = { ...newCoords[index], zIndex: newZIndex };
-      return newCoords;
-    });
+    if (newZIndex <= -1 && newZIndex >= -imageCoords.length) {
+      setTempImageCoords((prevCoords) => {
+        const newCoords = [...prevCoords];
+        newCoords[index] = { ...newCoords[index], zIndex: newZIndex };
+        return newCoords;
+      });
+    }
   };
 
   const handleConfirmClick = () => {
@@ -151,15 +153,15 @@ const ResizableImage = ({
                 <div className={styles.buttonGroup}>
                   <button
                     className={styles.zoomControlGridButtons}
-                    onClick={() => handleZindexChange(5, index)}
+                    onClick={() => handleZindexChange(1, index)}
                   >
-                    ZIndex +
+                    Move Up
                   </button>
                   <button
                     className={styles.zoomControlGridButtons}
-                    onClick={() => handleZindexChange(-5, index)}
+                    onClick={() => handleZindexChange(-1, index)}
                   >
-                    ZIndex -
+                    Move Down
                   </button>
                 </div>
               </div>
