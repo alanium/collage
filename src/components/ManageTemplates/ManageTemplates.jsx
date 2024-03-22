@@ -94,10 +94,7 @@ export default function ManageTemplates({
         staticColumns: Array(staticColumns.length)
           .fill()
           .map((_, index) => ({
-            img: [
-              { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
-              { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
-            ],
+            img: [],
             text: {
               top: "",
               left: "",

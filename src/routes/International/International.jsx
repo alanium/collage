@@ -170,6 +170,7 @@ function International({
             dynamicColumn={dynamicColumn}
             imageFolder={templateCollection}
             templateCollection={templateCollection}
+            stickers={stickers}
           />
         );
       case 2:
@@ -197,6 +198,7 @@ function International({
             templateFolder={templateCollection}
             templateName={templateName}
             templateCollection={templateCollection}
+            stickers={stickers}
           />
         );
       case 4:
@@ -224,6 +226,7 @@ function International({
             dynamicColumn={dynamicColumn}
             imageFolder={templateCollection}
             templateCollection={templateCollection}
+            stickers={stickers}
           />
         );
       case 8:
@@ -252,6 +255,7 @@ function International({
             staticColumns={staticColumns}
             dynamicColumn={dynamicColumn}
             templateCollection={templateCollection}
+            stickers={stickers}
           />
         );
       case 9:
@@ -280,6 +284,7 @@ function International({
             staticColumns={staticColumns}
             dynamicColumn={dynamicColumn}
             templateCollection={templateCollection}
+            stickers={stickers}
           />
         );
       case 10:
@@ -307,6 +312,7 @@ function International({
             setPopup={setPopupState}
             uploadDataToFirebase={uploadDataToFirebase}
             templateCollection={templateCollection}
+            stickers={stickers}
           />
         );
       case 12:

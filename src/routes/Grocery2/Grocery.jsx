@@ -42,10 +42,7 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
     Array(cardsInStatic)
       .fill()
       .map((_, index) => ({
-        img: [
-          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
-          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
-        ],
+        img: [],
         text: {
           top: "",
           left: "",
@@ -133,10 +130,7 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
 
     for (let i = 0; i < Number(cardAmount); i++) {
       const card = {
-        img: [
-          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
-          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
-        ],
+        img: [],
         text: {
           top: "",
           left: "",
@@ -202,6 +196,7 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
             dynamicColumn={dynamicColumn}
             imageFolder="Grocery"
             templateCollection={templateCollection}
+            stickers={stickers}
           />
         );
       case 2:
@@ -257,6 +252,7 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
             staticColumns={staticColumns}
             dynamicColumn={dynamicColumn}
             imageFolder="Grocery"
+            stickers={stickers}
             templateCollection={templateCollection}
           />
         );
@@ -287,6 +283,7 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
             staticColumns={staticColumns}
             dynamicColumn={dynamicColumn}
             templateCollection={templateCollection}
+            stickers={stickers}
           />
         );
       case 9:
@@ -315,6 +312,7 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
             staticColumns={staticColumns}
             dynamicColumn={dynamicColumn}
             templateCollection={templateCollection}
+            stickers={stickers}
           />
         );
       case 10:
@@ -342,6 +340,7 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
             templateCollection={templateCollection}
             setPopup={setPopupState}
             uploadDataToFirebase={uploadDataToFirebase}
+            stickers={stickers}
           />
         );
       case 12:
@@ -489,9 +488,7 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
                 ).then((url) => {
                   const newDynamicColumn = [...dynamicColumn];
                   const lastImg =
-                    newDynamicColumn[cardIndex].img[
-                      newDynamicColumn[cardIndex].img.length - 1
-                    ];
+                    {src: url, zoom: 100, x: 0, y: 0, zIndex: -1 };
                   console.log(url);
                   const updatedImg = {
                     src: url,
@@ -536,9 +533,7 @@ function Grocery({ uploadDataToFirebase, handleConvertToPDF, renderPriceBox }) {
                 ).then((url) => {
                   const newStaticColumns = [...staticColumns];
                   const lastImg =
-                    newStaticColumns[cardIndex].img[
-                      newStaticColumns[cardIndex].img.length - 1
-                    ];
+                    {src: url, zoom: 100, x: 0, y: 0, zIndex: -1}
 
                   const updatedImg = {
                     ...lastImg,

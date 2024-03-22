@@ -142,7 +142,7 @@ const ResizableImage = ({
                 key={`image-controls-${index}`}
               >
                 <label className={styles.imageLabel}>
-                  {index === 0 ? "Image 1" : "Image 2"}
+                  {`Image ${index + 1}`}
                 </label>
                 <div className={styles.buttonGroup}>
                   <button
