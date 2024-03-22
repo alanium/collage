@@ -1,0 +1,37 @@
+.background {
+    background-color: rgba(0, 0, 0, 0.7);
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    z-index: 1;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    backdrop-filter: blur(10px);
+    border: 1px solid black;
+  }
+
+  .popUp2 {
+    background-color: #000000;
+    color: white;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid #666;
+    padding: 25px;
+    border-radius: 15px;
+    max-width: 250px;
+    text-align: center;
+  }
+
+  .actionButton {
+    width: 100%;
+    padding: 10px;
+    background-color: #000000;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 1px solid white;
+  }

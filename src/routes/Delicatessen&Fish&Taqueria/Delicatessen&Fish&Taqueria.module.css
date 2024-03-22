@@ -91,6 +91,7 @@
   justify-content: space-between;
   flex: 1;
   margin-top: 20px;
+  z-index: 0;
 }
 
 .taqueriaCard {
@@ -101,6 +102,7 @@
   margin: 2px;
   padding: 3px;
   padding-top: 100px;
+  z-index: 0;
 }
 
 .secondContainerDiv {
@@ -364,6 +366,11 @@
 
 .card:hover,
 .card.editing {
+  outline: 1px dashed blue;
+}
+
+.taqueriaCard:hover,
+.card.card.editing {
   outline: 1px dashed blue;
 }
 

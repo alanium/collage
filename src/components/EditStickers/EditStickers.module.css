@@ -1,0 +1,23 @@
+.background {
+  background-color: rgba(0, 0, 0, 0); /* Transparent background */
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+   /* Optional: Apply backdrop filter */
+  border: 1px solid black;
+  display: flex;
+}
+
+.container {
+  width: 21cm;
+  height: 29.6cm;
+  outline: 1.7px solid black;
+  position: absolute;
+  left: 23%;
+  display: flex;
+  background-color: rgba(255, 255, 255, 0); /* Transparent background */
+}

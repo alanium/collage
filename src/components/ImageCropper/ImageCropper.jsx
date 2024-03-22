@@ -2,7 +2,13 @@ import React, { useRef, useEffect, useState } from "react";
 import Cropper from "cropperjs";
 import "cropperjs/dist/cropper.min.css";
 import styles from "./ImageCropper.module.css";
-import { getDownloadURL, getStorage, listAll, ref, uploadBytes } from "firebase/storage"
+import {
+  getDownloadURL,
+  getStorage,
+  listAll,
+  ref,
+  uploadBytes,
+} from "firebase/storage";
 
 const ImageCropper = ({
   src,
@@ -14,29 +20,33 @@ const ImageCropper = ({
   imageFolder,
   uploadDataToFirebase,
   maxStaticIndex,
-  templateCollection, templateName, staticColumns, dynamicColumn
+  templateCollection,
+  templateName,
+  staticColumns,
+  dynamicColumn,
+  stickers,
 }) => {
   const imageRef = useRef(null);
   const cropper = useRef(null);
   const storage = getStorage();
   const [rotationValue, setRotationValue] = useState(0);
 
-  const calculatedCardIndex = (selectedCardIndex > maxStaticIndex ? selectedCardIndex - maxStaticIndex - 1 : selectedCardIndex)
-  
+  const calculatedCardIndex =
+    selectedCardIndex > maxStaticIndex
+      ? selectedCardIndex - maxStaticIndex - 1
+      : selectedCardIndex;
 
-  console.log(selectedCardIndex, maxStaticIndex)
+  console.log(selectedCardIndex, maxStaticIndex);
 
   useEffect(() => {
     if (!src) return;
 
     cropper.current = new Cropper(imageRef.current, {
       viewMode: 2,
-      dragMode: 'move',
+      dragMode: "move",
       autoCropArea: 1,
       background: false,
-      crop(event) {
-        
-      },
+      crop(event) {},
     });
 
     return () => {
@@ -46,12 +56,12 @@ const ImageCropper = ({
 
   const isImageNameIncluded = async (imageName) => {
     const imagesRef = ref(storage, `images/${imageFolder}`);
-  
+
     try {
       const result = await listAll(imagesRef);
       const items = result.items;
       const names = items.map((item) => item.name);
-  
+
       return names.includes(imageName);
     } catch (error) {
       console.log(error);
@@ -71,14 +81,20 @@ const ImageCropper = ({
             await uploadBytes(imageRef, blob);
             console.log("Blob uploaded successfully");
             setPopup(0);
-  
+
             const newSelectedColumn = [...selectedColumn];
             const url = await getDownloadURL(
               ref(storage, `images/${imageFolder}/${imageName}`)
             );
             newSelectedColumn[calculatedCardIndex].img[imageIndex].src = url;
             setSelectedColumn(newSelectedColumn);
-            uploadDataToFirebase(templateCollection, templateName, staticColumns, dynamicColumn );
+            uploadDataToFirebase(
+              templateCollection,
+              templateName,
+              staticColumns,
+              dynamicColumn,
+              stickers
+            );
           } catch (error) {
             console.log("Error uploading image:", error);
           }
@@ -98,14 +114,19 @@ const ImageCropper = ({
   };
 
   const handleCancel = () => {
-    setPopup(0)
+    setPopup(0);
   };
 
   return (
     <div className={styles.background}>
       <div className={styles.popupContainer}>
         <div>
-          <img style={{maxHeight: "400px", maxWidth:"400px"}} ref={imageRef} src={src} alt="Crop preview" />
+          <img
+            style={{ maxHeight: "400px", maxWidth: "400px" }}
+            ref={imageRef}
+            src={src}
+            alt="Crop preview"
+          />
         </div>
         <div className={styles.rotationSliderContainer}>
           <input

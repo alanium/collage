@@ -19,13 +19,15 @@ const uploadDataToFirebase = async (
   folderName,
   templateName,
   staticColumns,
-  dynamicColumn
+  dynamicColumn,
+  stickers
 ) => {
   try {
     // Upload staticColumns to a document in "Grocery" collection
     await setDoc(doc(db, `${folderName}/${templateName}`), {
       staticColumns: staticColumns,
       dynamicColumn: dynamicColumn,
+      stickers: stickers,
     });
 
     console.log("Data uploaded successfully!");

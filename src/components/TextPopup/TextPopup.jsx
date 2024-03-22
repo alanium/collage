@@ -14,6 +14,7 @@ export default function TextPopUp({
   templateName,
   staticColumns,
   dynamicColumn,
+  stickers
 }) {
   const [text, setText] = useState("");
   const textareaRef = useRef(null); // Ref for textarea
@@ -41,7 +42,8 @@ export default function TextPopUp({
       templateCollection,
       templateName,
       staticColumns,
-      dynamicColumn
+      dynamicColumn,
+      stickers
     );
     setPopup(false);
   };

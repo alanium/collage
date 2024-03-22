@@ -89,6 +89,18 @@ export default function Sidebar({
             uploadDataToFirebase={uploadDataToFirebase}
             imageFolder="Grocery"
           />
+          <button
+            style={{
+              width: "165px",
+              position: "relative",
+              backgroundColor: "gray",
+              color: "white",
+              marginBottom: "10px",
+            }}
+            onClick={() => setPopup(15)}
+          >
+            Edit Stickers
+          </button>
         </div>
       </div>
     </div>

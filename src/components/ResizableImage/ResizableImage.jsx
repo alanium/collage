@@ -13,22 +13,29 @@ const ResizableImage = ({
   templateName,
   staticColumns,
   dynamicColumn,
+  stickers
 }) => {
-  const imageRefs = useRef([useRef(null), useRef(null)]);
-  const [imageCoords, setImageCoords] = useState([
-    { x: 0, y: 0, zoom: 100, zIndex: 1 },
-    { x: 0, y: 0, zoom: 100, zIndex: 1 },
-  ]);
+  const imgAmount = selectedColumn[cardIndex].img.length;
+  const imageRefs = useRef(
+    Array(imgAmount)
+      .fill()
+      .map((_, index) => useRef(null))
+  );
+  const [imageCoords, setImageCoords] = useState(
+    Array(imgAmount)
+      .fill()
+      .map((_, index) => ({ x: 0, y: 0, zoom: 100, zIndex: -1 }))
+  );
   const [tempImageCoords, setTempImageCoords] = useState([...imageCoords]); // Temporary state
   const [containerResolution, setContainerResolution] = useState({});
 
   useEffect(() => {
     renderContainerBox();
     const initialImageCoords = selectedColumn[cardIndex].img.map((image) => ({
-      x: image.x,
-      y: image.y,
+      x: image.x || 0, // Default to 0 if x is undefined
+      y: image.y || 0, // Default to 0 if y is undefined
       zoom: image.zoom || 100,
-      zIndex: image.zIndex,
+      zIndex: image.zIndex || -1,
     }));
     setImageCoords(initialImageCoords);
     setTempImageCoords(initialImageCoords); // Initialize temporary state
@@ -44,10 +51,10 @@ const ResizableImage = ({
             move: (event) => {
               const { dx, dy } = event;
               const newCoords = {
-                x: tempImageCoords[index].x + dx,
-                y: tempImageCoords[index].y + dy,
+                x: tempImageCoords[index].x + dx || 0, // Default to 0 if x is undefined
+                y: tempImageCoords[index].y + dy || 0, // Default to 0 if y is undefined
                 zoom: tempImageCoords[index].zoom,
-                zIndex: tempImageCoords[index].zIndex,
+                zIndex: tempImageCoords[index].zIndex || -1, // Default to 1 if zIndex is undefined
               };
               setTempImageCoords((prevCoords) => {
                 const newCoordsArray = [...prevCoords];
@@ -81,16 +88,17 @@ const ResizableImage = ({
     }
   };
 
-  const handleConfirmClick = () => {
+  const handleConfirmClick = async () => {
     setImageCoords(tempImageCoords); // Apply temporary state
-    tempImageCoords.forEach((coords, index) => {
-      updateImageProperties(cardIndex, index, coords); // Call updateImageProperties
+    tempImageCoords.forEach(async (coords, index) => {
+      await updateImageProperties(cardIndex, index, coords); // Call updateImageProperties
     });
-    uploadDataToFirebase(
+    await uploadDataToFirebase(
       templateCollection,
       templateName,
       staticColumns,
-      dynamicColumn
+      dynamicColumn,
+      stickers
     );
     setPopup(0);
   };
@@ -102,6 +110,7 @@ const ResizableImage = ({
         ...newSelectedColumn[cardIndex].img[imageIndex],
         ...properties,
       };
+      console.log(newSelectedColumn);
       return newSelectedColumn;
     });
   };
@@ -126,7 +135,7 @@ const ResizableImage = ({
     <div className={styles.background}>
       <div className={styles.popupContainer}>
         <div className={styles.zoomSliderContainer}>
-          {selectedColumn[cardIndex].img.slice(0, 2).map((image, index) =>
+          {selectedColumn[cardIndex].img.map((image, index) =>
             image.src !== "" ? (
               <div
                 className={styles.zoomControlGrid}
@@ -168,7 +177,8 @@ const ResizableImage = ({
             ) : null
           )}
         </div>
-        <div className={styles.imageContainer}
+        <div
+          className={styles.imageContainer}
           style={{
             height: `${containerResolution.height}px`,
             width: `${containerResolution.width}px`,
@@ -176,7 +186,7 @@ const ResizableImage = ({
           }}
         >
           <div className={styles.images}>
-            {selectedColumn[cardIndex].img.slice(0, 2).map((image, index) =>
+            {selectedColumn[cardIndex].img.map((image, index) =>
               image.src !== "" ? (
                 <img
                   key={`image-${cardIndex}-${index + 1}`}

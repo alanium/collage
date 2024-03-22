@@ -15,8 +15,10 @@ import { db } from "../../routes/root";
 export default function ManageTemplates({
   dynamicColumn,
   staticColumns,
+  stickers,
   setDynamicColumn,
   setStaticColumns,
+  setStickers,
   setTemplates,
   setPopup,
   setCurrentTemplate,
@@ -44,6 +46,7 @@ export default function ManageTemplates({
       await setDoc(doc(groceryCollectionRef, templateName), {
         dynamicColumn: dynamicColumn,
         staticColumns: staticColumns,
+        stickers: stickers,
         name: templateName,
       });
 
@@ -118,6 +121,7 @@ export default function ManageTemplates({
             index,
           })),
         dynamicColumn: [],
+        stickers: [],
       });
 
       console.log("Template added successfully!");
@@ -192,9 +196,10 @@ export default function ManageTemplates({
 
       if (templateDoc) {
         // Create a new document with the newTemplateId and newTemplateName
-        await setDoc(doc(db, "Grocery", newTemplateId), {
+        await setDoc(doc(db, templateFolder, newTemplateId), {
           dynamicColumn: templateDoc.data().dynamicColumn,
           staticColumns: templateDoc.data().staticColumns,
+          stickers: templateDoc.data().stickers,
           name: newTemplateName,
         });
 

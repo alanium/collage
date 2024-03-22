@@ -12,6 +12,7 @@ export default function ImageFromCloud({
   imgIndex,
   maxCardPosition,
   imageFolder,
+  stickers,
   templateName,
   staticColumns,
   dynamicColumn,
@@ -35,8 +36,6 @@ export default function ImageFromCloud({
   const totalPages = Math.ceil(totalImages / imagesPerPage);
   const storage = getStorage();
 
-  console.log(images);
-
   const handleImageChange = (event, imagePreview, imageName) => {
     event.preventDefault();
     setSelectedImage(imagePreview);
@@ -58,7 +57,7 @@ export default function ImageFromCloud({
       cardIndex > maxCardPosition
         ? cardIndex - (maxCardPosition + 1)
         : cardIndex;
-    newSelectedColumn[calculatedCardIndex].img[imgIndex].src = selectedImage;
+    newSelectedColumn[calculatedCardIndex].img.push({ src: selectedImage, zoom: 100, x: 0, y: 0, zIndex: -1 })
     setSelectedColumn(newSelectedColumn);
     setSelectedImage(null);
     setImages(null);
@@ -69,7 +68,8 @@ export default function ImageFromCloud({
       templateCollection,
       templateName,
       staticColumns,
-      dynamicColumn
+      dynamicColumn,
+      stickers
     );
   };
 
@@ -170,43 +170,42 @@ export default function ImageFromCloud({
           >
             <h1 className={styles.title}>Database Explorer</h1>
 
-<div className={styles.pageNavigation}>
-  <div>
-    <input
-      type="text"
-      value={searchTerm}
-      onChange={handleSearchInputChange}
-      placeholder="Search by name"
-      className={styles.searchInput}
-    />
-  </div>
-  <div className={styles.centeredItems}>
-    <button
-      className={styles.pageButton}
-      onClick={() => goToPage(currentPage - 1)}
-      disabled={currentPage === 1}
-    >
-      Previous
-    </button>
-    <input
-      type="text"
-      value={inputPage}
-      onChange={handleInputChange}
-      onKeyPress={handleInputKeyPress}
-      className={styles.pageInput}
-      placeholder="Enter Page"
-    />
-    <span className={styles.pageText}>of {totalPages}</span>
-    <button
-      className={styles.pageButton}
-      onClick={() => goToPage(currentPage + 1)}
-      disabled={currentPage === totalPages}
-    >
-      Next
-    </button>
-  </div>
-</div>
-
+            <div className={styles.pageNavigation}>
+              <div>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={handleSearchInputChange}
+                  placeholder="Search by name"
+                  className={styles.searchInput}
+                />
+              </div>
+              <div className={styles.centeredItems}>
+                <button
+                  className={styles.pageButton}
+                  onClick={() => goToPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </button>
+                <input
+                  type="text"
+                  value={inputPage}
+                  onChange={handleInputChange}
+                  onKeyPress={handleInputKeyPress}
+                  className={styles.pageInput}
+                  placeholder="Enter Page"
+                />
+                <span className={styles.pageText}>of {totalPages}</span>
+                <button
+                  className={styles.pageButton}
+                  onClick={() => goToPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
 
             <hr />
 

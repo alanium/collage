@@ -34,6 +34,8 @@ import NewPriceBox from "../../components/NewPriceBox/NewPriceBox";
 import IrregularImageCropper from "../../components/IrregularImageCropper/IrregularImageCropper";
 import PriceBoxFromCloud from "../../components/PriceBoxFromCloud/PriceBoxFromCloud";
 import NewPriceBoxEdit from "../../components/NewPriceBoxEdit/NewPriceBoxEdit";
+import EditStickers from "../../components/EditStickers/EditStickers";
+import AddStickersPopup from "../../components/AddStickersPopup/AddStickersPopup";
 
 const groceryRef = collection(db, "Dairy&Snacks");
 const templatesQuerySnapshot = await getDocs(groceryRef);
@@ -51,8 +53,8 @@ export default function DairyAndSnacks({
       .fill()
       .map((_, index) => ({
         img: [
-          { src: "", zoom: 100, x: 0, y: 0 },
-          { src: "", zoom: 100, x: 0, y: 0 },
+          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
+          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
         ],
         text: {
           top: "",
@@ -79,7 +81,7 @@ export default function DairyAndSnacks({
         index,
       }))
   );
-
+  const [stickers, setStickers] = useState([])
   const [dynamicColumn, setDynamicColumn] = useState([]);
   const [contextMenu, setContextMenu] = useState(null);
   const [selectedImage, setSelectedImage] = useState({});
@@ -138,9 +140,19 @@ export default function DairyAndSnacks({
       }
     );
 
+    const unsubscribeStickers = onSnapshot(
+      doc(db, `Dairy&Snacks/${templateName}`),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          setStickers(snapshot.data().stickers);
+        }
+      }
+    );
+
     return () => {
       unsubscribeStaticColumns();
       unsubscribeDynamicColumn();
+      unsubscribeStickers();
     };
   }, [templateName]);
 
@@ -154,8 +166,8 @@ export default function DairyAndSnacks({
     for (let i = 0; i < Number(cardAmount); i++) {
       const card = {
         img: [
-          { src: "", zoom: 100, x: 0, y: 0 },
-          { src: "", zoom: 100, x: 0, y: 0 },
+          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
+          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
         ],
         text: {
           top: "",
@@ -189,7 +201,8 @@ export default function DairyAndSnacks({
           templateCollection,
           templateName,
           staticColumns,
-          dynamicColumn
+          dynamicColumn,
+          stickers
         );
       };
   };
@@ -220,6 +233,7 @@ export default function DairyAndSnacks({
             staticColumns={staticColumns}
             dynamicColumn={dynamicColumn}
             templateCollection={templateCollection}
+            stickers={stickers}
           />
         );
       case 2:
@@ -237,6 +251,8 @@ export default function DairyAndSnacks({
           <ManageTemplates
             dynamicColumn={dynamicColumn}
             staticColumns={staticColumns}
+            stickers={stickers}
+            setStickers={setStickers}
             setDynamicColumn={setDynamicColumn}
             setStaticColumns={setStaticColumns}
             templates={templates}
@@ -246,6 +262,7 @@ export default function DairyAndSnacks({
             setCurrentTemplate={setTemplateName}
             templateFolder={templateCollection}
             templateName={templateName}
+            
           />
         );
       case 4:
@@ -273,6 +290,7 @@ export default function DairyAndSnacks({
             dynamicColumn={dynamicColumn}
             templateCollection={templateCollection}
             imageFolder={imageFolder}
+            stickers={stickers}
           />
         );
       case 8:
@@ -301,6 +319,7 @@ export default function DairyAndSnacks({
             templateName={templateName}
             staticColumns={staticColumns}
             dynamicColumn={dynamicColumn}
+            stickers={stickers}
           />
         );
       case 9:
@@ -329,6 +348,7 @@ export default function DairyAndSnacks({
             templateName={templateName}
             staticColumns={staticColumns}
             dynamicColumn={dynamicColumn}
+            stickers={stickers}
           />
         );
       case 10:
@@ -356,6 +376,7 @@ export default function DairyAndSnacks({
             imageFolder={imageFolder}
             setPopup={setPopupState}
             uploadDataToFirebase={uploadDataToFirebase}
+            stickers={stickers}
           />
         );
         case 12:
@@ -383,7 +404,8 @@ export default function DairyAndSnacks({
                   templateCollection,
                   templateName,
                   staticColumns,
-                  dynamicColumn
+                  dynamicColumn,
+                  stickers
                 )
               }
             />
@@ -407,7 +429,8 @@ export default function DairyAndSnacks({
                   templateCollection,
                   templateName,
                   staticColumns,
-                  dynamicColumn
+                  dynamicColumn,
+                  stickers
                 )
               }
             />
@@ -432,12 +455,48 @@ export default function DairyAndSnacks({
                   templateCollection,
                   templateName,
                   staticColumns,
-                  dynamicColumn
+                  dynamicColumn,
+                  stickers
                 )
               }
               imageFolder={imageFolder}
             />
         );
+        case 15:
+          return <EditStickers setPopup={setPopupState} stickers={stickers} />;
+        case 16:
+          return (
+            <AddStickersPopup
+              setPopup={setPopupState}
+              stickers={stickers}
+              setStickers={setStickers}
+              uploadDataToFirebase={() => uploadDataToFirebase(
+                templateCollection,
+                  templateName,
+                  staticColumns,
+                  dynamicColumn,
+                  stickers
+              )}
+              imageFolder={imageFolder}
+            />
+          );
+        case 17:
+          return (
+            <StikersFromCloud
+              setPopup={setPopupState}
+              stickers={stickers}
+              setStickers={setStickers}
+              uploadDataToFirebase={() =>
+                uploadDataToFirebase(
+                  templateCollection,
+                  templateName,
+                  staticColumns,
+                  dynamicColumn,
+                  stickers
+                )
+              }
+            />
+          );
     }
   };
 
@@ -474,30 +533,36 @@ export default function DairyAndSnacks({
           input.accept = "image/*";
           input.onchange = (event) => {
             const file = event.target.files[0];
-
             if (file) {
               const uploadedImageRef = ref(
                 storage,
-                `images/${imageFolder}/${file.name}`
+                `images/${templateCollection}/${file.name}`
               );
               uploadBytes(uploadedImageRef, file).then((snapshot) => {
                 getDownloadURL(
-                  ref(storage, `images/${imageFolder}/${file.name}`)
-                )
-                  .then((url) => {
-                    const newDynamicColumn = [...dynamicColumn];
-                    newDynamicColumn[cardIndex].img[img].src = url;
-                    setDynamicColumn(newDynamicColumn);
-                  })
-                  .then(() => {
-                    uploadDataToFirebase(
-                      templateCollection,
-                      templateName,
-                      staticColumns,
-                      dynamicColumn
-                    );
-                  });
-                console.log("Uploaded a blob or file!");
+                  ref(storage, `images/${templateCollection}/${file.name}`)
+                ).then((url) => {
+                  const newDynamicColumn = [...dynamicColumn];
+                  const lastImg =
+                    newDynamicColumn[cardIndex].img[
+                      newDynamicColumn[cardIndex].img.length - 1
+                    ];
+                  console.log(url);
+                  const updatedImg = {
+                    src: url,
+                    ...lastImg, // Copying other properties from the last image object
+                  };
+                  newDynamicColumn[cardIndex].img.push(updatedImg);
+                  setDynamicColumn(newDynamicColumn);
+                  setPopupState(0);
+                  uploadDataToFirebase(
+                    templateCollection,
+                    templateName,
+                    staticColumns,
+                    newDynamicColumn,
+                    stickers
+                  );
+                });
               });
             }
           };
@@ -518,27 +583,33 @@ export default function DairyAndSnacks({
             if (file) {
               const uploadedImageRef = ref(
                 storage,
-                `images/${imageFolder}/${file.name}`
+                `images/${templateCollection}/${file.name}`
               );
               uploadBytes(uploadedImageRef, file).then((snapshot) => {
                 getDownloadURL(
-                  ref(storage, `images/${imageFolder}/${file.name}`)
-                )
-                  .then((url) => {
-                    console.log(file.name);
-                    console.log(url);
-                    const newStaticColumns = [...staticColumns];
-                    newStaticColumns[cardIndex].img[img].src = url;
-                    setStaticColumns(newStaticColumns);
-                  })
-                  .then(() => {
-                    uploadDataToFirebase(
-                      templateCollection,
-                      templateName,
-                      staticColumns,
-                      dynamicColumn
-                    );
-                  });
+                  ref(storage, `images/${templateCollection}/${file.name}`)
+                ).then((url) => {
+                  const newStaticColumns = [...staticColumns];
+                  const lastImg =
+                    newStaticColumns[cardIndex].img[
+                      newStaticColumns[cardIndex].img.length - 1
+                    ];
+                  const updatedImg = {
+                    ...lastImg,
+                    src: url, // Copying other properties from the last image object
+                  };
+                  newStaticColumns[cardIndex].img.push(updatedImg);
+                  console.log(updatedImg);
+                  setStaticColumns(newStaticColumns);
+                  setPopupState(0);
+                  uploadDataToFirebase(
+                    templateCollection,
+                    templateName,
+                    newStaticColumns,
+                    dynamicColumn,
+                    stickers
+                  );
+                });
               });
             }
           };
@@ -564,14 +635,8 @@ export default function DairyAndSnacks({
 
           if (imageToUpdate) {
             // Set the src value to an empty string when deleting
-            imageToUpdate.img[index].src = "";
-          }
 
-          if (
-            imageToUpdate.img[0].src == "" &&
-            imageToUpdate.img[1].src == ""
-          ) {
-            setPopupState(0);
+            imageToUpdate.img.splice(index, 1);
           }
 
           return newDynamicColumn;
@@ -587,14 +652,7 @@ export default function DairyAndSnacks({
 
           if (imageToUpdate) {
             // Set the src value to an empty string when deleting
-            imageToUpdate.img[index].src = "";
-          }
-
-          if (
-            imageToUpdate.img[0].src == "" &&
-            imageToUpdate.img[1].src == ""
-          ) {
-            setPopupState(0);
+            imageToUpdate.img.splice(index, 1);
           }
 
           return newStaticColumns;
@@ -618,7 +676,7 @@ export default function DairyAndSnacks({
 
     const contextMenuItems = [
       {
-        label: "PriceBox"
+        label: "PriceBox",
       },
       {
         label: "Edit",
@@ -636,111 +694,65 @@ export default function DairyAndSnacks({
           setSelectedImage({ cardIndex });
         },
       },
+      { type: "divider" },
+      {
+        label: "Image " + (selectedColumn[index].img.length + 1),
+      },
+      {
+        label: "Upload",
+        action: () => {
+          setImgIndex(selectedColumn[index].img.length + 1);
+          setPopupState(2);
+          setSelectedCardIndex(cardIndex);
+        },
+      },
     ];
 
-    if (selectedColumn[index].img[1].src == "") {
-      // If only one image uploaded, allow uploading the second image
-      contextMenuItems.push({ type: "divider" },{
-        label: "Image 2"
-      },{
-        label: "Upload",
-        action: () => {
-          setImgIndex(1);
-          setPopupState(2);
-          setSelectedCardIndex(cardIndex);
+    selectedColumn[index].img.map((img, index) => {
+      contextMenuItems.push(
+        { type: "divider" },
+        {
+          label: "Image " + (index + 1),
         },
-      },
-     );
-    }
-    if (selectedColumn[index].img[1].src !== "") {
-      contextMenuItems.push({ type: "divider" },{
-        label: "Image 2"
-      },{
-        label: "Delete",
-        action: async () => {
-          await handleDeleteImage(cardIndex, 1);
-          await uploadDataToFirebase(
-            templateCollection,
-            templateName,
-            staticColumns,
-            dynamicColumn
-          );
+        {
+          label: "Delete",
+          action: async () => {
+            await handleDeleteImage(cardIndex, index);
+            await uploadDataToFirebase(
+              templateCollection,
+              templateName,
+              staticColumns,
+              dynamicColumn,
+              stickers
+            );
+          },
         },
-      },{
-        label: "Crop-Square",
-        action: () => {
-          setImgIndex(1);
-          setSelectedCardIndex(cardIndex);
-          handleCropImage(cardIndex, imgIndex);
+        {
+          label: "Crop-Square",
+          action: () => {
+            setImgIndex(index);
+            setSelectedCardIndex(cardIndex);
+            handleCropImage(cardIndex, imgIndex);
+          },
         },
-      },
-      {
-        label: "Auto-crop",
-        action: () => {
-          setImgIndex(1);
-          setSelectedCardIndex(cardIndex);
-          setPopupState(7);
+        {
+          label: "Auto-crop",
+          action: () => {
+            setImgIndex(index);
+            setSelectedCardIndex(cardIndex);
+            setPopupState(7);
+          },
         },
-      },
-      {
-        label: "Freehand",
-        action: () => {
-          setImgIndex(1), setPopupState(14), setSelectedCardIndex(cardIndex);
-        },
-      },
-      )
-    }
-    
-    if (selectedColumn[index].img[0].src == "") {
-      contextMenuItems.push({ type: "divider" },{
-        label: "Image 1"
-      },{
-        label: "Upload",
-        action: () => {
-          setImgIndex(0);
-          setPopupState(2);
-          setSelectedCardIndex(cardIndex);
-        },
-      });
-    }
-    if (selectedColumn[index].img[0].src != "") {
-      contextMenuItems.push({ type: "divider" },{
-        label: "Image 1"
-      },{
-        label: "Delete",
-        action: async () => {
-          await handleDeleteImage(cardIndex, 0);
-          await uploadDataToFirebase(
-            templateCollection,
-            templateName,
-            staticColumns,
-            dynamicColumn
-          );
-        },
-      },
-      {
-        label: "Crop-Square",
-        action: () => {
-          setImgIndex(0);
-          setSelectedCardIndex(cardIndex);
-          handleCropImage(cardIndex, imgIndex);
-        },
-      },
-      {
-        label: "Auto-crop",
-        action: () => {
-          setImgIndex(0), setPopupState(7);
-          setSelectedCardIndex(cardIndex);
-        },
-      },
-      {
-        label: "Freehand",
-        action: () => {
-          setImgIndex(0), setPopupState(14), setSelectedCardIndex(cardIndex);
-        },
-      });
-    }
-
+        {
+          label: "Freehand",
+          action: () => {
+            setImgIndex(index),
+              setPopupState(14),
+              setSelectedCardIndex(cardIndex);
+          },
+        }
+      );
+    });
 
     const containerRect = contextMenuRef.current.getBoundingClientRect();
     setContextMenu({
@@ -760,13 +772,15 @@ export default function DairyAndSnacks({
     if (!event.target.classList.contains(styles.card)) {
       return;
     }
+
     const image = (cardIndex > maxStaticIndex ? dynamicColumn : staticColumns)[
       auxIndex
     ];
 
-    if (image.img[0].src === "" && image.img[1].src === "") {
+    if (image.img.length === 0) {
       setPopupState(2);
       setSelectedCardIndex(cardIndex);
+      console.log(selectedCardIndex);
     } else {
       handleContextMenu(event, cardIndex, image);
       setSelectedCardIndex(cardIndex);
@@ -823,31 +837,23 @@ export default function DairyAndSnacks({
               key={cardIndex}
               onClick={(event) => handleCardClick(cardIndex, event)}
             >
-              {images.img[0] && ( // Check if img[0] exists before rendering
+              {images.img.map((img, index) => (
                 <img
-                  name={`image-${cardIndex}-0`}
-                  src={images.img[0].src ? images.img[0].src : ""}
+                  name={`image-${cardIndex}-${index}`}
+                  src={images.img[index] ? images.img[index].src : ""}
                   className={styles.uploadedImage}
                   style={{
-                    transform: `scale(${images.img[0].zoom / 100}) translate(${
-                      images.img[0].x / (images.img[0].zoom / 100)
-                    }px, ${images.img[0].y / (images.img[0].zoom / 100)}px)`,
+                    transform: `scale(${
+                      images.img[index].zoom / 100
+                    }) translate(${
+                      images.img[index].x / (images.img[index].zoom / 100)
+                    }px, ${
+                      images.img[index].y / (images.img[index].zoom / 100)
+                    }px)`,
+                    zIndex: images.img[index].zIndex,
                   }}
                 />
-              )}
-
-              {images.img[1] && ( // Check if img[1] exists before rendering
-                <img
-                  name={`image-${cardIndex}-1`}
-                  src={images.img[1] ? images.img[1].src : ""}
-                  className={styles.uploadedImage}
-                  style={{
-                    transform: `scale(${images.img[1].zoom / 100}) translate(${
-                      images.img[1].x / (images.img[1].zoom / 100)
-                    }px, ${images.img[1].y / (images.img[1].zoom / 100)}px)`,
-                  }}
-                />
-              )}
+              ))}
              <NewPriceBox
                 cardIndex={cardIndex}
                 priceBox={dynamicColumn[calculatedCardIndex].text.priceBox}
@@ -894,31 +900,19 @@ export default function DairyAndSnacks({
             key={cardIndex}
             onClick={(event) => handleCardClick(cardIndex, event)}
           >
-            {images[0] && ( // Check if img[0] exists before rendering
+            {images.map((img, index) => (
               <img
-                name={`image-${cardIndex}-0`}
-                src={images[0].src ? images[0].src : ""}
+                name={`image-${cardIndex}-${index}`}
+                src={img ? img.src : ""}
                 className={styles.uploadedImage}
                 style={{
-                  transform: `scale(${images[0].zoom / 100}) translate(${
-                    images[0].x
-                  }px, ${images[0].y}px)`,
+                  transform: `scale(${img.zoom / 100}) translate(${
+                    img.x / (img.zoom / 100)
+                  }px, ${img.y / (img.zoom / 100)}px)`,
+                  zIndex: img.zIndex,
                 }}
               />
-            )}
-
-            {images[1] && ( // Check if img[1] exists before rendering
-              <img
-                name={`image-${cardIndex}-1`}
-                src={images[1] ? images[1].src : ""}
-                className={styles.uploadedImage}
-                style={{
-                  transform: `scale(${images[1].zoom / 100}) translate(${
-                    images[1].x
-                  }px, ${images[1].y}px)`,
-                }}
-              />
-            )}
+            ))}
             <NewPriceBox 
             cardIndex={cardIndex}
             priceBox={staticColumns[cardIndex].text.priceBox} />
@@ -983,31 +977,19 @@ export default function DairyAndSnacks({
             key={cardIndex}
             onClick={(event) => handleCardClick(cardIndex, event)}
           >
-            {images[0] && ( // Check if img[0] exists before rendering
+            {images.map((img, index) => (
               <img
-                name={`image-${cardIndex}-0`}
-                src={images[0].src ? images[0].src : ""}
+                name={`image-${cardIndex}-${index}`}
+                src={img ? img.src : ""}
                 className={styles.uploadedImage}
                 style={{
-                  transform: `scale(${images[0].zoom / 100}) translate(${
-                    images[0].x
-                  }px, ${images[0].y}px)`,
+                  transform: `scale(${img.zoom / 100}) translate(${
+                    img.x / (img.zoom / 100)
+                  }px, ${img.y / (img.zoom / 100)}px)`,
+                  zIndex: img.zIndex,
                 }}
               />
-            )}
-
-            {images[1] && ( // Check if img[1] exists before rendering
-              <img
-                name={`image-${cardIndex}-1`}
-                src={images[1] ? images[1].src : ""}
-                className={styles.uploadedImage}
-                style={{
-                  transform: `scale(${images[1].zoom / 100}) translate(${
-                    images[1].x
-                  }px, ${images[1].y}px)`,
-                }}
-              />
-            )}
+            ))}
             <NewPriceBox 
             cardIndex={cardIndex}
             priceBox={staticColumns[cardIndex].text.priceBox} />

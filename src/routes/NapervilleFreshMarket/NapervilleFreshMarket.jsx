@@ -36,11 +36,13 @@ import RenderInfo from "../../components/RenderInfo/RenderInfo";
 import NewPriceBoxEdit from "../../components/NewPriceBoxEdit/NewPriceBoxEdit";
 import PriceBoxFromCloud from "../../components/PriceBoxFromCloud/PriceBoxFromCloud";
 import IrregularImageCropper from "../../components/IrregularImageCropper/IrregularImageCropper";
+import EditStickers from "../../components/EditStickers/EditStickers";
+import AddStickersPopup from "../../components/AddStickersPopup/AddStickersPopup";
 
 const groceryRef = collection(db, "NapervilleFresh");
 const templatesQuerySnapshot = await getDocs(groceryRef);
 
-function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
+function NapervilleFreshMarket({uploadDataToFirebase, handleConvertToPDF}) {
   const cardsInStatic = 28;
   const maxStaticIndex = cardsInStatic - 1;
 
@@ -49,8 +51,8 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
       .fill()
       .map((_, index) => ({
         img: [
-          { src: "", zoom: 100, x: 0, y: 0 },
-          { src: "", zoom: 100, x: 0, y: 0 },
+          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
+          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1},
         ],
         text: {
           top: "",
@@ -77,7 +79,8 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
         index,
       }))
   );
-
+  
+  const [stickers, setStickers] = useState([])
   const [dynamicColumn, setDynamicColumn] = useState([]);
   const [contextMenu, setContextMenu] = useState(null);
   const [selectedImage, setSelectedImage] = useState({});
@@ -130,16 +133,26 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
       }
     );
 
+    const unsubscribeStickers = onSnapshot(
+      doc(db, `NapervilleFresh/${templateName}`),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          setStickers(snapshot.data().stickers);
+        }
+      }
+    );
+
     return () => {
       unsubscribeStaticColumns();
       unsubscribeDynamicColumn();
+      unsubscribeStickers();
     };
   }, [templateName]);
 
   const renderPopup = (popupNumber) => {
     switch (popupNumber) {
       case 0:
-        return null;
+        return "";
       case 1:
         return (
           <TextPopUp
@@ -161,7 +174,9 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
             templateName={templateName}
             staticColumns={staticColumns}
             dynamicColumn={dynamicColumn}
+            imageFolder={imageFolder}
             templateCollection={templateCollection}
+            stickers={stickers}
           />
         );
       case 2:
@@ -172,6 +187,7 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
             handleImageUpload={handleImageUpload}
             selectedCardIndex={selectedCardIndex}
             imgIndex={imgIndex}
+            stickers={stickers}
           />
         );
       case 3:
@@ -179,8 +195,10 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
           <ManageTemplates
             dynamicColumn={dynamicColumn}
             staticColumns={staticColumns}
+            stickers={stickers}
             setDynamicColumn={setDynamicColumn}
             setStaticColumns={setStaticColumns}
+            setStickers={setStickers}
             templates={templates}
             setTemplates={setTemplates}
             setPopup={setPopupState}
@@ -188,6 +206,8 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
             setCurrentTemplate={setTemplateName}
             templateFolder={templateCollection}
             templateName={templateName}
+            templateCollection={templateCollection}
+            
           />
         );
       case 4:
@@ -213,8 +233,9 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
             templateName={templateName}
             staticColumns={staticColumns}
             dynamicColumn={dynamicColumn}
-            templateCollection={templateCollection}
             imageFolder={imageFolder}
+            templateCollection={templateCollection}
+            stickers={stickers}
           />
         );
       case 8:
@@ -237,13 +258,14 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
             }
             selectedCardIndex={selectedCardIndex}
             imageIndex={imgIndex}
-            maxStaticIndex={maxStaticIndex}
             imageFolder={imageFolder}
-            templateCollection={templateCollection}
             uploadDataToFirebase={uploadDataToFirebase}
             templateName={templateName}
+            maxStaticIndex={maxStaticIndex}
             staticColumns={staticColumns}
             dynamicColumn={dynamicColumn}
+            templateCollection={templateCollection}
+            stickers={stickers}
           />
         );
       case 9:
@@ -268,10 +290,11 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
             cardNumber={selectedImage.cardIndex}
             imageFolder={imageFolder}
             uploadDataToFirebase={uploadDataToFirebase}
-            templateCollection={templateCollection}
             templateName={templateName}
             staticColumns={staticColumns}
             dynamicColumn={dynamicColumn}
+            templateCollection={templateCollection}
+            stickers={stickers}
           />
         );
       case 10:
@@ -295,10 +318,11 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
             templateName={templateName}
             imgIndex={imgIndex}
             maxCardPosition={maxStaticIndex}
-            templateCollection={templateCollection}
             imageFolder={imageFolder}
+            templateCollection={templateCollection}
             setPopup={setPopupState}
             uploadDataToFirebase={uploadDataToFirebase}
+            stickers={stickers}
           />
         );
       case 12:
@@ -325,7 +349,8 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
                 templateCollection,
                 templateName,
                 staticColumns,
-                dynamicColumn
+                dynamicColumn,
+                stickers
               )
             }
           />
@@ -349,7 +374,8 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
                 templateCollection,
                 templateName,
                 staticColumns,
-                dynamicColumn
+                dynamicColumn,
+                stickers
               )
             }
           />
@@ -374,10 +400,46 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
                 templateCollection,
                 templateName,
                 staticColumns,
-                dynamicColumn
+                dynamicColumn,
+                stickers
               )
             }
             imageFolder={imageFolder}
+          />
+        );
+      case 15:
+        return <EditStickers setPopup={setPopupState} stickers={stickers} />;
+      case 16:
+        return (
+          <AddStickersPopup
+            setPopup={setPopupState}
+            stickers={stickers}
+            setStickers={setStickers}
+            uploadDataToFirebase={() => uploadDataToFirebase(
+              templateCollection,
+                templateName,
+                staticColumns,
+                dynamicColumn,
+                stickers
+            )}
+            imageFolder={imageFolder}
+          />
+        );
+      case 17:
+        return (
+          <StikersFromCloud
+            setPopup={setPopupState}
+            stickers={stickers}
+            setStickers={setStickers}
+            uploadDataToFirebase={() =>
+              uploadDataToFirebase(
+                templateCollection,
+                templateName,
+                staticColumns,
+                dynamicColumn,
+                stickers
+              )
+            }
           />
         );
     }
@@ -393,8 +455,8 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
     for (let i = 0; i < Number(cardAmount); i++) {
       const card = {
         img: [
-          { src: "", zoom: 100, x: 0, y: 0 },
-          { src: "", zoom: 100, x: 0, y: 0 },
+          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
+          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
         ],
         text: {
           top: "",
@@ -428,7 +490,8 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
           templateCollection,
           templateName,
           staticColumns,
-          dynamicColumn
+          dynamicColumn,
+          stickers
         );
       };
   };
@@ -458,7 +521,16 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
                 )
                   .then((url) => {
                     const newDynamicColumn = [...dynamicColumn];
-                    newDynamicColumn[cardIndex].img[img].src = url;
+                  const lastImg =
+                    newDynamicColumn[cardIndex].img[
+                      newDynamicColumn[cardIndex].img.length - 1
+                    ];
+                  console.log(url);
+                  const updatedImg = {
+                    src: url,
+                    ...lastImg, // Copying other properties from the last image object
+                  };
+                  newDynamicColumn[cardIndex].img.push(updatedImg);
                     setDynamicColumn(newDynamicColumn);
                   })
                   .then(() => {
@@ -466,7 +538,8 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
                       templateCollection,
                       templateName,
                       staticColumns,
-                      dynamicColumn
+                      dynamicColumn,
+                      stickers
                     );
                   });
                 console.log("Uploaded a blob or file!");
@@ -497,10 +570,17 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
                   ref(storage, `images/${imageFolder}/${file.name}`)
                 )
                   .then((url) => {
-                    console.log(file.name);
-                    console.log(url);
                     const newStaticColumns = [...staticColumns];
-                    newStaticColumns[cardIndex].img[img].src = url;
+                    const lastImg =
+                      newStaticColumns[cardIndex].img[
+                        newStaticColumns[cardIndex].img.length - 1
+                      ];
+  
+                    const updatedImg = {
+                      ...lastImg,
+                      src: url, // Copying other properties from the last image object
+                    };
+                    newStaticColumns[cardIndex].img.push(updatedImg);
                     setStaticColumns(newStaticColumns);
                   })
                   .then(() => {
@@ -508,7 +588,8 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
                       templateCollection,
                       templateName,
                       staticColumns,
-                      dynamicColumn
+                      dynamicColumn,
+                      stickers
                     );
                   });
               });
@@ -556,14 +637,8 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
 
           if (imageToUpdate) {
             // Set the src value to an empty string when deleting
-            imageToUpdate.img[index].src = "";
-          }
 
-          if (
-            imageToUpdate.img[0].src == "" &&
-            imageToUpdate.img[1].src == ""
-          ) {
-            setPopupState(0);
+            imageToUpdate.img.splice(index, 1);
           }
 
           return newDynamicColumn;
@@ -579,14 +654,7 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
 
           if (imageToUpdate) {
             // Set the src value to an empty string when deleting
-            imageToUpdate.img[index].src = "";
-          }
-
-          if (
-            imageToUpdate.img[0].src == "" &&
-            imageToUpdate.img[1].src == ""
-          ) {
-            setPopupState(0);
+            imageToUpdate.img.splice(index, 1);
           }
 
           return newStaticColumns;
@@ -594,6 +662,7 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
       }
     }
   };
+
 
   const handleCropImage = () => {
     setPopupState(8);
@@ -628,47 +697,43 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
           setSelectedImage({ cardIndex });
         },
       },
+      { type: "divider" },
+      {
+        label: "Image " + (selectedColumn[index].img.length + 1),
+      },
+      {
+        label: "Upload",
+        action: () => {
+          setImgIndex(selectedColumn[index].img.length + 1);
+          setPopupState(2);
+          setSelectedCardIndex(cardIndex);
+        },
+      },
     ];
 
-    if (selectedColumn[index].img[1].src == "") {
-      // If only one image uploaded, allow uploading the second image
+    selectedColumn[index].img.map((img, index) => {
       contextMenuItems.push(
         { type: "divider" },
         {
-          label: "Image 2",
-        },
-        {
-          label: "Upload",
-          action: () => {
-            setImgIndex(1);
-            setPopupState(2);
-            setSelectedCardIndex(cardIndex);
-          },
-        }
-      );
-    }
-    if (selectedColumn[index].img[1].src !== "") {
-      contextMenuItems.push(
-        { type: "divider" },
-        {
-          label: "Image 2",
+          label: "Image " + (index + 1),
         },
         {
           label: "Delete",
           action: async () => {
-            await handleDeleteImage(cardIndex, 1);
+            await handleDeleteImage(cardIndex, index);
             await uploadDataToFirebase(
-              templateCollection,
+              "Grocery",
               templateName,
               staticColumns,
-              dynamicColumn
+              dynamicColumn,
+              stickers
             );
           },
         },
         {
           label: "Crop-Square",
           action: () => {
-            setImgIndex(1);
+            setImgIndex(index);
             setSelectedCardIndex(cardIndex);
             handleCropImage(cardIndex, imgIndex);
           },
@@ -676,7 +741,7 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
         {
           label: "Auto-crop",
           action: () => {
-            setImgIndex(1);
+            setImgIndex(index);
             setSelectedCardIndex(cardIndex);
             setPopupState(7);
           },
@@ -684,69 +749,13 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
         {
           label: "Freehand",
           action: () => {
-            setImgIndex(1), setPopupState(14), setSelectedCardIndex(cardIndex);
+            setImgIndex(index),
+              setPopupState(14),
+              setSelectedCardIndex(cardIndex);
           },
         }
       );
-    }
-
-    if (selectedColumn[index].img[0].src == "") {
-      contextMenuItems.push(
-        { type: "divider" },
-        {
-          label: "Image 1",
-        },
-        {
-          label: "Upload",
-          action: () => {
-            setImgIndex(0);
-            setPopupState(2);
-            setSelectedCardIndex(cardIndex);
-          },
-        }
-      );
-    }
-    if (selectedColumn[index].img[0].src != "") {
-      contextMenuItems.push(
-        { type: "divider" },
-        {
-          label: "Image 1",
-        },
-        {
-          label: "Delete",
-          action: async () => {
-            await handleDeleteImage(cardIndex, 0);
-            await uploadDataToFirebase(
-              templateCollection,
-              templateName,
-              staticColumns,
-              dynamicColumn
-            );
-          },
-        },
-        {
-          label: "Crop-Square",
-          action: () => {
-            setImgIndex(0);
-            setSelectedCardIndex(cardIndex);
-            handleCropImage(cardIndex, imgIndex);
-          },
-        },
-        {
-          label: "Auto-crop",
-          action: () => {
-            setImgIndex(0), setPopupState(7);
-            setSelectedCardIndex(cardIndex);
-          },
-        },
-        {
-          label: "Freehand",
-          action: () => {
-            setImgIndex(0), setPopupState(14), setSelectedCardIndex(cardIndex);
-          },
-        }
-      );
-    }
+    });
 
     const containerRect = contextMenuRef.current.getBoundingClientRect();
     setContextMenu({
@@ -758,7 +767,6 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
 
   const handleCardClick = (cardIndex, event) => {
     // Check if the click event target is not the card element
-
     setImgIndex(0);
 
     const auxIndex =
@@ -767,13 +775,18 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
     if (!event.target.classList.contains(styles.card)) {
       return;
     }
+
+    console.log("Clicked on card with index:", cardIndex);
+    setSelectedCardIndex(cardIndex);
+
     const image = (cardIndex > maxStaticIndex ? dynamicColumn : staticColumns)[
       auxIndex
     ];
 
-    if (image.img[0].src === "" && image.img[1].src === "") {
+    if (image.img.length === 0) {
       setPopupState(2);
       setSelectedCardIndex(cardIndex);
+      console.log(selectedCardIndex);
     } else {
       handleContextMenu(event, cardIndex, image);
       setSelectedCardIndex(cardIndex);
@@ -790,7 +803,6 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
         const names = items.map((item) => item.name);
 
         setImages(names);
-        console.log(names);
       })
       .then(() => setPopupState(11))
       .catch((error) => {
@@ -843,29 +855,23 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
               key={cardIndex}
               onClick={(event) => handleCardClick(cardIndex, event)}
             >
-              {images.img[0] && ( // Check if img[0] exists before rendering
+              {images.img.map((img, index) => (
                 <img
-                  src={images.img[0].src ? images.img[0].src : ""}
+                  name={`image-${cardIndex}-${index}`}
+                  src={images.img[index] ? images.img[index].src : ""}
                   className={styles.uploadedImage}
                   style={{
-                    transform: `scale(${images.img[0].zoom / 100}) translate(${
-                      images.img[0].x / (images.img[0].zoom / 100)
-                    }px, ${images.img[0].y / (images.img[0].zoom / 100)}px)`,
+                    transform: `scale(${
+                      images.img[index].zoom / 100
+                    }) translate(${
+                      images.img[index].x / (images.img[index].zoom / 100)
+                    }px, ${
+                      images.img[index].y / (images.img[index].zoom / 100)
+                    }px)`,
+                    zIndex: images.img[index].zIndex,
                   }}
                 />
-              )}
-
-              {images.img[1] && ( // Check if img[1] exists before rendering
-                <img
-                  src={images.img[1] ? images.img[1].src : ""}
-                  className={styles.uploadedImage}
-                  style={{
-                    transform: `scale(${images.img[1].zoom / 100}) translate(${
-                      images.img[1].x / (images.img[1].zoom / 100)
-                    }px, ${images.img[1].y / (images.img[1].zoom / 100)}px)`,
-                  }}
-                />
-              )}
+              ))}
               <NewPriceBox
                 cardIndex={cardIndex}
                 priceBox={
@@ -915,29 +921,20 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
             key={cardIndex}
             onClick={(event) => handleCardClick(cardIndex, event)}
           >
-            {images[0] && ( // Check if img[0] exists before rendering
+           {images.map((img, index) => (
               <img
-                src={images[0].src ? images[0].src : ""}
+                name={`image-${cardIndex}-${index}`}
+                src={img ? img.src : ""}
                 className={styles.uploadedImage}
                 style={{
-                  transform: `scale(${images[0].zoom / 100}) translate(${
-                    images[0].x / (images[0].zoom / 100)
-                  }px, ${images[0].y / (images[0].zoom / 100)}px)`,
+                  transform: `scale(${img.zoom / 100}) translate(${
+                    img.x / (img.zoom / 100)
+                  }px, ${img.y / (img.zoom / 100)}px)`,
+                  zIndex: img.zIndex,
                 }}
               />
-            )}
+            ))}
 
-            {images[1] && ( // Check if img[1] exists before rendering
-              <img
-                src={images[1] ? images[1].src : ""}
-                className={styles.uploadedImage}
-                style={{
-                  transform: `scale(${images[1].zoom / 100}) translate(${
-                    images[1].x / (images[1].zoom / 100)
-                  }px, ${images[1].y / (images[1].zoom / 100)}px)`,
-                }}
-              />
-            )}
             <NewPriceBox
               cardIndex={cardIndex}
               priceBox={staticColumns[cardIndex].text.priceBox}
@@ -1002,29 +999,20 @@ function NapervilleFreshMarket(uploadDataToFirebase, handleConvertToPDF) {
             key={cardIndex}
             onClick={(event) => handleCardClick(cardIndex, event)}
           >
-            {images[0] && ( // Check if img[0] exists before rendering
+           {images.map((img, index) => (
               <img
-                src={images[0].src ? images[0].src : ""}
+                name={`image-${cardIndex}-${index}`}
+                src={img ? img.src : ""}
                 className={styles.uploadedImage}
                 style={{
-                  transform: `scale(${images[0].zoom / 100}) translate(${
-                    images[0].x / (images[0].zoom / 100)
-                  }px, ${images[0].y / (images[0].zoom / 100)}px)`,
+                  transform: `scale(${img.zoom / 100}) translate(${
+                    img.x / (img.zoom / 100)
+                  }px, ${img.y / (img.zoom / 100)}px)`,
+                  zIndex: img.zIndex,
                 }}
               />
-            )}
+            ))}
 
-            {images[1] && ( // Check if img[1] exists before rendering
-              <img
-                src={images[1] ? images[1].src : ""}
-                className={styles.uploadedImage}
-                style={{
-                  transform: `scale(${images[1].zoom / 100}) translate(${
-                    images[1].x / (images[1].zoom / 100)
-                  }px, ${images[1].y / (images[1].zoom / 100)}px)`,
-                }}
-              />
-            )}
             <NewPriceBox
               cardIndex={cardIndex}
               priceBox={staticColumns[cardIndex].text.priceBox}
