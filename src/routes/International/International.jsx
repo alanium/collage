@@ -52,10 +52,7 @@ function International({
     Array(21)
       .fill()
       .map((_, index) => ({
-        img: [
-          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
-          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
-        ],
+        img: [],
         text: {
           top: "",
           left: "",
@@ -444,10 +441,7 @@ function International({
 
     for (let i = 0; i < Number(cardAmount); i++) {
       const card = {
-        img: [
-          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
-          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
-        ],
+        img: [],
         text: {
           top: "",
           left: "",
@@ -509,11 +503,7 @@ function International({
                   ref(storage, `images/${templateCollection}/${file.name}`)
                 ).then((url) => {
                   const newDynamicColumn = [...dynamicColumn];
-                  const lastImg =
-                    newDynamicColumn[cardIndex].img[
-                      newDynamicColumn[cardIndex].img.length - 1
-                    ];
-                  console.log(url);
+                  const lastImg ={src: url, zoom: 100, x: 0, y: 0, zIndex: -1 };
                   const updatedImg = {
                     src: url,
                     ...lastImg, // Copying other properties from the last image object
@@ -556,10 +546,7 @@ function International({
                   ref(storage, `images/${templateCollection}/${file.name}`)
                 ).then((url) => {
                   const newStaticColumns = [...staticColumns];
-                  const lastImg =
-                    newStaticColumns[cardIndex].img[
-                      newStaticColumns[cardIndex].img.length - 1
-                    ];
+                  const lastImg = {src: url, zoom: 100, x: 0, y: 0, zIndex: -1 };
                   const updatedImg = {
                     ...lastImg,
                     src: url, // Copying other properties from the last image object

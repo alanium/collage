@@ -52,10 +52,7 @@ export default function DairyAndSnacks({
     Array(cardsInStatic)
       .fill()
       .map((_, index) => ({
-        img: [
-          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
-          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
-        ],
+        img: [],
         text: {
           top: "",
           left: "",
@@ -165,10 +162,7 @@ export default function DairyAndSnacks({
 
     for (let i = 0; i < Number(cardAmount); i++) {
       const card = {
-        img: [
-          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
-          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
-        ],
+        img: [],
         text: {
           top: "",
           left: "",
@@ -543,11 +537,8 @@ export default function DairyAndSnacks({
                   ref(storage, `images/${templateCollection}/${file.name}`)
                 ).then((url) => {
                   const newDynamicColumn = [...dynamicColumn];
-                  const lastImg =
-                    newDynamicColumn[cardIndex].img[
-                      newDynamicColumn[cardIndex].img.length - 1
-                    ];
-                  console.log(url);
+                  const lastImg ={src: url, zoom: 100, x: 0, y: 0, zIndex: -1 };
+      
                   const updatedImg = {
                     src: url,
                     ...lastImg, // Copying other properties from the last image object
@@ -590,10 +581,7 @@ export default function DairyAndSnacks({
                   ref(storage, `images/${templateCollection}/${file.name}`)
                 ).then((url) => {
                   const newStaticColumns = [...staticColumns];
-                  const lastImg =
-                    newStaticColumns[cardIndex].img[
-                      newStaticColumns[cardIndex].img.length - 1
-                    ];
+                  const lastImg ={src: url, zoom: 100, x: 0, y: 0, zIndex: -1 };
                   const updatedImg = {
                     ...lastImg,
                     src: url, // Copying other properties from the last image object

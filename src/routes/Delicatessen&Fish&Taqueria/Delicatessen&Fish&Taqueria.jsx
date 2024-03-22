@@ -46,10 +46,7 @@ export default function DelicatessenAndMore({
     Array(cardsInStatic)
       .fill()
       .map((_, index) => ({
-        img: [
-          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
-          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
-        ],
+        img: [],
         text: {
           top: "",
           left: "",
@@ -175,10 +172,7 @@ export default function DelicatessenAndMore({
 
     for (let i = 0; i < Number(cardAmount); i++) {
       const card = {
-        img: [
-          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
-          { src: "", zoom: 100, x: 0, y: 0, zIndex: -1 },
-        ],
+        img: [],
         text: {
           top: "",
           left: "",
