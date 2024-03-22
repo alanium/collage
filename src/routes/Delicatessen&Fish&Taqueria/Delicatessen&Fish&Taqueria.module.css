@@ -105,6 +105,16 @@
   z-index: 0;
 }
 
+.card {
+  flex: 1;
+  border-bottom: 1px solid gray;
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+  margin: 2px;
+  padding: 3px;
+}
+
 .secondContainerDiv {
   width: 98%;
   height: 38%;
@@ -217,15 +227,7 @@
   border-left: 1px solid rgb(0, 0, 0);
 }
 
-.card {
-  flex: 1;
-  border-bottom: 1px solid gray;
-  border-radius: 3px;
-  position: relative;
-  overflow: hidden;
-  margin: 2px;
-  padding: 3px;
-}
+
 
 .overlay {
   position: absolute;

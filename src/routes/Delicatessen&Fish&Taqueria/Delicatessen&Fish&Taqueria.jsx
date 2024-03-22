@@ -72,7 +72,7 @@ export default function DelicatessenAndMore({
         index,
       }))
   );
-  const [stickers, setStickers] = useState([])
+  const [stickers, setStickers] = useState([]);
   const [dynamicColumn, setDynamicColumn] = useState([]);
   const [contextMenu, setContextMenu] = useState(null);
   const [selectedImage, setSelectedImage] = useState({});
@@ -266,7 +266,6 @@ export default function DelicatessenAndMore({
             setCurrentTemplate={setTemplateName}
             templateFolder={templateCollection}
             templateName={templateName}
-            
           />
         );
       case 4:
@@ -383,124 +382,125 @@ export default function DelicatessenAndMore({
             stickers={stickers}
           />
         );
-        case 12:
-          return (
-            <NewPriceBoxEdit  
-              oldPriceBox={
-                selectedCardIndex > maxStaticIndex
-                  ? dynamicColumn[selectedCardIndex - cardsInStatic].text
-                      .priceBox
-                  : staticColumns[selectedCardIndex].text.priceBox
-              }
-              setSelectedColumn={
-                selectedCardIndex > maxStaticIndex
-                  ? setDynamicColumn
-                  : setStaticColumns
-              }
-              selectedColumn={
-                selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
-              }
-              selectedCardIndex={selectedCardIndex}
-              cardsInStatic={cardsInStatic}
-              setPopup={setPopupState}
-              uploadDataToFirebase={() =>
-                uploadDataToFirebase(
-                  templateCollection,
-                  templateName,
-                  staticColumns,
-                  dynamicColumn,
-                  stickers
-                )
-              }
-            />
-          );
-        case 13:
-          return (
-            <PriceBoxFromCloud
-              setPopup={setPopupState}
-              setSelectedColumn={
-                selectedCardIndex > maxStaticIndex
-                  ? setDynamicColumn
-                  : setStaticColumns
-              }
-              selectedColumn={
-                selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
-              }
-              selectedCardIndex={selectedCardIndex}
-              cardsInStatic={cardsInStatic}
-              uploadDataToFirebase={() =>
-                uploadDataToFirebase(
-                  templateCollection,
-                  templateName,
-                  staticColumns,
-                  dynamicColumn,
-                  stickers
-                )
-              }
-            />
-          );
-        case 14:
-          return (
-            <IrregularImageCropper
-              setPopup={setPopupState}
-              setSelectedColumn={
-                selectedCardIndex > maxStaticIndex
-                  ? setDynamicColumn
-                  : setStaticColumns
-              }
-              selectedColumn={
-                selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
-              }
-              selectedCardIndex={selectedCardIndex}
-              cardsInStatic={cardsInStatic}
-              imgIndex={imgIndex}
-              uploadDataToFirebase={() =>
-                uploadDataToFirebase(
-                  templateCollection,
-                  templateName,
-                  staticColumns,
-                  dynamicColumn,
-                  stickers
-                )
-              }
-              imageFolder={imageFolder}
-            />
-        );
-        case 15:
-          return <EditStickers setPopup={setPopupState} stickers={stickers} />;
-        case 16:
-          return (
-            <AddStickersPopup
-              setPopup={setPopupState}
-              stickers={stickers}
-              setStickers={setStickers}
-              uploadDataToFirebase={() => uploadDataToFirebase(
+      case 12:
+        return (
+          <NewPriceBoxEdit
+            oldPriceBox={
+              selectedCardIndex > maxStaticIndex
+                ? dynamicColumn[selectedCardIndex - cardsInStatic].text.priceBox
+                : staticColumns[selectedCardIndex].text.priceBox
+            }
+            setSelectedColumn={
+              selectedCardIndex > maxStaticIndex
+                ? setDynamicColumn
+                : setStaticColumns
+            }
+            selectedColumn={
+              selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
+            }
+            selectedCardIndex={selectedCardIndex}
+            cardsInStatic={cardsInStatic}
+            setPopup={setPopupState}
+            uploadDataToFirebase={() =>
+              uploadDataToFirebase(
                 templateCollection,
-                  templateName,
-                  staticColumns,
-                  dynamicColumn,
-                  stickers
-              )}
-              imageFolder={imageFolder}
-            />
-          );
-        case 17:
-          return (
-            <StikersFromCloud
-              setPopup={setPopupState}
-              stickers={stickers}
-              setStickers={setStickers}
-              uploadDataToFirebase={() =>
-                uploadDataToFirebase(
-                  templateCollection,
-                  templateName,
-                  staticColumns,
-                  dynamicColumn,
-                  stickers
-                )
-              }
-            />
-          );
+                templateName,
+                staticColumns,
+                dynamicColumn,
+                stickers
+              )
+            }
+          />
+        );
+      case 13:
+        return (
+          <PriceBoxFromCloud
+            setPopup={setPopupState}
+            setSelectedColumn={
+              selectedCardIndex > maxStaticIndex
+                ? setDynamicColumn
+                : setStaticColumns
+            }
+            selectedColumn={
+              selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
+            }
+            selectedCardIndex={selectedCardIndex}
+            cardsInStatic={cardsInStatic}
+            uploadDataToFirebase={() =>
+              uploadDataToFirebase(
+                templateCollection,
+                templateName,
+                staticColumns,
+                dynamicColumn,
+                stickers
+              )
+            }
+          />
+        );
+      case 14:
+        return (
+          <IrregularImageCropper
+            setPopup={setPopupState}
+            setSelectedColumn={
+              selectedCardIndex > maxStaticIndex
+                ? setDynamicColumn
+                : setStaticColumns
+            }
+            selectedColumn={
+              selectedCardIndex > maxStaticIndex ? dynamicColumn : staticColumns
+            }
+            selectedCardIndex={selectedCardIndex}
+            cardsInStatic={cardsInStatic}
+            imgIndex={imgIndex}
+            uploadDataToFirebase={() =>
+              uploadDataToFirebase(
+                templateCollection,
+                templateName,
+                staticColumns,
+                dynamicColumn,
+                stickers
+              )
+            }
+            imageFolder={imageFolder}
+          />
+        );
+      case 15:
+        return <EditStickers setPopup={setPopupState} stickers={stickers} />;
+      case 16:
+        return (
+          <AddStickersPopup
+            setPopup={setPopupState}
+            stickers={stickers}
+            setStickers={setStickers}
+            uploadDataToFirebase={() =>
+              uploadDataToFirebase(
+                templateCollection,
+                templateName,
+                staticColumns,
+                dynamicColumn,
+                stickers
+              )
+            }
+            imageFolder={imageFolder}
+          />
+        );
+      case 17:
+        return (
+          <StikersFromCloud
+            setPopup={setPopupState}
+            stickers={stickers}
+            setStickers={setStickers}
+            uploadDataToFirebase={() =>
+              uploadDataToFirebase(
+                templateCollection,
+                templateName,
+                staticColumns,
+                dynamicColumn,
+                stickers
+              )
+            }
+          />
+        );
     }
   };
 
@@ -753,7 +753,10 @@ export default function DelicatessenAndMore({
     const auxIndex =
       cardIndex > maxStaticIndex ? cardIndex - cardsInStatic : cardIndex;
 
-    if (!event.target.classList.contains(styles.card)) {
+    if (
+      !(event.target.classList.contains(styles.card) ||
+      event.target.classList.contains(styles.taqueriaCard))
+    ) {
       return;
     }
 
@@ -821,7 +824,7 @@ export default function DelicatessenAndMore({
               key={cardIndex}
               onClick={(event) => handleCardClick(cardIndex, event)}
             >
-             {images.img.map((img, index) => (
+              {images.img.map((img, index) => (
                 <img
                   name={`image-${cardIndex}-${index}`}
                   src={images.img[index] ? images.img[index].src : ""}
@@ -884,7 +887,7 @@ export default function DelicatessenAndMore({
             key={cardIndex}
             onClick={(event) => handleCardClick(cardIndex, event)}
           >
-           {images.map((img, index) => (
+            {images.map((img, index) => (
               <img
                 name={`image-${cardIndex}-${index}`}
                 src={img ? img.src : ""}
@@ -1029,18 +1032,18 @@ export default function DelicatessenAndMore({
           onClick={(event) => handleCardClick(25, event)}
         >
           {staticColumns[25].img.map((img, index) => (
-              <img
-                name={`image-${25}-${index}`}
-                src={img ? img.src : ""}
-                className={styles.uploadedImage}
-                style={{
-                  transform: `scale(${img.zoom / 100}) translate(${
-                    img.x / (img.zoom / 100)
-                  }px, ${img.y / (img.zoom / 100)}px)`,
-                  zIndex: img.zIndex,
-                }}
-              />
-            ))}
+            <img
+              name={`image-${25}-${index}`}
+              src={img ? img.src : ""}
+              className={styles.uploadedImage}
+              style={{
+                transform: `scale(${img.zoom / 100}) translate(${
+                  img.x / (img.zoom / 100)
+                }px, ${img.y / (img.zoom / 100)}px)`,
+                zIndex: img.zIndex,
+              }}
+            />
+          ))}
           <NewPriceBox
             cardIndex={25}
             priceBox={staticColumns[25].text.priceBox}
@@ -1098,7 +1101,7 @@ export default function DelicatessenAndMore({
             key={cardIndex}
             onClick={(event) => handleCardClick(cardIndex, event)}
           >
-             {images.map((img, index) => (
+            {images.map((img, index) => (
               <img
                 name={`image-${cardIndex}-${index}`}
                 src={img ? img.src : ""}
